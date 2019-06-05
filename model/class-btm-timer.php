@@ -8,29 +8,77 @@ class BTM_Timer{
 	const STATE_INITIAL = 'initial';
 	const STATE_STARTED = 'started';
 	const STATE_STOPPED = 'stopped';
-
 	/**
+	 * Timer start timestamp
+	 *
+	 * @var integer
+	 */
+	public $started;
+	/**
+	 * Timer stop timestamp
+	 *
+	 * @var integer
+	 */
+	public $stoped;
+	/**
+	 * The timer initial state
+	 *
 	 * @var string
 	 */
 	protected $state = self::STATE_INITIAL;
 
+	/**
+	 * Return the state of timer
+	 *
+	 * @return string
+	 */
 	public function get_state(){
-		throw new Exception('not implemented');
+		return $this->state;
 	}
 
+	/**
+	 * BTM_Timer constructor.
+	 */
 	public function __construct() {
-		throw new Exception('not implemented');
 	}
 
+	/**
+	 * Timer start
+	 *
+	 * @throws Exception
+	 */
 	public function start(){
-		throw new Exception('not implemented');
+		if( $this->get_state() === BTM_Timer::STATE_INITIAL || $this->get_state() === BTM_Timer::STATE_STOPPED ){
+			$this->started = time();
+			$this->state = self::STATE_STARTED;
+		}else{
+			throw new Exception("Timer started Exception");
+		}
 	}
-
+	/**
+	 * Timer start
+	 *
+	 * @throws Exception
+	 */
 	public function stop(){
-		throw new Exception('not implemented');
+		if( $this->get_state() === BTM_Timer::STATE_STARTED ){
+			$this->stoped = time();
+			$this->state = self::STATE_STOPPED;
+		}else{
+			throw new Exception("Timer is not started Exception");
+		}
 	}
 
+	/**
+	 * Get elapdes time
+	 *
+	 * @throws Exception
+	 */
 	public function get_time_elapsed(){
-		throw new Exception('not implemented');
+		if( $this->get_state() === BTM_Timer::STATE_STOPPED ){
+			$this->state = self::STATE_INITIAL;
+		}else{
+			throw new Exception("Timer is not stoped Exception");
+		}
 	}
 }
