@@ -35,10 +35,17 @@ final class BTM_Task_Runner{
 	 * @return string[]
 	 */
 	public function run_task( BTM_Task $task ){
-		echo 'running the task';
-		return array(
-			'log test 1',
-			'log test 2'
-		);
+		$timer = new BTM_Timer();
+		$timer->start();
+
+		try{
+			apply_filters( $task->get_callback_action(), $task->get_callback_arguments() );
+		}catch( Exception $e ){
+
+		}
+
+		$timer->stop();
+
+		// @todo: log task info, and run-status, $timer->get_time_elapsed()
 	}
 }

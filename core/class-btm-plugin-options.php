@@ -72,6 +72,14 @@ final class BTM_Plugin_Options{
 	}
 
 	/**
+	 * @return int
+	 */
+	public function get_total_execution_allowed_duration_in_seconds(){
+		// @todo: make it configurable, read from DB
+		return 60 * 3; // 3 min
+	}
+
+	/**
 	 * Is plugin in debug mode
 	 *
 	 * @return bool

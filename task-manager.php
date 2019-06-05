@@ -56,6 +56,7 @@ final class BTM_Plugin {
 
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-cron-job-manager.php' );
+		require_once( $core_path . 'class-run-restrictor.php' );
 
 		$model_path = $plugin_path . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR;
 		require_once( $model_path . 'class-btm-task-management-status.php' );
