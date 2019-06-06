@@ -58,7 +58,7 @@ final class BTM_Run_Restrictor {
 	 */
 	public function check_execution_time_restriction(){
 		$allowed_duration = BTM_Plugin_Options::get_instance()->get_total_execution_allowed_duration_in_seconds();
-		if( $allowed_duration <= $this->timer->get_time_elapsed() ){
+		if( $allowed_duration <= $this->timer->get_time_elapsed_in_seconds() ){
 			$this->timer->stop();
 			return __( 'Allowed total execution time is exceeded', 'background_task_manager' );
 		}
