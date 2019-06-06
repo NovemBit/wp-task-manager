@@ -8,25 +8,13 @@ class BTM_Timer{
 	const STATE_INITIAL = 'initial';
 	const STATE_STARTED = 'started';
 	const STATE_STOPPED = 'stopped';
-	/**
-	 * Timer start timestamp
-	 *
-	 * @var integer
-	 */
-	public $started;
-	/**
-	 * Timer stop timestamp
-	 *
-	 * @var integer
-	 */
-	public $stoped;
+
 	/**
 	 * The timer initial state
 	 *
 	 * @var string
 	 */
 	protected $state = self::STATE_INITIAL;
-
 	/**
 	 * Return the state of timer
 	 *
@@ -37,48 +25,62 @@ class BTM_Timer{
 	}
 
 	/**
+	 * Timer start timestamp
+	 *
+	 * @var int
+	 */
+	public $started;
+	/**
+	 * Timer stop timestamp
+	 *
+	 * @var int
+	 */
+	public $stopped;
+
+	/**
 	 * BTM_Timer constructor.
 	 */
-	public function __construct() {
-	}
+	public function __construct() {}
 
 	/**
 	 * Timer start
 	 *
 	 * @throws Exception
+	 *      in the case the timer is already started
 	 */
 	public function start(){
-		if( $this->get_state() === BTM_Timer::STATE_INITIAL || $this->get_state() === BTM_Timer::STATE_STOPPED ){
+		if( $this->get_state() === BTM_Timer::STATE_STARTED ){
+			throw new Exception("Timer is already started.");
+		}else{
 			$this->started = time();
 			$this->state = self::STATE_STARTED;
-		}else{
-			throw new Exception("Timer started Exception");
 		}
 	}
 	/**
-	 * Timer start
+	 * Timer stop
 	 *
 	 * @throws Exception
+	 *      in the case the timer is not started
 	 */
 	public function stop(){
 		if( $this->get_state() === BTM_Timer::STATE_STARTED ){
-			$this->stoped = time();
+			$this->stopped = time();
 			$this->state = self::STATE_STOPPED;
 		}else{
-			throw new Exception("Timer is not started Exception");
+			throw new Exception("Timer is not started.");
 		}
 	}
 
 	/**
-	 * Get elapdes time
+	 * Get the time elapsed after the timer is started
 	 *
-	 * @throws Exception
+	 * @return int
 	 */
-	public function get_time_elapsed(){
+	public function get_time_elapsed_in_seconds(){
 		if( $this->get_state() === BTM_Timer::STATE_STOPPED ){
-			$this->state = self::STATE_INITIAL;
+			return $this->stopped - $this->started;
 		}else{
-			throw new Exception("Timer is not stoped Exception");
+			return time() - $this->started;
 		}
 	}
 }
