@@ -4,6 +4,9 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 	exit;
 }
 
+/**
+ * Class BTM_Timer
+ */
 class BTM_Timer{
 	const STATE_INITIAL = 'initial';
 	const STATE_STARTED = 'started';

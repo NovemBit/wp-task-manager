@@ -15,6 +15,8 @@ define( 'BTM_PLUGIN_ACTIVE', true );
  * Plugin main class
  *  requires the files
  *  handles plugin activation, deactivation, removal
+ *  starts migrations
+ *  starts running the tasks as a cron job
  */
 final class BTM_Plugin {
 	// region Singleton
@@ -54,26 +56,30 @@ final class BTM_Plugin {
 
 		$plugin_path = BTM_Plugin_Options::get_instance()->get_path();
 
-		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
-		require_once( $core_path . 'class-btm-cron-job-manager.php' );
-		require_once( $core_path . 'class-run-restrictor.php' );
-
 		$model_path = $plugin_path . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR;
 		require_once( $model_path . 'class-btm-task-management-status.php' );
 		require_once( $model_path . 'class-btm-task-run-status.php' );
 		require_once( $model_path . 'class-btm-timer.php' );
 		require_once( $model_path . 'class-btm-task.php' );
-		require_once( $model_path . 'class-btm-task-log.php' );
+		require_once( $model_path . 'class-btm-task-run-log.php' );
 		require_once( $model_path . 'class-btm-task-manager-log.php' );
 
 		$dao_path = $plugin_path . DIRECTORY_SEPARATOR . 'dao' . DIRECTORY_SEPARATOR;
 		require_once( $dao_path . 'class-btm-task-dao.php' );
-		require_once( $dao_path . 'class-btm-task-log-dao.php' );
+		require_once( $dao_path . 'class-btm-task-run-log-dao.php' );
 		require_once( $dao_path . 'class-btm-task-manager-log-dao.php' );
 
-		$controller_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
-		require_once( $controller_path . 'class-btm-task-runner.php' );
-		require_once( $controller_path . 'class-btm-task-manager.php' );
+		$migration_path = $plugin_path . DIRECTORY_SEPARATOR . 'migration' . DIRECTORY_SEPARATOR;
+		require_once( $migration_path . 'interface-btm-migration-manager.php' );
+		require_once( $migration_path . 'class-btm-migration-manager.php' );
+
+		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
+		require_once( $core_path . 'class-btm-cron-job-manager.php' );
+		require_once( $core_path . 'class-btm-run-restrictor.php' );
+		require_once( $core_path . 'class-btm-task-runner.php' );
+
+		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
+		require_once( $app_path . 'class-btm-task-manager.php' );
 	}
 
 	/**
@@ -85,18 +91,18 @@ final class BTM_Plugin {
 		register_uninstall_hook( __FILE__, array( __CLASS__, 'on_plugin_uninstall' ) );
 
 		add_action( BTM_Plugin_Options::get_instance()->get_cron_job_name(), array( $this, 'on_cron_job_run_tasks' ) );
-		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
+		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
 	}
 
 	public function on_cron_job_run_tasks(){
-		BTM_Task_Manager::get_instance()->run_the_tasks();
+		 BTM_Task_Manager::get_instance()->run_the_tasks();
 	}
 
 	/**
 	 * Callback for plugins_loaded, should not be called directly
 	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/plugins_loaded
 	 */
-	public function on_plugins_loaded(){
+	public function after_setup_theme(){
 		// init cron job manager
 		BTM_Cron_Job_Manager::get_instance();
 
@@ -104,7 +110,7 @@ final class BTM_Plugin {
 		if( is_admin() ){
 			// create admin page(s) to show report(s)
 			// handle ajax requests
-		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() ){
+		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			$this->on_cron_job_run_tasks();
 			exit;
 		}
@@ -115,7 +121,7 @@ final class BTM_Plugin {
 	 * @see register_activation_hook
 	 */
 	public function on_plugin_activation(){
-		//  run DB migrations up if any
+		BTM_Migration_Manager::get_instance()->migrate_up();
 		BTM_Cron_Job_Manager::get_instance()->activate_cron_job();
 	}
 

@@ -4,6 +4,11 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 	exit;
 }
 
+/*
+ * Registers background tasks
+ * Checks the run restrictions and runs the tasks in a loop
+ * Logs information about run restrictions and about the tasks it request to run
+ */
 final class BTM_Task_Manager{
 	// region Singleton
 
@@ -23,11 +28,7 @@ final class BTM_Task_Manager{
 	}
 
 	private function __construct() {
-		try{
-			$this->task_runner = BTM_Task_Runner::get_the_instance_once();
-		}catch ( Exception $e ){
-			// log error
-		}
+		$this->task_runner = BTM_Task_Runner::get_the_instance_once();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
@@ -39,48 +40,42 @@ final class BTM_Task_Manager{
 	 */
 	private $task_runner = null;
 
+	/**
+	 * Checks run restrictions, runs the tasks, logs steps
+	 */
 	public function run_the_tasks(){
-		// @todo: log started running the tasks
+		$task_manager_log_dao = BTM_Task_Manager_Log_Dao::get_instance();
+		$task_manager_log_dao->log( __( 'Started running the tasks', 'background_task_manager' ) );
 
 		while( true ){
 			$restriction_message = BTM_Run_Restrictor::get_instance()->check_all_restrictions();
-			if( true !== $restriction_message ){
-				$task_to_run = $this->get_next_task();
+			if( true === $restriction_message ){
 
+				$task_to_run = BTM_Task_Dao::get_instance()->get_next_task_to_run();
 				if( false === $task_to_run ){
-					// @todo: log there is no task to run
+					$task_manager_log_dao->log( __( 'There are no tasks to run', 'background_task_manager' ) );
 					break;
 				}else{
+					$task_manager_log_dao->log(
+						sprintf( __( 'Started running task: %s', 'background_task_manager' ), $task_to_run->get_callback_action() )
+					);
 					$this->task_runner->run_task( $task_to_run );
 				}
 			}else{
-				// @todo: log the $restriction_message why we should not run the tasks
+				$task_manager_log_dao->log( $restriction_message );
 				break;
 			}
 		}
 
-		// @todo: log finished running the tasks
+		$task_manager_log_dao->log( __( 'Finished running the tasks', 'background_task_manager' ) );
 	}
 
 	/**
-	 * @return BTM_Task|false
-	 *      false - in the case there is no more tasks to run
-	 */
-	public function get_next_task(){
-		return false;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function check_reasons_not_to_run_tasks(){
-		return true;
-	}
-
-	/**
+	 * Registers a task to run later in background
+	 *
 	 * @param BTM_Task $task
 	 */
 	public function register_task( BTM_Task $task ){
-
+		BTM_Task_Dao::get_instance()->create( $task );
 	}
 }

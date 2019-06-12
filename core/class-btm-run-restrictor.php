@@ -4,6 +4,11 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 	exit;
 }
 
+/**
+ * Checks the reasons not to run tasks
+ *
+ * Class BTM_Run_Restrictor
+ */
 final class BTM_Run_Restrictor {
 	// region Singleton
 
@@ -38,12 +43,15 @@ final class BTM_Run_Restrictor {
 	private $timer;
 
 	/**
+	 * Checks all the restrictions
+	 *
 	 * @return string|true
 	 *      string - restriction message
 	 *      true - restriction passed
 	 */
 	public function check_all_restrictions(){
 		$restriction_message = $this->check_execution_time_restriction();
+
 		if( true !== $restriction_message ){
 			return $restriction_message;
 		}
@@ -52,6 +60,8 @@ final class BTM_Run_Restrictor {
 	}
 
 	/**
+	 * Checks the execution time restriction
+	 *
 	 * @return string|true
 	 *      string - restriction message
 	 *      true - restriction passed

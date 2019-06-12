@@ -5,8 +5,9 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 }
 
 /**
+ * Manages the plugin's cron job
+ *
  * Class BTM_Cron_Job_Manager
- *  manages the cron job of the plugins
  */
 final class BTM_Cron_Job_Manager{
 	// region Singleton
