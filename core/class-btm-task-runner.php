@@ -47,11 +47,24 @@ final class BTM_Task_Runner{
 
 		$start = time();
 		try{
+
+			$logs = array();
+			$callback_args = $task->get_callback_arguments();
+			/**
+			 * Runs the background tasks, gathers their logs.
+			 *
+			 * There is a prefix added to the filter tag,
+			 * @see BTM_Plugin_Options::get_task_filter_name_prefix()
+			 *
+			 * @param string[] $logs            the logs that callback functions should return
+			 * @param mixed[] $callback_args    the callback arguments
+			 */
 			$logs = apply_filters(
 				BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $task->get_callback_action(),
-				array(),
-				$task->get_callback_arguments()
+				$logs,
+				$callback_args
 			);
+
 			$run_success = true;
 		}catch( Exception $e ){
 			$logs = array( $e->getMessage() );
