@@ -41,11 +41,11 @@ class BTM_Task_Dao{
 	// region CREATE
 
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function create( BTM_Task $task ){
+	public function create( I_BTM_Task $task ){
 		global $wpdb;
 
 		if( empty( $task->get_status() ) ){
@@ -61,9 +61,10 @@ class BTM_Task_Dao{
 			'callback_arguments' => serialize( $task->get_callback_arguments() ),
 			'priority' => $task->get_priority(),
 			'status' => $task->get_status()->get_value(),
-			'date_created' => date( 'Y-m-d H:i:s', $task->get_date_created_timestamp() )
+			'date_created' => date( 'Y-m-d H:i:s', $task->get_date_created_timestamp() ),
+			'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
 		);
-		$format = array( '%s', '%s', '%d', '%s', '%s' );
+		$format = array( '%s', '%s', '%d', '%s', '%s', '%s' );
 
 		if( 0 < $task->get_id() ){
 			$data['id'] = $task->get_id();
@@ -94,7 +95,7 @@ class BTM_Task_Dao{
 	/**
 	 * @param int $id
 	 *
-	 * @return BTM_Task|false
+	 * @return I_BTM_Task|false
 	 */
 	public function get_by_id( $id ){
 		global $wpdb;
@@ -114,7 +115,7 @@ class BTM_Task_Dao{
 	}
 
 	/**
-	 * @return BTM_Task|false
+	 * @return I_BTM_Task|false
 	 */
 	public function get_next_task_to_run(){
 		global $wpdb;
@@ -144,11 +145,11 @@ class BTM_Task_Dao{
 	// region UPDATE
 
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function update( BTM_Task $task ){
+	public function update( I_BTM_Task $task ){
 		global $wpdb;
 
 		$updated = $wpdb->update(
@@ -158,12 +159,13 @@ class BTM_Task_Dao{
 				'callback_arguments' => serialize( $task->get_callback_arguments() ),
 				'priority' => $task->get_priority(),
 				'status' => $task->get_status()->get_value(),
-				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() )
+				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
+				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
 			),
 			array(
 				'id' => $task->get_id()
 			),
-			array( '%s', '%s', '%d', '%s', '%s' ),
+			array( '%s', '%s', '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -175,29 +177,29 @@ class BTM_Task_Dao{
 	}
 
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function mark_task_running( BTM_Task $task ){
+	public function mark_task_running( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_RUNNING ) );
 		return $this->update( $task );
 	}
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function mark_task_succeeded( BTM_Task $task ){
+	public function mark_task_succeeded( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED ) );
 		return $this->update( $task );
 	}
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function mark_task_failed( BTM_Task $task ){
+	public function mark_task_failed( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED ) );
 		return $this->update( $task );
 	}
@@ -207,11 +209,11 @@ class BTM_Task_Dao{
 	// region DELETE
 
 	/**
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 *
 	 * @return bool
 	 */
-	public function delete( BTM_Task $task ){
+	public function delete( I_BTM_Task $task ){
 		return $this->delete_by_id( $task->get_id() );
 	}
 
@@ -241,19 +243,12 @@ class BTM_Task_Dao{
 	/**
 	 * @param stdClass $task_obj
 	 *
-	 * @return BTM_Task
+	 * @return I_BTM_Task
 	 */
 	protected function create_task_from_db_obj( stdClass $task_obj ){
-		$task = new BTM_Task(
-			$task_obj->callback_action,
-			unserialize( $task_obj->callback_arguments ),
-			(int) $task_obj->priority,
-			new BTM_Task_Run_Status( $task_obj->status ),
-			strtotime( $task_obj->date_created )
-		);
+		$class_name = BTM_Task_Type_Service::get_instance()->get_class_from_type( $task_obj->type );
 
-		$task->set_id( (int) $task_obj->id );
-
-		return $task;
+		/** @var I_BTM_Task $class_name */
+		return $class_name::create_from_db_obj( $task_obj );
 	}
 }

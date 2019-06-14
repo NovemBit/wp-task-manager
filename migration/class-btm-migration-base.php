@@ -44,6 +44,7 @@ class BTM_Migration_Base implements I_BTM_Migration{
 			  `priority` int(11) NOT NULL DEFAULT \'10\',
 			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			  `type` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');

@@ -57,7 +57,11 @@ final class BTM_Task_Manager{
 					break;
 				}else{
 					$task_manager_log_dao->log(
-						sprintf( __( 'Started running task: %s', 'background_task_manager' ), $task_to_run->get_callback_action() )
+						sprintf(
+							__( 'Started running task %s: %s', 'background_task_manager' ),
+							$task_to_run->get_callback_action(),
+							BTM_Task_Type_Service::get_instance()->get_type_from_task( $task_to_run )
+						)
 					);
 					$this->task_runner->run_task( $task_to_run );
 				}
@@ -73,9 +77,9 @@ final class BTM_Task_Manager{
 	/**
 	 * Registers a task to run later in background
 	 *
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 */
-	public function register_task( BTM_Task $task ){
+	public function register_task( I_BTM_Task $task ){
 		BTM_Task_Dao::get_instance()->create( $task );
 	}
 }

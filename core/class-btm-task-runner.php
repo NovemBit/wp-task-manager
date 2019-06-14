@@ -15,6 +15,9 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 final class BTM_Task_Runner{
 	// region Singleton
 
+	/**
+	 * @var bool
+	 */
 	private static $created = false;
 	/**
 	 * @return BTM_Task_Runner
@@ -39,9 +42,9 @@ final class BTM_Task_Runner{
 	 * Changes the task running status during the run
 	 * Logs information that the task callbacks returns
 	 *
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 */
-	public function run_task( BTM_Task $task ){
+	public function run_task( I_BTM_Task $task ){
 		$task_dao = BTM_Task_Dao::get_instance();
 		$task_dao::get_instance()->mark_task_running( $task );
 

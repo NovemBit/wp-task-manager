@@ -57,17 +57,22 @@ final class BTM_Plugin {
 		$plugin_path = BTM_Plugin_Options::get_instance()->get_path();
 
 		$model_path = $plugin_path . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR;
-		require_once( $model_path . 'class-btm-task-management-status.php' );
-		require_once( $model_path . 'class-btm-task-run-status.php' );
 		require_once( $model_path . 'class-btm-timer.php' );
-		require_once( $model_path . 'class-btm-task.php' );
-		require_once( $model_path . 'class-btm-task-run-log.php' );
-		require_once( $model_path . 'class-btm-task-manager-log.php' );
 
-		$dao_path = $plugin_path . DIRECTORY_SEPARATOR . 'dao' . DIRECTORY_SEPARATOR;
-		require_once( $dao_path . 'class-btm-task-dao.php' );
-		require_once( $dao_path . 'class-btm-task-run-log-dao.php' );
-		require_once( $dao_path . 'class-btm-task-manager-log-dao.php' );
+		require_once( $model_path . 'enum' . DIRECTORY_SEPARATOR . 'class-btm-task-management-status.php' );
+		require_once( $model_path . 'enum' . DIRECTORY_SEPARATOR . 'class-btm-task-run-status.php' );
+
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'interface-btm-task.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task.php' );
+
+		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
+		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-manager-log.php' );
+
+		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
+		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
+		require_once( $data_provider_path . 'class-btm-task-dao.php' );
+		require_once( $data_provider_path . 'class-btm-task-run-log-dao.php' );
+		require_once( $data_provider_path . 'class-btm-task-manager-log-dao.php' );
 
 		$migration_path = $plugin_path . DIRECTORY_SEPARATOR . 'migration' . DIRECTORY_SEPARATOR;
 		require_once( $migration_path . 'interface-btm-migration-manager.php' );

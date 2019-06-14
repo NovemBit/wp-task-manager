@@ -7,7 +7,26 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 /**
  * Class BTM_Task
  */
-class BTM_Task{
+class BTM_Task implements I_BTM_Task{
+	/**
+	 * @param stdClass $task_obj
+	 *
+	 * @return BTM_Task
+	 */
+	public static function create_from_db_obj( stdClass $task_obj ){
+		$task = new static(
+			$task_obj->callback_action,
+			unserialize( $task_obj->callback_arguments ),
+			(int) $task_obj->priority,
+			new BTM_Task_Run_Status( $task_obj->status ),
+			strtotime( $task_obj->date_created )
+		);
+
+		$task->set_id( (int) $task_obj->id );
+
+		return $task;
+	}
+
 	/**
 	 * @var int
 	 */
@@ -72,7 +91,7 @@ class BTM_Task{
 		return $this->callback_arguments;
 	}
 	/**
-	 * @param mixed $callback_arguments
+	 * @param mixed[] $callback_arguments
 	 */
 	public function set_callback_arguments( array $callback_arguments ){
 		// @todo: check arguments to be serializable,
