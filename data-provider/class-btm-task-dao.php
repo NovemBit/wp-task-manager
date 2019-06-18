@@ -60,11 +60,12 @@ class BTM_Task_Dao{
 			'callback_action' => $task->get_callback_action(),
 			'callback_arguments' => serialize( $task->get_callback_arguments() ),
 			'priority' => $task->get_priority(),
+			'bulk_size' => $task->get_bulk_size(),
 			'status' => $task->get_status()->get_value(),
 			'date_created' => date( 'Y-m-d H:i:s', $task->get_date_created_timestamp() ),
 			'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
 		);
-		$format = array( '%s', '%s', '%d', '%s', '%s', '%s' );
+		$format = array( '%s', '%s', '%d', '%d', '%s', '%s', '%s' );
 
 		if( 0 < $task->get_id() ){
 			$data['id'] = $task->get_id();
@@ -122,8 +123,11 @@ class BTM_Task_Dao{
 
 		$where = ' 1=1 ';
 		$where .= $wpdb->prepare('
-			AND `status` = %s
-		', BTM_Task_Run_Status::STATUS_REGISTERED );
+			AND ( `status` = %s OR `status` = %s )
+		',
+			BTM_Task_Run_Status::STATUS_REGISTERED,
+			BTM_Task_Run_Status::STATUS_IN_PROGRESS
+		);
 
 		$query = '
 			SELECT *
@@ -158,6 +162,7 @@ class BTM_Task_Dao{
 				'callback_action' => $task->get_callback_action(),
 				'callback_arguments' => serialize( $task->get_callback_arguments() ),
 				'priority' => $task->get_priority(),
+				'bulk_size' => $task->get_bulk_size(),
 				'status' => $task->get_status()->get_value(),
 				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
 				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
@@ -165,7 +170,7 @@ class BTM_Task_Dao{
 			array(
 				'id' => $task->get_id()
 			),
-			array( '%s', '%s', '%d', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -181,7 +186,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function mark_task_running( I_BTM_Task $task ){
+	public function mark_as_running( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_RUNNING ) );
 		return $this->update( $task );
 	}
@@ -190,7 +195,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function mark_task_succeeded( I_BTM_Task $task ){
+	public function mark_as_succeeded( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED ) );
 		return $this->update( $task );
 	}
@@ -199,8 +204,17 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function mark_task_failed( I_BTM_Task $task ){
+	public function mark_as_failed( I_BTM_Task $task ){
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED ) );
+		return $this->update( $task );
+	}
+	/**
+	 * @param I_BTM_Task $task
+	 *
+	 * @return bool
+	 */
+	public function mark_as_in_progress( I_BTM_Task $task ){
+		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_IN_PROGRESS ) );
 		return $this->update( $task );
 	}
 
@@ -214,7 +228,11 @@ class BTM_Task_Dao{
 	 * @return bool
 	 */
 	public function delete( I_BTM_Task $task ){
-		return $this->delete_by_id( $task->get_id() );
+		if( 0 < $task->get_bulk_size() ){
+			return $this->delete_bulk_by_id( $task->get_id() );
+		}else{
+			return $this->delete_simple_by_id( $task->get_id() );
+		}
 	}
 
 	/**
@@ -222,7 +240,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function delete_by_id( $id ){
+	public function delete_simple_by_id( $id ){
 		global $wpdb;
 
 		$deleted = $wpdb->delete(
@@ -235,6 +253,38 @@ class BTM_Task_Dao{
 			return false;
 		}
 
+		return true;
+	}
+
+	/**
+	 * @param int $id   task id
+	 *
+	 * @return bool
+	 */
+	public function delete_bulk_by_id( $id ){
+		global $wpdb;
+		$db_transaction = BTM_DB_Transaction::get_instance();
+
+		$db_transaction->start();
+
+		$deleted = $wpdb->delete(
+			$this->get_table_name(),
+			array( 'id' => $id ),
+			array( '%d' )
+		);
+
+		if( false === $deleted || 0 === $deleted ){
+			$db_transaction->rollback();
+			return false;
+		}
+
+		$deleted = BTM_Task_Bulk_Argument_Dao::get_instance()->delete_by_task_id( $id );
+		if( true !== $deleted ){
+			$db_transaction->rollback();
+			return false;
+		}
+
+		$db_transaction->commit();
 		return true;
 	}
 

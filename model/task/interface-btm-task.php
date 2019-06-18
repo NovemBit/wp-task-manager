@@ -52,6 +52,15 @@ interface I_BTM_Task{
 	public function set_priority( $priority );
 
 	/**
+	 * @return int
+	 */
+	public function get_bulk_size();
+	/**
+	 * @param $bulk_size
+	 */
+	public function set_bulk_size( $bulk_size );
+
+	/**
 	 * @return BTM_Task_Run_Status
 	 */
 	public function get_status();

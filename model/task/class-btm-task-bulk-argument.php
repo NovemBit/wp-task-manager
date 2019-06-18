@@ -5,27 +5,26 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 }
 
 /**
- * Class BTM_Task
+ * Class BTM_Task_Bulk_Argument
  */
-class BTM_Task implements I_BTM_Task{
+class BTM_Task_Bulk_Argument {
 	/**
-	 * @param stdClass $task_obj
+	 * @param stdClass $task_bulk_argument_obj
 	 *
-	 * @return BTM_Task
+	 * @return BTM_Task_Bulk_Argument
 	 */
-	public static function create_from_db_obj( stdClass $task_obj ){
-		$task = new self(
-			$task_obj->callback_action,
-			unserialize( $task_obj->callback_arguments ),
-			(int) $task_obj->priority,
-			(int) $task_obj->bulk_size,
-			new BTM_Task_Run_Status( $task_obj->status ),
-			strtotime( $task_obj->date_created )
+	public static function create_from_db_obj( stdClass $task_bulk_argument_obj ){
+		$task_bulk_argument = new self(
+			(int) $task_bulk_argument_obj->task_id,
+			unserialize( $task_bulk_argument_obj->callback_arguments ),
+			(int) $task_bulk_argument_obj->priority,
+			new BTM_Task_Run_Status( $task_bulk_argument_obj->status ),
+			strtotime( $task_bulk_argument_obj->date_created_timestamp )
 		);
 
-		$task->set_id( (int) $task_obj->id );
+		$task_bulk_argument->set_id( (int) $task_bulk_argument_obj->id );
 
-		return $task;
+		return $task_bulk_argument;
 	}
 
 	/**
@@ -58,27 +57,32 @@ class BTM_Task implements I_BTM_Task{
 	}
 
 	/**
-	 * @var string
+	 * @var int
 	 */
-	protected $callback_action;
+	protected $task_id;
 	/**
-	 * @return string
+	 * @return int
 	 */
-	public function get_callback_action(){
-		return $this->callback_action;
+	public function get_task_id(){
+		return $this->task_id;
 	}
 	/**
-	 * @param string $callback_action
+	 * @param int $task_id
 	 *
 	 * @throws InvalidArgumentException
-	 *      in the case the argument $callback_action is not a string or is empty
+	 *      in the case the argument $task_id is not a positive int
+	 * @throws LogicException
+	 *      in the case the task_id is already evaluated
 	 */
-	public function set_callback_action( $callback_action ){
-		if( ! is_string( $callback_action ) || empty( $callback_action ) ){
-			throw new InvalidArgumentException( 'Argument $callback_action should be non empty string. Input was: ' . $callback_action );
+	public function set_task_id( $task_id ){
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException( 'Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+		if( ! empty( $this->task_id ) ){
+			throw new LogicException( 'Task id is already evaluated.' );
 		}
 
-		$this->callback_action = $callback_action;
+		$this->task_id = $task_id;
 	}
 
 	/**
@@ -125,30 +129,6 @@ class BTM_Task implements I_BTM_Task{
 	}
 
 	/**
-	 * @var int
-	 */
-	protected $bulk_size;
-	/**
-	 * @return int
-	 */
-	public function get_bulk_size(){
-		return $this->bulk_size;
-	}
-	/**
-	 * @param $bulk_size
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $bulk_size is not an int or is less than 0
-	 */
-	public function set_bulk_size( $bulk_size ){
-		if( ! is_int( $bulk_size ) || 0 > $bulk_size ){
-			throw new InvalidArgumentException( 'Argument $bulk_size should be non negative int. Input was: ' . $bulk_size );
-		}
-
-		$this->bulk_size = $bulk_size;
-	}
-
-	/**
 	 * @var BTM_Task_Run_Status
 	 */
 	protected $status;
@@ -192,25 +172,22 @@ class BTM_Task implements I_BTM_Task{
 	/**
 	 * BTM_Task constructor.
 	 *
-	 * @param string $callback_action
+	 * @param int $task_id
 	 * @param mixed[] $callback_arguments
 	 * @param int $priority
-	 * @param int $bulk_size
 	 * @param BTM_Task_Run_Status $status
 	 * @param int|null $date_created_timestamp
 	 */
 	public function __construct(
-		$callback_action,
+		$task_id,
 		array $callback_arguments = array(),
 		$priority = 10,
-		$bulk_size = 1,
 		BTM_Task_Run_Status $status = null,
 		$date_created_timestamp = null
 	){
-		$this->set_callback_action( $callback_action );
+		$this->set_task_id( $task_id );
 		$this->set_callback_arguments( $callback_arguments );
 		$this->set_priority( $priority );
-		$this->set_bulk_size( $bulk_size );
 
 		if( null !== $status ){
 			$this->set_status( $status );

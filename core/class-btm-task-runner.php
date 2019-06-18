@@ -46,7 +46,7 @@ final class BTM_Task_Runner{
 	 */
 	public function run_task( I_BTM_Task $task ){
 		$task_dao = BTM_Task_Dao::get_instance();
-		$task_dao::get_instance()->mark_task_running( $task );
+		$task_dao::get_instance()->mark_as_running( $task );
 
 		$start = time();
 		try{
@@ -76,9 +76,9 @@ final class BTM_Task_Runner{
 		$end = time();
 
 		if( true === $run_success ){
-			$task_dao::get_instance()->mark_task_succeeded( $task );
+			$task_dao::get_instance()->mark_as_succeeded( $task );
 		}else{
-			$task_dao::get_instance()->mark_task_failed( $task );
+			$task_dao::get_instance()->mark_as_failed( $task );
 		}
 
 		BTM_Task_Run_Log_Dao::get_instance()->create(

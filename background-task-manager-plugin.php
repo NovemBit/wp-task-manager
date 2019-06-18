@@ -64,13 +64,17 @@ final class BTM_Plugin {
 
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'interface-btm-task.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-simple.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument.php' );
 
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-manager-log.php' );
 
 		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
 		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
+		require_once( $data_provider_path . 'class-btm-db-transaction.php' );
 		require_once( $data_provider_path . 'class-btm-task-dao.php' );
+		require_once( $data_provider_path . 'class-btm-task-bulk-argument-dao.php' );
 		require_once( $data_provider_path . 'class-btm-task-run-log-dao.php' );
 		require_once( $data_provider_path . 'class-btm-task-manager-log-dao.php' );
 
