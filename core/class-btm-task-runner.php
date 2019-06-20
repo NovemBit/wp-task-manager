@@ -66,15 +66,8 @@ final class BTM_Task_Runner{
 
 		$task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 			$task->get_id(),
-			$task->get_bulk_size() + 1
+			$task->get_bulk_size()
 		);
-
-		if( count( $task_bulk_arguments ) > $task->get_bulk_size() ){
-			array_pop( $task_bulk_arguments );
-			$is_in_progress = true;
-		}else{
-			$is_in_progress = false;
-		}
 
 		$task_bulk_argument_dao->mark_many_as_running( $task_bulk_arguments );
 
@@ -105,10 +98,20 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
-			}else if( $is_in_progress ){
-				$task_dao::get_instance()->mark_as_in_progress( $task );
 			}else{
-				$task_dao::get_instance()->mark_as_succeeded( $task );
+				$task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
+					$task->get_id(),
+					1
+				);
+				if( 0 < count( $task_bulk_arguments ) ){
+					$task_dao::get_instance()->mark_as_in_progress( $task );
+				}else{
+					if( $task_bulk_argument_dao->has_failed_arguments( $task->get_id() ) ){
+						$task_dao::get_instance()->mark_as_failed( $task );
+					}else{
+						$task_dao::get_instance()->mark_as_succeeded( $task );
+					}
+				}
 			}
 
 			// marking bulk arguments failed or succeeded
