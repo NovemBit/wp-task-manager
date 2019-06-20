@@ -97,9 +97,16 @@ class BTM_Task_Dao{
 	 * @param int $id
 	 *
 	 * @return I_BTM_Task|false
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
 	public function get_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$query = $wpdb->prepare('
 			SELECT * 
