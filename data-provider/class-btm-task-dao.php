@@ -174,7 +174,7 @@ class BTM_Task_Dao{
 			SELECT *
 			FROM `' . $this->get_table_name() . '`
 			WHERE ' . $where . '
-			ORDER BY `priority` DESC, `date_created` ASC
+			ORDER BY `priority` ASC, `date_created` ASC
 		';
 
 		$task_obj = $wpdb->get_row( $query, OBJECT );
