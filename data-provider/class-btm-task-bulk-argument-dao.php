@@ -488,6 +488,34 @@ class BTM_Task_Bulk_Argument_Dao{
 		return $task_bulk_arguments;
 	}
 
+	/**
+	 * @param int $task_id
+	 *
+	 * @return bool
+	 */
+	public function has_failed_arguments( $task_id ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT `id`
+			FROM `' . $this->get_table_name() . '`
+			WHERE `task_id` = %d
+				AND `status` = %s
+			LIMIT 0, 1
+		',
+			$task_id,
+			BTM_Task_Run_Status::STATUS_FAILED
+		);
+
+		$id = $wpdb->get_var( $query );
+
+		if( 0 < $id ){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	// endregion
 
 	// region UPDATE
