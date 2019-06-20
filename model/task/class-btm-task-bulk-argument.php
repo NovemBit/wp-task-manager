@@ -101,6 +101,7 @@ class BTM_Task_Bulk_Argument {
 	public function set_callback_arguments( array $callback_arguments ){
 		// @todo: check arguments to be serializable,
 		// log error otherwise?
+		ksort( $callback_arguments );
 		$this->callback_arguments = $callback_arguments;
 	}
 
