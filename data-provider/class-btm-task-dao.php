@@ -123,6 +123,40 @@ class BTM_Task_Dao{
 	}
 
 	/**
+	 * @param I_BTM_Task $task
+	 *
+	 * @return I_BTM_Task|false
+	 */
+	public function get_existing_task( I_BTM_Task $task ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT *
+			FROM `' . $this->get_table_name() . '`
+			WHERE `callback_action` = %s
+					AND `callback_arguments` = %s
+					AND `priority` = %d
+					AND `type` = %s
+					AND ( `status` = %s OR `status` = %s OR `status` = %s )
+		',
+			$task->get_callback_action(),
+			serialize( $task->get_callback_arguments() ),
+			$task->get_priority(),
+			BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
+			BTM_Task_Run_Status::STATUS_IN_PROGRESS,
+			BTM_Task_Run_Status::STATUS_REGISTERED,
+			BTM_Task_Run_Status::STATUS_PAUSED
+		);
+
+		$task_obj = $wpdb->get_row( $query, OBJECT );
+		if( null === $task_obj ){
+			return false;
+		}
+
+		return $this->create_task_from_db_obj( $task_obj );
+	}
+
+	/**
 	 * @return I_BTM_Task|false
 	 */
 	public function get_next_task_to_run(){
