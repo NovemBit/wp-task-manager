@@ -215,7 +215,7 @@ class BTM_Task_Dao{
 			array( '%d' )
 		);
 
-		if( false === $updated || 0 === $updated ){
+		if( false === $updated ){
 			return false;
 		}
 
@@ -269,20 +269,23 @@ class BTM_Task_Dao{
 	 * @return bool
 	 */
 	public function delete( I_BTM_Task $task ){
-		if( 0 < $task->get_bulk_size() ){
-			return $this->delete_bulk_by_id( $task->get_id() );
-		}else{
-			return $this->delete_simple_by_id( $task->get_id() );
-		}
+		return $this->delete_by_id( $task->get_id() );
 	}
 
 	/**
 	 * @param int $id   task id
 	 *
 	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
-	public function delete_simple_by_id( $id ){
+	public function delete_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$deleted = $wpdb->delete(
 			$this->get_table_name(),
@@ -294,38 +297,6 @@ class BTM_Task_Dao{
 			return false;
 		}
 
-		return true;
-	}
-
-	/**
-	 * @param int $id   task id
-	 *
-	 * @return bool
-	 */
-	public function delete_bulk_by_id( $id ){
-		global $wpdb;
-		$db_transaction = BTM_DB_Transaction::get_instance();
-
-		$db_transaction->start();
-
-		$deleted = $wpdb->delete(
-			$this->get_table_name(),
-			array( 'id' => $id ),
-			array( '%d' )
-		);
-
-		if( false === $deleted || 0 === $deleted ){
-			$db_transaction->rollback();
-			return false;
-		}
-
-		$deleted = BTM_Task_Bulk_Argument_Dao::get_instance()->delete_by_task_id( $id );
-		if( true !== $deleted ){
-			$db_transaction->rollback();
-			return false;
-		}
-
-		$db_transaction->commit();
 		return true;
 	}
 

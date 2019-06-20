@@ -65,10 +65,12 @@ final class BTM_Plugin {
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'interface-btm-task.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-simple.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-normalizer.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument.php' );
 
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-manager-log.php' );
+		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-filter-log.php' );
 
 		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
 		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
@@ -83,6 +85,7 @@ final class BTM_Plugin {
 		require_once( $migration_path . 'class-btm-migration-manager.php' );
 
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
+		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
 		require_once( $core_path . 'class-btm-cron-job-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
@@ -104,7 +107,8 @@ final class BTM_Plugin {
 	}
 
 	public function on_cron_job_run_tasks(){
-		 BTM_Task_Manager::get_instance()->run_the_tasks();
+		BTM_Task_Bulk_Argument_Manager::get_instance();
+		BTM_Task_Manager::get_instance()->run_the_tasks();
 	}
 
 	/**

@@ -15,16 +15,94 @@ class BTM_Task_Bulk_Argument {
 	 */
 	public static function create_from_db_obj( stdClass $task_bulk_argument_obj ){
 		$task_bulk_argument = new self(
-			(int) $task_bulk_argument_obj->task_id,
 			unserialize( $task_bulk_argument_obj->callback_arguments ),
 			(int) $task_bulk_argument_obj->priority,
 			new BTM_Task_Run_Status( $task_bulk_argument_obj->status ),
-			strtotime( $task_bulk_argument_obj->date_created_timestamp )
+			strtotime( $task_bulk_argument_obj->date_created )
 		);
 
+		$task_bulk_argument->set_task_id( (int) $task_bulk_argument_obj->task_id );
 		$task_bulk_argument->set_id( (int) $task_bulk_argument_obj->id );
 
 		return $task_bulk_argument;
+	}
+	/**
+	 * Converts BTM_Task_Bulk_Argument instances into arrays
+	 *
+	 * @param BTM_Task_Bulk_Argument[] $task_bulk_arguments
+	 *
+	 * @return array
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument array $task_bulk_arguments contains non BTM_Task_Bulk_Argument instance
+	 */
+	public static function convert_to_array( array $task_bulk_arguments ){
+		$data = array();
+		/** @var BTM_Task_Bulk_Argument $argument */
+		foreach ( $task_bulk_arguments as $argument ){
+			if( ! is_a( $argument, 'BTM_Task_Bulk_Argument' ) ){
+				throw new InvalidArgumentException(
+					'The argument array $task_bulk_arguments should only contain BTM_Task_Bulk_Argument instances'
+				);
+			}
+
+			$arg_array = array();
+			if( $argument->get_id() ){
+				$arg_array['id'] = $argument->get_id();
+			}
+			if( $argument->get_task_id() ){
+				$arg_array['task_id'] = $argument->get_task_id();
+			}
+			if( $argument->get_callback_arguments() ){
+				$arg_array['callback_arguments'] = $argument->get_callback_arguments();
+			}
+			if( $argument->get_priority() ){
+				$arg_array['priority'] = $argument->get_priority();
+			}
+			if( $argument->get_status() ){
+				$arg_array['status'] = $argument->get_status()->get_value();
+			}
+			if( $argument->get_date_created_timestamp() ){
+				$arg_array['date_created_timestamp'] = $argument->get_date_created_timestamp();
+			}
+			$data[] = $arg_array;
+		}
+
+		return $data;
+	}
+	/**
+	 * @param array $arguments
+	 *
+	 * @return BTM_Task_Bulk_Argument[]
+	 */
+	public static function convert_from_array( array $arguments ){
+		$btm_arguments = array();
+		foreach( $arguments as $argument ){
+			$btm_argument = new BTM_Task_Bulk_Argument();
+
+			if( isset( $argument['id'] ) ){
+				$btm_argument->set_id( (int) $argument['id'] );
+			}
+			if( isset( $argument['task_id'] ) ){
+				$btm_argument->set_task_id( (int) $argument['task_id'] );
+			}
+			if( isset( $argument['callback_arguments'] ) ){
+				$btm_argument->set_callback_arguments( $argument['callback_arguments'] );
+			}
+			if( isset( $argument['priority'] ) ){
+				$btm_argument->set_priority( (int) $argument['priority'] );
+			}
+			if( isset( $argument['status'] ) ){
+				$btm_argument->set_status( new BTM_Task_Run_Status( $argument['status'] ) );
+			}
+			if( isset( $argument['date_created_timestamp'] ) ){
+				$btm_argument->set_date_created_timestamp( (int) $argument['date_created_timestamp'] );
+			}
+
+			$btm_arguments[] = $btm_argument;
+		}
+
+		return $btm_arguments;
 	}
 
 	/**
@@ -186,13 +264,11 @@ class BTM_Task_Bulk_Argument {
 	 * @param int|null $date_created_timestamp
 	 */
 	public function __construct(
-		$task_id,
 		array $callback_arguments = array(),
 		$priority = 10,
 		BTM_Task_Run_Status $status = null,
 		$date_created_timestamp = null
 	){
-		$this->set_task_id( $task_id );
 		$this->set_callback_arguments( $callback_arguments );
 		$this->set_priority( $priority );
 

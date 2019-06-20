@@ -14,7 +14,7 @@ class BTM_Task_Simple extends BTM_Task {
 	 * @return BTM_Task_Simple
 	 */
 	public static function create_from_db_obj( stdClass $task_obj ){
-		$task = new self(
+		$task = new static(
 			$task_obj->callback_action,
 			unserialize( $task_obj->callback_arguments ),
 			(int) $task_obj->priority,
