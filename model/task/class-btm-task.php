@@ -115,10 +115,16 @@ class BTM_Task implements I_BTM_Task{
 	 *
 	 * @throws InvalidArgumentException
 	 *      in the case the argument $priority is not an int
+	 *      or is not between BTM_Plugin_Options::get_max_priority() and BTM_Plugin_Options::get_min_priority()
 	 */
 	public function set_priority( $priority ){
-		if( ! is_int( $priority ) ){
-			throw new InvalidArgumentException( 'Argument $priority should be int. Input was: ' . $priority );
+		$plugin_options = BTM_Plugin_Options::get_instance();
+		$max_priority = $plugin_options->get_max_priority();
+		$min_priority = $plugin_options->get_min_priority();
+		if( ! is_int( $priority ) || $max_priority > $priority || $min_priority < $priority ){
+			throw new InvalidArgumentException(
+				'Argument $priority should be int between ' . $max_priority . ' and ' . $min_priority . '. Input was: ' . $priority
+			);
 		}
 
 		$this->priority = $priority;

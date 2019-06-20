@@ -195,6 +195,21 @@ final class BTM_Plugin_Options{
 	}
 
 	/**
+
+	/**
+	 * @return int
+	 */
+	public function get_max_priority(){
+		return -1000;
+	}
+	/**
+	 * @return int
+	 */
+	public function get_min_priority(){
+		return 1000;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function get_task_filter_name_prefix(){
