@@ -154,15 +154,56 @@ class BTM_Task_Dao{
 	 * @param int $id
 	 *
 	 * @return I_BTM_Task|false
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
 	public function get_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$query = $wpdb->prepare('
 			SELECT * 
 			FROM `' . $this->get_table_name() . '`
 			WHERE `id` = %d
 		', $id);
+
+		$task_obj = $wpdb->get_row( $query, OBJECT );
+		if( null === $task_obj ){
+			return false;
+		}
+
+		return $this->create_task_from_db_obj( $task_obj );
+	}
+
+	/**
+	 * @param I_BTM_Task $task
+	 *
+	 * @return I_BTM_Task|false
+	 */
+	public function get_existing_task( I_BTM_Task $task ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT *
+			FROM `' . $this->get_table_name() . '`
+			WHERE `callback_action` = %s
+					AND `callback_arguments` = %s
+					AND `priority` = %d
+					AND `type` = %s
+					AND ( `status` = %s OR `status` = %s OR `status` = %s )
+		',
+			$task->get_callback_action(),
+			serialize( $task->get_callback_arguments() ),
+			$task->get_priority(),
+			BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
+			BTM_Task_Run_Status::STATUS_IN_PROGRESS,
+			BTM_Task_Run_Status::STATUS_REGISTERED,
+			BTM_Task_Run_Status::STATUS_PAUSED
+		);
 
 		$task_obj = $wpdb->get_row( $query, OBJECT );
 		if( null === $task_obj ){
@@ -190,7 +231,7 @@ class BTM_Task_Dao{
 			SELECT *
 			FROM `' . $this->get_table_name() . '`
 			WHERE ' . $where . '
-			ORDER BY `priority` DESC, `date_created` ASC
+			ORDER BY `priority` ASC, `date_created` ASC
 		';
 
 		$task_obj = $wpdb->get_row( $query, OBJECT );
@@ -231,7 +272,7 @@ class BTM_Task_Dao{
 			array( '%d' )
 		);
 
-		if( false === $updated || 0 === $updated ){
+		if( false === $updated ){
 			return false;
 		}
 
@@ -285,20 +326,23 @@ class BTM_Task_Dao{
 	 * @return bool
 	 */
 	public function delete( I_BTM_Task $task ){
-		if( 0 < $task->get_bulk_size() ){
-			return $this->delete_bulk_by_id( $task->get_id() );
-		}else{
-			return $this->delete_simple_by_id( $task->get_id() );
-		}
+		return $this->delete_by_id( $task->get_id() );
 	}
 
 	/**
 	 * @param int $id   task id
 	 *
 	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
-	public function delete_simple_by_id( $id ){
+	public function delete_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$deleted = $wpdb->delete(
 			$this->get_table_name(),
@@ -310,38 +354,6 @@ class BTM_Task_Dao{
 			return false;
 		}
 
-		return true;
-	}
-
-	/**
-	 * @param int $id   task id
-	 *
-	 * @return bool
-	 */
-	public function delete_bulk_by_id( $id ){
-		global $wpdb;
-		$db_transaction = BTM_DB_Transaction::get_instance();
-
-		$db_transaction->start();
-
-		$deleted = $wpdb->delete(
-			$this->get_table_name(),
-			array( 'id' => $id ),
-			array( '%d' )
-		);
-
-		if( false === $deleted || 0 === $deleted ){
-			$db_transaction->rollback();
-			return false;
-		}
-
-		$deleted = BTM_Task_Bulk_Argument_Dao::get_instance()->delete_by_task_id( $id );
-		if( true !== $deleted ){
-			$db_transaction->rollback();
-			return false;
-		}
-
-		$db_transaction->commit();
 		return true;
 	}
 

@@ -87,6 +87,288 @@ class BTM_Task_Bulk_Argument_Dao{
 		return true;
 	}
 
+	/**
+	 * @param int $task_id
+	 * @param BTM_Task_Bulk_Argument[] $task_bulk_arguments
+	 *
+	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function create_many( $task_id, array $task_bulk_arguments ){
+		global $wpdb;
+
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException('Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+
+		$base_query = '
+			INSERT INTO `' . $this->get_table_name() . '`( `task_id`, `callback_arguments`, `priority`, `status`, `date_created` )
+			VALUES
+		';
+
+		$allowed_insert_bulk_size = BTM_Plugin_Options::get_instance()->get_allowed_insert_bulk_size();
+		$task_argument_chunks = array_chunk( $task_bulk_arguments, $allowed_insert_bulk_size );
+
+		/** @var BTM_Task_Bulk_Argument[] $task_argument_chunk */
+		foreach( $task_argument_chunks as $task_argument_chunk ){
+			$query = $base_query;
+			for( $i = 0; $i < count( $task_argument_chunk ) ; ++ $i ){
+				if( 0 < $task_argument_chunk[ $i ]->get_task_id() ){
+					if( $task_id !== $task_argument_chunk[ $i ]->get_task_id() ){
+						throw new InvalidArgumentException(
+							'Items in argument array $task_bulk_arguments should not have a task_id or it should be equal to the argument $task_id'
+						);
+					}
+				}else{
+					$task_argument_chunk[ $i ]->set_task_id( $task_id );
+				}
+
+				if( empty( $task_argument_chunk[ $i ]->get_status() ) ){
+					$status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_REGISTERED );
+					$task_argument_chunk[ $i ]->set_status( $status );
+				}
+				if( empty( $task_argument_chunk[ $i ]->get_date_created_timestamp() ) ){
+					$task_argument_chunk[ $i ]->set_date_created_timestamp( time() );
+				}
+
+				$values = $wpdb->prepare('
+					( %d, %s, %d, %s, %s ),
+				',
+					$task_id,
+					serialize( $task_argument_chunk[ $i ]->get_callback_arguments() ),
+					$task_argument_chunk[ $i ]->get_priority(),
+					$task_argument_chunk[ $i ]->get_status()->get_value(),
+					date( 'Y-m-d H:i:s', $task_argument_chunk[ $i ]->get_date_created_timestamp() )
+				);
+
+				$query .= $values;
+			}
+
+			$query = trim( $query, ", \t\n\r\0\x0B" );
+			$inserted = $wpdb->query( $query );
+			if( false === $inserted ){
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param int $task_id
+	 * @param BTM_Task_Bulk_Argument $task_bulk_argument
+	 *
+	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function add_to_keep_higher_priority( $task_id, BTM_Task_Bulk_Argument $task_bulk_argument ){
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException('Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+		if( 0 < $task_bulk_argument->get_task_id() ){
+			if( $task_id !== $task_bulk_argument->get_task_id() ){
+				throw new InvalidArgumentException(
+					'Argument $task_bulk_argument should not have a task_id or it should be equal to the argument $task_id'
+				);
+			}
+		}else{
+			$task_bulk_argument->set_task_id( $task_id );
+		}
+
+		$created = $this->create( $task_bulk_argument );
+		if( false === $created ){
+			return false;
+		}
+
+		$deleted = $this->delete_low_priority_duplicates( $task_id );
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+	/**
+	 * @param int $task_id
+	 * @param BTM_Task_Bulk_Argument[] $task_bulk_arguments
+	 *
+	 * @return bool
+	 */
+	public function add_many_to_keep_higher_priority( $task_id, array $task_bulk_arguments ){
+		$created = $this->create_many( $task_id, $task_bulk_arguments );
+		if( false === $created ){
+			return false;
+		}
+
+		$deleted = $this->delete_low_priority_duplicates( $task_id );
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+	/**
+	 * @param int $task_id
+	 *
+	 * @return bool
+	 */
+	protected function delete_low_priority_duplicates( $task_id ){
+		global $wpdb;
+
+		$status_registered = BTM_Task_Run_Status::STATUS_REGISTERED;
+
+		$query = $wpdb->prepare('
+			SELECT `id`
+			FROM `' . $this->get_table_name() . '` AS `t1`
+			JOIN (
+				SELECT `t2`.`callback_arguments`, MIN(`t2`.`priority`) AS `priority`
+				FROM `' . $this->get_table_name() . '` AS `t2`
+				JOIN `' . $this->get_table_name() . '` AS `t3`
+					ON `t2`.`id` != `t3`.`id`
+					AND `t2`.`callback_arguments` = `t3`.`callback_arguments`
+				WHERE `t2`.`task_id` = %d
+					AND `t3`.`task_id` = %d
+					AND `t2`.`status` = %s
+					AND `t3`.`status` = %s
+				GROUP BY `t2`.`callback_arguments`
+			) AS `max_p`
+				ON `t1`.`callback_arguments` = `max_p`.`callback_arguments`
+				AND `t1`.`priority` != `max_p`.`priority`
+			WHERE `t1`.`task_id` = %d
+				AND `t1`.`status` = %s
+		',
+			$task_id,
+			$task_id,
+			$status_registered,
+			$status_registered,
+			$task_id,
+			$status_registered
+		);
+
+		$ids_to_remove = $wpdb->get_col( $query );
+		if( empty( $ids_to_remove ) ){
+			return true;
+		}
+
+		$deleted = $wpdb->query('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE id IN (' . implode( ',', $ids_to_remove ) . ')
+		');
+
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param int $task_id
+	 * @param BTM_Task_Bulk_Argument $task_bulk_argument
+	 *
+	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function add_to_overwrite( $task_id, BTM_Task_Bulk_Argument $task_bulk_argument ){
+		if( 0 < $task_bulk_argument->get_task_id() ){
+			if( $task_id !== $task_bulk_argument->get_task_id() ){
+				throw new InvalidArgumentException(
+					'Argument $task_bulk_argument should not have a task_id or it should be equal to the argument $task_id'
+				);
+			}
+		}else{
+			$task_bulk_argument->set_task_id( $task_id );
+		}
+
+		$created = $this->create( $task_bulk_argument );
+		if( false === $created ){
+			return false;
+		}
+
+		$deleted = $this->delete_old_duplicates( $task_id );
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+	/**
+	 * @param int $task_id
+	 * @param BTM_Task_Bulk_Argument[] $task_bulk_arguments
+	 *
+	 * @return bool
+	 */
+	public function add_many_to_overwrite( $task_id, array $task_bulk_arguments ){
+		$created = $this->create_many( $task_id, $task_bulk_arguments );
+		if( false === $created ){
+			return false;
+		}
+
+		$deleted = $this->delete_old_duplicates( $task_id );
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+	/**
+	 * @param int $task_id
+	 *
+	 * @return bool
+	 */
+	protected function delete_old_duplicates( $task_id ){
+		global $wpdb;
+
+		$status_registered = BTM_Task_Run_Status::STATUS_REGISTERED;
+
+		$query = $wpdb->prepare('
+			SELECT `t1`.`id`
+			FROM `' . $this->get_table_name() . '` AS `t1`
+			JOIN (
+				SELECT `t2`.`callback_arguments`, MAX(`t2`.`id`) AS `id`
+				FROM `' . $this->get_table_name() . '` AS `t2`
+				JOIN `' . $this->get_table_name() . '` AS `t3`
+					ON `t2`.`id` != `t3`.`id`
+					AND `t2`.`callback_arguments` = `t3`.`callback_arguments`
+				WHERE `t2`.`task_id` = %d
+					AND `t3`.`task_id` = %d
+					AND `t2`.`status` = %s
+					AND `t3`.`status` = %s
+				GROUP BY `t2`.`callback_arguments`
+			) AS max_p
+				ON `t1`.`callback_arguments` = max_p.`callback_arguments`
+				AND `t1`.`id` != max_p.`id`
+			WHERE `t1`.`task_id` = %d
+				AND `t1`.`status` = %s
+
+		',
+			$task_id,
+			$task_id,
+			$status_registered,
+			$status_registered,
+			$task_id,
+			$status_registered
+		);
+
+		$ids_to_remove = $wpdb->get_col( $query );
+		if( empty( $ids_to_remove ) ){
+			return true;
+		}
+
+		$deleted = $wpdb->query('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE id IN (' . implode( ',', $ids_to_remove ) . ')
+		');
+
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+
 	// endregion
 
 	// region READ
@@ -151,9 +433,16 @@ class BTM_Task_Bulk_Argument_Dao{
 	 * @param int $id
 	 *
 	 * @return BTM_Task_Bulk_Argument|false
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
 	public function get_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$query = $wpdb->prepare('
 			SELECT * 
@@ -175,9 +464,16 @@ class BTM_Task_Bulk_Argument_Dao{
 	 * @param int $limit
 	 *
 	 * @return BTM_Task_Bulk_Argument[]
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $task_id is not a positive int
 	 */
 	public function get_by_task_id( $task_id, $offset = 0, $limit = 100 ){
 		global $wpdb;
+
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException( 'Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
 
 		$query = $wpdb->prepare('
 			SELECT * 
@@ -201,6 +497,79 @@ class BTM_Task_Bulk_Argument_Dao{
 		}
 
 		return $task_bulk_arguments;
+	}
+
+	/**
+	 * @param int $task_id
+	 * @param int $bulk_size
+	 *
+	 * @return BTM_Task_Bulk_Argument[]
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $task_id or $bulk_size is not a positive int
+	 */
+	public function get_next_arguments_to_run( $task_id, $bulk_size ){
+		global $wpdb;
+
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException( 'Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+		if( ! is_int( $bulk_size ) || 0 >= $bulk_size ){
+			throw new InvalidArgumentException( 'Argument $bulk_size should be positive int. Input was: ' . $bulk_size );
+		}
+
+		$query = $wpdb->prepare('
+			SELECT *
+			FROM `' . $this->get_table_name() . '`
+			WHERE task_id = %d
+				AND `status` = %s
+			ORDER BY `priority` ASC
+			LIMIT 0, %d
+		',
+			$task_id,
+			BTM_Task_Run_Status::STATUS_REGISTERED,
+			$bulk_size
+		);
+
+		$task_bulk_argument_objs = $wpdb->get_results( $query, OBJECT );
+		if( ! $task_bulk_argument_objs ){
+			$task_bulk_argument_objs = array();
+		}
+
+		$task_bulk_arguments = array();
+		foreach( $task_bulk_argument_objs as $task_bulk_argument_obj ){
+			$task_bulk_arguments[] = $this->create_task_from_db_obj( $task_bulk_argument_obj );
+		}
+
+		return $task_bulk_arguments;
+	}
+
+	/**
+	 * @param int $task_id
+	 *
+	 * @return bool
+	 */
+	public function has_failed_arguments( $task_id ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT `id`
+			FROM `' . $this->get_table_name() . '`
+			WHERE `task_id` = %d
+				AND `status` = %s
+			LIMIT 0, 1
+		',
+			$task_id,
+			BTM_Task_Run_Status::STATUS_FAILED
+		);
+
+		$id = $wpdb->get_var( $query );
+
+		if( 0 < $id ){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	// endregion
@@ -273,6 +642,7 @@ class BTM_Task_Bulk_Argument_Dao{
 	 * @return bool
 	 */
 	public function mark_many_as( array $task_bulk_arguments, BTM_Task_Run_Status $task_run_status ){
+		// @todo: make a single query
 		$db_transaction = BTM_DB_Transaction::get_instance();
 
 		$db_transaction->start();

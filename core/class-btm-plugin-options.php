@@ -32,6 +32,7 @@ final class BTM_Plugin_Options{
 		$this->init_path();
 		$this->init_dir_name();
 		$this->init_total_execution_allowed_duration_in_seconds();
+		$this->init_allowed_insert_bulk_size();
 		$this->init_mode_debug();
 		$this->init_request_debug();
 		$this->init_cron_job_interval_in_minutes();
@@ -192,6 +193,48 @@ final class BTM_Plugin_Options{
 	 */
 	public function get_db_table_prefix(){
 		return 'btm_';
+	}
+
+	/**
+	 * @var int
+	 */
+	private $allowed_insert_bulk_size;
+	/**
+	 * @return int
+	 */
+	public function get_allowed_insert_bulk_size(){
+		return $this->allowed_insert_bulk_size;
+	}
+	/**
+	 * @param int $allowed_insert_bulk_size
+	 */
+	private function set_allowed_insert_bulk_size( $allowed_insert_bulk_size ){
+		if( ! is_int( $allowed_insert_bulk_size ) || 0 >= $allowed_insert_bulk_size || 200 < $allowed_insert_bulk_size ){
+			throw new InvalidArgumentException(
+				'Argument $allowed_insert_bulk_size should be int between 1 and 200. Input was: ' . $allowed_insert_bulk_size
+			);
+		}
+
+		$this->allowed_insert_bulk_size = $allowed_insert_bulk_size;
+	}
+	/**
+	 * Initializes the allowed insert bulk size
+	 */
+	private function init_allowed_insert_bulk_size(){
+		$this->set_allowed_insert_bulk_size( 100 );
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_max_priority(){
+		return -1000;
+	}
+	/**
+	 * @return int
+	 */
+	public function get_min_priority(){
+		return 1000;
 	}
 
 	/**

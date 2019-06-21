@@ -43,6 +43,8 @@ final class BTM_DB_Transaction{
 			throw new LogicException('Transaction is already started');
 		}
 
+		$this->started = true;
+
 		$wpdb->query('START TRANSACTION');
 	}
 
@@ -53,6 +55,8 @@ final class BTM_DB_Transaction{
 			throw new LogicException('Transaction is not started');
 		}
 
+		$this->started = false;
+
 		$wpdb->query('COMMIT');
 	}
 
@@ -62,6 +66,8 @@ final class BTM_DB_Transaction{
 		if( ! $this->started ){
 			throw new LogicException('Transaction is not started');
 		}
+
+		$this->started = false;
 
 		$wpdb->query('ROLLBACK');
 	}

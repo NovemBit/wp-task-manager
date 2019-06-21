@@ -14,7 +14,7 @@ class BTM_Task implements I_BTM_Task{
 	 * @return BTM_Task
 	 */
 	public static function create_from_db_obj( stdClass $task_obj ){
-		$task = new self(
+		$task = new static(
 			$task_obj->callback_action,
 			unserialize( $task_obj->callback_arguments ),
 			(int) $task_obj->priority,
@@ -97,6 +97,7 @@ class BTM_Task implements I_BTM_Task{
 	public function set_callback_arguments( array $callback_arguments ){
 		// @todo: check arguments to be serializable,
 		// log error otherwise?
+		ksort( $callback_arguments );
 		$this->callback_arguments = $callback_arguments;
 	}
 
@@ -115,10 +116,16 @@ class BTM_Task implements I_BTM_Task{
 	 *
 	 * @throws InvalidArgumentException
 	 *      in the case the argument $priority is not an int
+	 *      or is not between BTM_Plugin_Options::get_max_priority() and BTM_Plugin_Options::get_min_priority()
 	 */
 	public function set_priority( $priority ){
-		if( ! is_int( $priority ) ){
-			throw new InvalidArgumentException( 'Argument $priority should be int. Input was: ' . $priority );
+		$plugin_options = BTM_Plugin_Options::get_instance();
+		$max_priority = $plugin_options->get_max_priority();
+		$min_priority = $plugin_options->get_min_priority();
+		if( ! is_int( $priority ) || $max_priority > $priority || $min_priority < $priority ){
+			throw new InvalidArgumentException(
+				'Argument $priority should be int between ' . $max_priority . ' and ' . $min_priority . '. Input was: ' . $priority
+			);
 		}
 
 		$this->priority = $priority;

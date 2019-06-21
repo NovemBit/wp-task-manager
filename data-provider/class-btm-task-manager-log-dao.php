@@ -98,9 +98,16 @@ class BTM_Task_Manager_Log_Dao{
 	 * @param int $id
 	 *
 	 * @return BTM_Task_Manager_Log|false
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
 	public function get_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$query = $wpdb->prepare('
 			SELECT * 
@@ -164,9 +171,16 @@ class BTM_Task_Manager_Log_Dao{
 	 * @param int $id   task manager log id
 	 *
 	 * @return bool
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $id is not a positive int
 	 */
 	public function delete_by_id( $id ){
 		global $wpdb;
+
+		if( ! is_int( $id ) || 0 >= $id ){
+			throw new InvalidArgumentException( 'Argument $id should be positive int. Input was: ' . $id );
+		}
 
 		$deleted = $wpdb->delete(
 			$this->get_table_name(),

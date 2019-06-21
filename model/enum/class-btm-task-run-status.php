@@ -13,6 +13,7 @@ final class BTM_Task_Run_Status{
 	const STATUS_RUNNING = 'running';
 	const STATUS_SUCCEEDED = 'succeeded';
 	const STATUS_IN_PROGRESS = 'in_progress';
+	const STATUS_PAUSED = 'paused';
 
 	/**
 	 * @return array<string,string>  status value and display name
@@ -46,6 +47,8 @@ final class BTM_Task_Run_Status{
 				return __( 'Succeeded', 'background_task_manager' );
 			case self::STATUS_IN_PROGRESS :
 				return __( 'In progress', 'background_task_manager' );
+			case self::STATUS_PAUSED :
+				return __( 'Paused', 'background_task_manager' );
 		}
 		return '';
 	}
