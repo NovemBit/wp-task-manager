@@ -92,6 +92,56 @@ class BTM_Task_Run_Log_Dao{
 	// region READ
 
 	/**
+	 * Function to get all logs from db
+	 *
+	 * @param string $orderby to order by column
+	 * @param string $order to order by ASC or DESC
+	 * @param string $search to search in table some value
+	 *
+	 * @return array|bool
+	 */
+	public function get_logs( $orderby = '', $order = '', $search = '' ){
+
+		global $wpdb;
+
+		$query = '
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+		';
+
+		if( $search !== '' ){
+			$query.= ' WHERE
+					id LIKE "%'. $search .'%" OR
+					task_id LIKE "%'. $search .'%" OR
+					session_id LIKE "%'. $search .'%" OR
+					logs LIKE "%'. $search .'%" OR
+					date_started LIKE "%'. $search .'%" OR
+					date_finished LIKE "%'. $search .'%"
+			';
+		}
+
+		if( $orderby !== '' ){
+			$query.= 'ORDER BY '. $orderby;
+			if( $order !== '' ){
+				$query.= ' '.$order;
+			}
+		}
+		$logs = $wpdb->get_results( $query, 'OBJECT' );
+		if( empty( $logs ) ){
+			return false;
+		}
+
+		$logs_arr = [];
+		foreach ( $logs as $log){
+			if( !empty( $log ) ){
+				$logs_arr[] = $this->create_task_run_log_from_db_obj( $log );
+			}
+		}
+		return $logs_arr;
+
+	}
+
+	/**
 	 * @param int $id
 	 *
 	 * @return BTM_Task_Run_Log|false

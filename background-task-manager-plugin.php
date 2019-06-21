@@ -70,6 +70,10 @@ final class BTM_Plugin {
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-manager-log.php' );
 
+		require_once( $model_path . 'admin-table' . DIRECTORY_SEPARATOR . 'class-btm-admin-table-tasks.php' );
+		require_once( $model_path . 'admin-table' . DIRECTORY_SEPARATOR . 'class-btm-admin-table-logs.php' );
+		require_once( $model_path . 'admin-table' . DIRECTORY_SEPARATOR . 'class-btm-admin-table-bulk-tasks.php' );
+
 		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
 		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
 		require_once( $data_provider_path . 'class-btm-db-transaction.php' );
@@ -89,6 +93,7 @@ final class BTM_Plugin {
 
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );
+		require_once( $app_path . 'class-btm-admin-manager.php' );
 	}
 
 	/**
@@ -117,8 +122,7 @@ final class BTM_Plugin {
 
 		$plugin_options = BTM_Plugin_Options::get_instance();
 		if( is_admin() ){
-			// create admin page(s) to show report(s)
-			// handle ajax requests
+			BTM_Admin_Manager::run();
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			$this->on_cron_job_run_tasks();
 			exit;

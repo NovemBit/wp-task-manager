@@ -19,7 +19,7 @@ class BTM_Task_Bulk_Argument {
 			unserialize( $task_bulk_argument_obj->callback_arguments ),
 			(int) $task_bulk_argument_obj->priority,
 			new BTM_Task_Run_Status( $task_bulk_argument_obj->status ),
-			strtotime( $task_bulk_argument_obj->date_created_timestamp )
+			strtotime( $task_bulk_argument_obj->date_created )
 		);
 
 		$task_bulk_argument->set_id( (int) $task_bulk_argument_obj->id );

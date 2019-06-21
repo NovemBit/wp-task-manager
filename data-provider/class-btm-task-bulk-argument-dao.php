@@ -92,6 +92,62 @@ class BTM_Task_Bulk_Argument_Dao{
 	// region READ
 
 	/**
+	 * Function to get all bulk tasks from db
+	 *
+	 * @param string $orderby to order by column
+	 * @param string $order to order by ASC or DESC
+	 * @param string $search to search in table some value
+	 * @param string $status to get table data by status
+	 *
+	 * @return array|bool
+	 */
+	public function get_bulk_tasks( $orderby = '', $order = '', $search = '', $status = '' ){
+		global $wpdb;
+
+		$query = '
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+		';
+		if( $status !== '' && $search == '' ){
+			$query.= ' WHERE status = "'. $status .'" ';
+		}
+
+		if( $search !== '' ){
+			$query.= ' WHERE
+					id LIKE "%'. $search .'%" OR
+					task_id LIKE "%'. $search .'%" OR
+					callback_arguments LIKE "%'. $search .'%" OR
+					priority LIKE "%'. $search .'%" OR
+					status LIKE "%'. $search .'%" OR
+					date_created LIKE "%'. $search .'%"
+			';
+			if( $status !== '' ){
+				$query.= ' AND status = "'. $status .'" ';
+			}
+		}
+
+		if( $orderby !== '' ){
+			$query.= 'ORDER BY '. $orderby;
+			if( $order !== '' ){
+				$query.= ' '.$order;
+			}
+		}
+		$tasks = $wpdb->get_results( $query, 'OBJECT' );
+
+		if( empty( $tasks ) ){
+			return false;
+		}
+
+		$tasks_arr = [];
+		foreach ( $tasks as $task){
+			if( !empty( $task ) ){
+				$tasks_arr[] = $this->create_task_from_db_obj( $task );
+			}
+		}
+		return $tasks_arr;
+	}
+
+	/**
 	 * @param int $id
 	 *
 	 * @return BTM_Task_Bulk_Argument|false
