@@ -85,53 +85,85 @@ final class BTM_Task_Manager{
 	}
 
 	/**
-	 * Registers a task to run later in background
+	 * Creates a simple(non bulk) task
 	 *
-	 * @param I_BTM_Task $task
-	 * @param BTM_Task_Bulk_Argument[] $bulk_arguments_to_keep_higher_priority
-	 * @param BTM_Task_Bulk_Argument[] $bulk_arguments_to_overwrite
+	 * @param I_BTM_Task                $task
+	 * @param bool                      $update_existing     on true - updates the existing task
+	 *
+	 * @return bool
+	 */
+	public function register_simple_task(
+		I_BTM_Task $task,
+		$update_existing = false
+	){
+		$task_dao = BTM_Task_Dao::get_instance();
+
+		if( 0 < $task->get_bulk_size() ){
+			throw new LogicException('Use method register_task to register bulk tasks');
+		}else{
+			if( true === $update_existing ){
+				$existing_task = $task_dao->get_existing_task( $task );
+				if( false !== $existing_task ){
+					if( $task->get_status() ){
+						$existing_task->set_status( $task->get_status() );
+					}
+
+					$updated = $task_dao->update( $existing_task );
+					if( true !== $updated ){
+						return false;
+					}
+
+					$task->set_id( $existing_task->get_id() );
+					$task->set_status( $existing_task->get_status() );
+					$task->set_date_created_timestamp( $existing_task->get_date_created_timestamp() );
+					return true;
+				}
+			}
+
+			return $task_dao->create( $task );
+		}
+	}
+
+	/**
+	 * Creates a background task to prepare bulk argument, and the given task to run with the prepared bulk arguments
+	 *
+	 * @param I_BTM_Task                $task
+	 * @param BTM_Task_Bulk_Argument[]  $bulk_arguments
+	 * @param bool                      $to_overwrite     on true - overwrites without keeping the highest priority
 	 *
 	 * @return bool
 	 */
 	public function register_task(
 		I_BTM_Task $task,
-		array $bulk_arguments_to_keep_higher_priority,
-		array $bulk_arguments_to_overwrite
+		array $bulk_arguments = array(),
+		$to_overwrite = false
 	){
 		$task_dao = BTM_Task_Dao::get_instance();
 		$db_transaction = BTM_DB_Transaction::get_instance();
 
 		if( 0 < $task->get_bulk_size() ){
-			$existing_task = $task_dao->get_existing_task( $task );
-
 			$db_transaction->start();
 
-			if( false === $existing_task ){
-				$created = $task_dao->create( $task );
-				if( true !== $created ){
-					$db_transaction->rollback();
-					return false;
-				}
-				$task_id = $task->get_id();
-			}else{
-				$existing_task->set_bulk_size( $task->get_bulk_size() );
-				if( $task->get_status() ){
-					$existing_task->set_status( $task->get_status() );
-				}
-
-				$updated = $task_dao->update( $existing_task );
-				if( true !== $updated ){
-					$db_transaction->rollback();
-					return false;
-				}
-				$task_id = $existing_task->get_id();
+			$task_id = $this->create_main_bulk_task( $task );
+			if( false === $task_id ){
+				$db_transaction->rollback();
+				return false;
 			}
 
-			$argument_normalization_task = BTM_Task_Bulk_Argument_Manager::get_instance()->create_task(
-				$task_id,
-				$bulk_arguments_to_keep_higher_priority,
-				$bulk_arguments_to_overwrite
-			);
+			if( true === $to_overwrite ){
+				$argument_normalization_task = BTM_Task_Bulk_Argument_Manager::get_instance()->create_task(
+					$task_id,
+					array(),
+					$bulk_arguments
+				);
+			}else{
+				$argument_normalization_task = BTM_Task_Bulk_Argument_Manager::get_instance()->create_task(
+					$task_id,
+					$bulk_arguments,
+					array()
+				);
+			}
+
 			$created = $task_dao->create( $argument_normalization_task );
 			if( true !== $created ){
 				$db_transaction->rollback();
@@ -141,7 +173,117 @@ final class BTM_Task_Manager{
 			$db_transaction->commit();
 			return true;
 		}else{
-			return $task_dao->create( $task );
+			throw new LogicException('Use method register_simple_task to register simple tasks');
 		}
+	}
+
+	/**
+	 * Creates a background task to prepare bulk argument, and the given task to run with the prepared bulk arguments
+	 *
+	 * @param I_BTM_Task    $task
+	 * @param array[]       $raw_bulk_arguments
+	 * @param int           $priority         bulk argument priority
+	 * @param bool          $to_overwrite     on true - overwrites without keeping the highest priority
+	 *
+	 * @return bool
+	 */
+	public function register_task_bulk(
+		I_BTM_Task $task,
+		array $raw_bulk_arguments,
+		$priority = 10,
+		$to_overwrite = false
+	){
+		$task_dao = BTM_Task_Dao::get_instance();
+		$db_transaction = BTM_DB_Transaction::get_instance();
+
+		if( 0 < $task->get_bulk_size() ){
+			$bulk_arguments = $this->create_bulk_arguments( $raw_bulk_arguments, $priority );
+
+			$db_transaction->start();
+
+			$task_id = $this->create_main_bulk_task( $task );
+			if( false === $task_id ){
+				$db_transaction->rollback();
+				return false;
+			}
+
+			if( true === $to_overwrite ){
+				$argument_normalization_task = BTM_Task_Bulk_Argument_Manager::get_instance()->create_task(
+					$task_id,
+					array(),
+					$bulk_arguments
+				);
+			}else{
+				$argument_normalization_task = BTM_Task_Bulk_Argument_Manager::get_instance()->create_task(
+					$task_id,
+					$bulk_arguments,
+					array()
+				);
+			}
+
+			$created = $task_dao->create( $argument_normalization_task );
+			if( true !== $created ){
+				$db_transaction->rollback();
+				return false;
+			}
+
+			$db_transaction->commit();
+			return true;
+		}else{
+			throw new LogicException('Use method register_simple_task to register simple tasks');
+		}
+	}
+
+	/**
+	 * @param I_BTM_Task $task
+	 *
+	 * @return int|false         the main task id, or false on failure
+	 */
+	private function create_main_bulk_task( I_BTM_Task $task ){
+		$task_dao = BTM_Task_Dao::get_instance();
+
+		$existing_task = $task_dao->get_existing_task( $task );
+
+		if( false === $existing_task ){
+			$created = $task_dao->create( $task );
+			if( true !== $created ){
+				return false;
+			}
+			$task_id = $task->get_id();
+		}else{
+			$existing_task->set_bulk_size( $task->get_bulk_size() );
+			if( $task->get_status() ){
+				$existing_task->set_status( $task->get_status() );
+			}
+
+			$updated = $task_dao->update( $existing_task );
+			if( true !== $updated ){
+				return false;
+			}
+			$task_id = $existing_task->get_id();
+		}
+
+		return $task_id;
+	}
+
+	/**
+	 * @param array[]       $raw_bulk_arguments
+	 * @param int           $priority           bulk argument priority
+	 *
+	 * @return BTM_Task_Bulk_Argument[]
+	 */
+	private function create_bulk_arguments(array $raw_bulk_arguments, $priority = 10){
+		$bulk_arguments = array();
+		foreach ( $raw_bulk_arguments as $raw_bulk_argument ){
+			if( ! is_array( $raw_bulk_argument ) ){
+				$raw_bulk_argument = array( $raw_bulk_argument );
+			}
+			$bulk_arguments[] = new BTM_Task_Bulk_Argument(
+				$raw_bulk_argument,
+				$priority
+			);
+		}
+
+		return $bulk_arguments;
 	}
 }
