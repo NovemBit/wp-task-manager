@@ -108,7 +108,8 @@ final class BTM_Plugin {
 		register_uninstall_hook( __FILE__, array( __CLASS__, 'on_plugin_uninstall' ) );
 
 		add_action( BTM_Plugin_Options::get_instance()->get_cron_job_name(), array( $this, 'on_cron_job_run_tasks' ) );
-		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
+		add_action( 'after_setup_theme', array( $this, 'on_after_setup_theme' ) );
+		add_action( 'init', array( $this, 'on_late_init' ), PHP_INT_MAX - 10 );
 	}
 
 	public function on_cron_job_run_tasks(){
@@ -117,13 +118,22 @@ final class BTM_Plugin {
 	}
 
 	/**
-	 * Callback for plugins_loaded, should not be called directly
-	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/plugins_loaded
+	 * Callback for after_setup_theme, should not be called directly
+	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/after_setup_theme
 	 */
-	public function after_setup_theme(){
+	public function on_after_setup_theme(){
 		// init cron job manager
 		BTM_Cron_Job_Manager::get_instance();
 
+		// init options
+		BTM_Plugin_Options::get_instance();
+	}
+
+	/**
+	 * Callback for init, should not be called directly
+	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/init
+	 */
+	public function on_late_init(){
 		$plugin_options = BTM_Plugin_Options::get_instance();
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
