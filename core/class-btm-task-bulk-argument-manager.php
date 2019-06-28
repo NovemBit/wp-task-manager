@@ -132,6 +132,7 @@ class BTM_Task_Bulk_Argument_Manager {
 
 		$task_run_filter_log->add_log( __( 'Bulk arguments inserted successfully', 'background_task_manager' ) );
 		$task_run_filter_log->set_failed( false );
+		$db_transaction->commit();
 		return $task_run_filter_log;
 	}
 }
