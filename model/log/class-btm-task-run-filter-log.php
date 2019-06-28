@@ -43,7 +43,7 @@ class BTM_Task_Run_Filter_Log{
 	/**
 	 * @var bool
 	 */
-	protected $is_failed = false;
+	protected $is_failed = true;
 	/**
 	 * @return bool
 	 */
