@@ -35,6 +35,12 @@ final class BTM_DB_Transaction{
 	 * @var bool
 	 */
 	private $started = false;
+	/**
+	 * @return bool
+	 */
+	public function is_started(){
+		return $this->started;
+	}
 
 	public function start(){
 		global $wpdb;
