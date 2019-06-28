@@ -17,8 +17,8 @@ class BTM_Task implements I_BTM_Task{
 		$task = new static(
 			$task_obj->callback_action,
 			unserialize( $task_obj->callback_arguments ),
-			(int) $task_obj->priority,
 			(int) $task_obj->bulk_size,
+			(int) $task_obj->priority,
 			new BTM_Task_Run_Status( $task_obj->status ),
 			strtotime( $task_obj->date_created )
 		);
@@ -201,23 +201,23 @@ class BTM_Task implements I_BTM_Task{
 	 *
 	 * @param string $callback_action
 	 * @param mixed[] $callback_arguments
-	 * @param int $priority
 	 * @param int $bulk_size
+	 * @param int $priority
 	 * @param BTM_Task_Run_Status $status
 	 * @param int|null $date_created_timestamp
 	 */
 	public function __construct(
 		$callback_action,
 		array $callback_arguments = array(),
+		$bulk_size,
 		$priority = 10,
-		$bulk_size = 1,
 		BTM_Task_Run_Status $status = null,
 		$date_created_timestamp = null
 	){
 		$this->set_callback_action( $callback_action );
 		$this->set_callback_arguments( $callback_arguments );
-		$this->set_priority( $priority );
 		$this->set_bulk_size( $bulk_size );
+		$this->set_priority( $priority );
 
 		if( null !== $status ){
 			$this->set_status( $status );

@@ -46,8 +46,8 @@ class BTM_Task_Simple extends BTM_Task {
 		parent::__construct(
 			$callback_action,
 			$callback_arguments,
-			$priority,
 			0,
+			$priority,
 			$status,
 			$date_created_timestamp
 		);
