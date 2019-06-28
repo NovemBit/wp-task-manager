@@ -146,6 +146,7 @@ class BTM_Task_Bulk_Argument_Dao{
 			}
 
 			$query = trim( $query, ", \t\n\r\0\x0B" );
+
 			$inserted = $wpdb->query( $query );
 			if( false === $inserted ){
 				return false;
@@ -643,12 +644,8 @@ class BTM_Task_Bulk_Argument_Dao{
 	 */
 	public function mark_many_as( array $task_bulk_arguments, BTM_Task_Run_Status $task_run_status ){
 		// @todo: make a single query
-		$db_transaction = BTM_DB_Transaction::get_instance();
-
-		$db_transaction->start();
 		foreach ( $task_bulk_arguments as $task_bulk_argument ){
 			if( ! is_a( $task_bulk_argument, 'BTM_Task_Bulk_Argument' ) ){
-				$db_transaction->rollback();
 				throw new InvalidArgumentException(
 					'Argument $task_bulk_arguments should only contain BTM_Task_Bulk_Argument instances. Input was: ' . $task_bulk_argument
 				);
@@ -657,12 +654,10 @@ class BTM_Task_Bulk_Argument_Dao{
 			$task_bulk_argument->set_status( $task_run_status );
 			$updated = $this->update( $task_bulk_argument );
 			if( true !== $updated ){
-				$db_transaction->rollback();
 				return false;
 			}
 		}
 
-		$db_transaction->commit();
 		return true;
 	}
 	/**
