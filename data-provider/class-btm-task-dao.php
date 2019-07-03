@@ -66,6 +66,8 @@ class BTM_Task_Dao{
 			'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
 		);
 		$format = array( '%s', '%s', '%d', '%d', '%s', '%s', '%s' );
+		$data['argument_hash'] = md5( $data['callback_arguments'] );
+		$format[] = '%s';
 
 		if( 0 < $task->get_id() ){
 			$data['id'] = $task->get_id();
@@ -191,13 +193,13 @@ class BTM_Task_Dao{
 			SELECT *
 			FROM `' . $this->get_table_name() . '`
 			WHERE `callback_action` = %s
-					AND `callback_arguments` = %s
+					AND `argument_hash` = %s
 					AND `priority` = %d
 					AND `type` = %s
 					AND ( `status` = %s OR `status` = %s OR `status` = %s )
 		',
 			$task->get_callback_action(),
-			serialize( $task->get_callback_arguments() ),
+			md5( serialize( $task->get_callback_arguments() ) ),
 			$task->get_priority(),
 			BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
 			BTM_Task_Run_Status::STATUS_IN_PROGRESS,
@@ -254,21 +256,23 @@ class BTM_Task_Dao{
 	public function update( I_BTM_Task $task ){
 		global $wpdb;
 
+		$callback_arguments = serialize( $task->get_callback_arguments() );
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
 				'callback_action' => $task->get_callback_action(),
-				'callback_arguments' => serialize( $task->get_callback_arguments() ),
+				'callback_arguments' => $callback_arguments,
 				'priority' => $task->get_priority(),
 				'bulk_size' => $task->get_bulk_size(),
 				'status' => $task->get_status()->get_value(),
 				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
-				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
+				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
+				'argument_hash' => md5( $callback_arguments )
 			),
 			array(
 				'id' => $task->get_id()
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

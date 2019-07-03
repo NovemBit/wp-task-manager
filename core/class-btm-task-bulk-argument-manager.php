@@ -91,30 +91,36 @@ class BTM_Task_Bulk_Argument_Manager {
 		$db_transaction->start();
 
 		try{
-			$inserted_to_keep_higher_priority = $task_bulk_argument_dao->add_many_to_keep_higher_priority(
-				$task_id,
-				$to_keep_higher_priority
-			);
-			$inserted_to_overwrite = $task_bulk_argument_dao->add_many_to_overwrite(
-				$task_id,
-				$to_overwrite
-			);
+			if( 0 < count( $to_keep_higher_priority ) ){
+				$inserted_to_keep_higher_priority = $task_bulk_argument_dao->add_many_to_keep_higher_priority(
+					$task_id,
+					$to_keep_higher_priority
+				);
+
+				if( true !== $inserted_to_keep_higher_priority ){
+					$db_transaction->rollback();
+					$task_run_filter_log->add_log( __( 'Could not insert bulk arguments with keeping higher priority', 'background_task_manager' ) );
+					$task_run_filter_log->set_failed( true );
+					return $task_run_filter_log;
+				}
+			}
+
+			if( 0 < count( $to_overwrite ) ){
+				$inserted_to_overwrite = $task_bulk_argument_dao->add_many_to_overwrite(
+					$task_id,
+					$to_overwrite
+				);
+
+				if( true !== $inserted_to_overwrite ){
+					$db_transaction->rollback();
+					$task_run_filter_log->add_log( __( 'Could not insert bulk arguments with overwriting', 'background_task_manager' ) );
+					$task_run_filter_log->set_failed( true );
+					return $task_run_filter_log;
+				}
+			}
 		}catch( Exception $exception ){
 			$db_transaction->rollback();
 			$task_run_filter_log->add_log( $exception->getMessage() );
-			$task_run_filter_log->set_failed( true );
-			return $task_run_filter_log;
-		}
-
-		if( true !== $inserted_to_keep_higher_priority ){
-			$db_transaction->rollback();
-			$task_run_filter_log->add_log( __( 'Could not insert bulk arguments with keeping higher priority', 'background_task_manager' ) );
-			$task_run_filter_log->set_failed( true );
-			return $task_run_filter_log;
-		}
-		if( true !== $inserted_to_overwrite ){
-			$db_transaction->rollback();
-			$task_run_filter_log->add_log( __( 'Could not insert bulk arguments with overwriting', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( true );
 			return $task_run_filter_log;
 		}
@@ -123,7 +129,6 @@ class BTM_Task_Bulk_Argument_Manager {
 			|| BTM_Task_Run_Status::STATUS_SUCCEEDED === $task->get_status()->get_value()
 		){
 			$marked = $task_dao->mark_as_in_progress( $task );
-
 			if( true !== $marked ){
 				$db_transaction->rollback();
 				$task_run_filter_log->add_log( __( 'Could not set the task status to in progress to add bulk arguments for', 'background_task_manager' ) );

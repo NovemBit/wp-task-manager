@@ -65,6 +65,9 @@ class BTM_Task_Bulk_Argument_Dao{
 		);
 		$format = array( '%d', '%s', '%d', '%s', '%s' );
 
+		$data[ 'argument_hash' ] = md5( $data[ 'callback_arguments' ] );
+		$format[] = '%s';
+
 		if( 0 < $task_bulk_argument->get_id() ){
 			$data['id'] = $task_bulk_argument->get_id();
 			$format[] = '%d';
@@ -103,7 +106,7 @@ class BTM_Task_Bulk_Argument_Dao{
 		}
 
 		$base_query = '
-			INSERT INTO `' . $this->get_table_name() . '`( `task_id`, `callback_arguments`, `priority`, `status`, `date_created` )
+			INSERT INTO `' . $this->get_table_name() . '`( `task_id`, `callback_arguments`, `priority`, `status`, `date_created`, `argument_hash` )
 			VALUES
 		';
 
@@ -132,14 +135,16 @@ class BTM_Task_Bulk_Argument_Dao{
 					$task_argument_chunk[ $i ]->set_date_created_timestamp( time() );
 				}
 
+				$callback_arguments = serialize( $task_argument_chunk[ $i ]->get_callback_arguments() );
 				$values = $wpdb->prepare('
-					( %d, %s, %d, %s, %s ),
+					( %d, %s, %d, %s, %s, %s ),
 				',
 					$task_id,
-					serialize( $task_argument_chunk[ $i ]->get_callback_arguments() ),
+					$callback_arguments,
 					$task_argument_chunk[ $i ]->get_priority(),
 					$task_argument_chunk[ $i ]->get_status()->get_value(),
-					date( 'Y-m-d H:i:s', $task_argument_chunk[ $i ]->get_date_created_timestamp() )
+					date( 'Y-m-d H:i:s', $task_argument_chunk[ $i ]->get_date_created_timestamp() ),
+					md5( $callback_arguments )
 				);
 
 				$query .= $values;
@@ -223,18 +228,18 @@ class BTM_Task_Bulk_Argument_Dao{
 			SELECT `id`
 			FROM `' . $this->get_table_name() . '` AS `t1`
 			JOIN (
-				SELECT `t2`.`callback_arguments`, MIN(`t2`.`priority`) AS `priority`
+				SELECT `t2`.`argument_hash`, MIN(`t2`.`priority`) AS `priority`
 				FROM `' . $this->get_table_name() . '` AS `t2`
 				JOIN `' . $this->get_table_name() . '` AS `t3`
 					ON `t2`.`id` != `t3`.`id`
-					AND `t2`.`callback_arguments` = `t3`.`callback_arguments`
+					AND `t2`.`argument_hash` = `t3`.`argument_hash`
 				WHERE `t2`.`task_id` = %d
 					AND `t3`.`task_id` = %d
 					AND `t2`.`status` = %s
 					AND `t3`.`status` = %s
-				GROUP BY `t2`.`callback_arguments`
+				GROUP BY `t2`.`argument_hash`
 			) AS `max_p`
-				ON `t1`.`callback_arguments` = `max_p`.`callback_arguments`
+				ON `t1`.`argument_hash` = `max_p`.`argument_hash`
 				AND `t1`.`priority` != `max_p`.`priority`
 			WHERE `t1`.`task_id` = %d
 				AND `t1`.`status` = %s
@@ -328,18 +333,18 @@ class BTM_Task_Bulk_Argument_Dao{
 			SELECT `t1`.`id`
 			FROM `' . $this->get_table_name() . '` AS `t1`
 			JOIN (
-				SELECT `t2`.`callback_arguments`, MAX(`t2`.`id`) AS `id`
+				SELECT `t2`.`argument_hash`, MAX(`t2`.`id`) AS `id`
 				FROM `' . $this->get_table_name() . '` AS `t2`
 				JOIN `' . $this->get_table_name() . '` AS `t3`
 					ON `t2`.`id` != `t3`.`id`
-					AND `t2`.`callback_arguments` = `t3`.`callback_arguments`
+					AND `t2`.`argument_hash` = `t3`.`argument_hash`
 				WHERE `t2`.`task_id` = %d
 					AND `t3`.`task_id` = %d
 					AND `t2`.`status` = %s
 					AND `t3`.`status` = %s
-				GROUP BY `t2`.`callback_arguments`
+				GROUP BY `t2`.`argument_hash`
 			) AS max_p
-				ON `t1`.`callback_arguments` = max_p.`callback_arguments`
+				ON `t1`.`argument_hash` = max_p.`argument_hash`
 				AND `t1`.`id` != max_p.`id`
 			WHERE `t1`.`task_id` = %d
 				AND `t1`.`status` = %s
@@ -585,19 +590,22 @@ class BTM_Task_Bulk_Argument_Dao{
 	public function update( BTM_Task_Bulk_Argument $task_bulk_argument ){
 		global $wpdb;
 
+		$callback_arguments = serialize( $task_bulk_argument->get_callback_arguments() );
+
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
 				'task_id' => $task_bulk_argument->get_task_id(),
-				'callback_arguments' => serialize( $task_bulk_argument->get_callback_arguments() ),
+				'callback_arguments' => $callback_arguments,
 				'priority' => $task_bulk_argument->get_priority(),
 				'status' => $task_bulk_argument->get_status()->get_value(),
-				'date_created' => date( 'Y-m-d H:i:s' , $task_bulk_argument->get_date_created_timestamp() )
+				'date_created' => date( 'Y-m-d H:i:s' , $task_bulk_argument->get_date_created_timestamp() ),
+				'argument_hash' => md5( $callback_arguments )
 			),
 			array(
 				'id' => $task_bulk_argument->get_id()
 			),
-			array( '%d', '%s', '%d', '%s', '%s' ),
+			array( '%d', '%s', '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

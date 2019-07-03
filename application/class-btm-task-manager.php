@@ -50,7 +50,6 @@ final class BTM_Task_Manager{
 		while( true ){
 			$restriction_message = BTM_Run_Restrictor::get_instance()->check_all_restrictions();
 			if( true === $restriction_message ){
-
 				$task_to_run = BTM_Task_Dao::get_instance()->get_next_task_to_run();
 				if( false === $task_to_run ){
 					$task_manager_log_dao->log( __( 'There are no tasks to run', 'background_task_manager' ) );
