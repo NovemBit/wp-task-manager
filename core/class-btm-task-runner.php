@@ -93,17 +93,19 @@ final class BTM_Task_Runner{
 			);
 		}catch( Exception $e ){
 			$task_run_filter_log->add_log( $e->getMessage() );
+			$task_run_filter_log->set_failed( true );
+			$task_run_filter_log->set_bulk_fails( $task_bulk_arguments );
 		}finally{
 			$end = time();
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
 			}else{
-				$task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
+				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),
 					1
 				);
-				if( 0 < count( $task_bulk_arguments ) ){
+				if( 0 < count( $more_task_bulk_arguments ) ){
 					$task_dao::get_instance()->mark_as_in_progress( $task );
 				}else{
 					if( $task_bulk_argument_dao->has_failed_arguments( $task->get_id() ) ){

@@ -185,7 +185,7 @@ final class BTM_Plugin_Options{
 	 */
 	private function init_total_execution_allowed_duration_in_seconds(){
 		// @todo: make it configurable, read from DB
-		$this->set_total_execution_allowed_duration_in_seconds( 60 * 5 );
+		$this->set_total_execution_allowed_duration_in_seconds( 60 * 1 );
 	}
 
 	/**

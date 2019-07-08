@@ -80,4 +80,12 @@ class BTM_Task_Run_Filter_Log{
 	public function set_bulk_fail( BTM_Task_Bulk_Argument $task_bulk_argument ){
 		$this->bulk_fails[ $task_bulk_argument->get_id() ] = $task_bulk_argument;
 	}
+	/**
+	 * @param BTM_Task_Bulk_Argument[] $task_bulk_arguments
+	 */
+	public function set_bulk_fails( array $task_bulk_arguments ){
+		foreach ( $task_bulk_arguments as $task_bulk_argument ){
+			$this->set_bulk_fail( $task_bulk_argument );
+		}
+	}
 }
