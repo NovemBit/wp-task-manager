@@ -36,6 +36,9 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		$order = '';
 		$search = '';
 		$status = '';
+		$callback = '';
+		$date_start = '';
+		$date_end = '';
 		if( isset( $_GET[ 'orderby' ] ) ){
 			$orderby = $_GET[ 'orderby' ];
 		}
@@ -48,13 +51,38 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		if( isset( $_GET[ 'status' ] ) ){
 			$status = $_GET[ 'status' ];
 		}
+		if( isset( $_GET[ 'callback' ] ) ){
+			$callback = $_GET[ 'callback' ];
+		}
+		if( isset( $_GET[ 'entry_date' ] ) ){
+			$date_start = $_GET[ 'entry_date' ];
+		}
+		if( isset( $_GET[ 'end_date' ] ) ){
+			$date_end = $_GET[ 'end_date' ];
+		}
 		$dao = BTM_Task_Dao::get_instance();
-		$tasks = $dao->get_tasks( $orderby, $order, $search, $status );
+		$tasks = $dao->get_tasks(   $orderby,
+									$order,
+									$search,
+									$status,
+									$callback,
+									$date_start,
+									$date_end
+								);
 		if( $tasks === false ){
 			return array();
 		}
 
 		return $tasks;
+	}
+
+	public function get_callback_actions(){
+
+		$dao = BTM_Task_Dao::get_instance();
+		$callback_actions = $dao->get_callback_actions();
+
+		return $callback_actions;
+
 	}
 
 	/**
@@ -97,14 +125,15 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	 */
 	public function get_columns() {
 		$columns = array(
-			'cb' => '<input type="checkbox" />',
+			'cb'                        => '<input type="checkbox" />',
 			'id'                        => 'ID',
 			'callback_action'           => 'Callback Action',
 			'callback_arguments'        => 'Callback Arguments',
 			'priority'                  => 'Priority',
 			'bulk_size'                 => 'Bulk Size',
 			'status'                    => 'Status',
-			'date_created'              => 'Date Created'
+			'date_created'              => 'Date Created',
+			'view_logs'                 => 'Logs'
 		);
 		return $columns;
 	}
@@ -168,6 +197,12 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 				exit;
 			}
 		}
+		else{
+			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action2', 'status-submit',  ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+				exit;
+			}
+		}
 	}
 
 	/**
@@ -188,10 +223,8 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		if ( $which == "top" ) {
 			$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 			?>
-			<select name="status">
-				<?php if( !isset( $_GET[ 'status' ] ) || empty( $_GET[ 'status' ] ) ){ ?>
-					<option value="">No status selected</option>
-				<?php } ?>
+			<select name="status" id="status-filter">
+				<option value="">Status</option>
 				<?php foreach ( $task_run_statuses as $status => $display_name ) {
 					if( isset( $_GET[ 'status' ] ) && $_GET[ 'status' ] == $status ){
 						?><option selected="selected" value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
@@ -200,7 +233,28 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 					}
 				} ?>
 			</select>
-			<?php submit_button( 'Apply', 'action', 'status-submit', false ); ?>
+			<select name="callback" id="callback-filter">
+				<?php $callback_actions = $this->get_callback_actions(); ?>
+				<option value="">Callback Actions</option>
+				<?php foreach ( $callback_actions as $callback_action ) {
+					if( isset( $_GET[ 'callback' ] ) && $_GET[ 'callback' ] == $callback_action->callback_action ){
+						?><option selected="selected" value="<?php echo $callback_action->callback_action; ?>"><?php echo $callback_action->callback_action; ?></option><?php
+					}else {
+						?><option value="<?php echo $callback_action->callback_action; ?>"><?php echo $callback_action->callback_action; ?></option><?php
+					}
+				} ?>
+			</select>
+				<?php
+				$entry = '';
+				$end = '';
+				if( isset( $_GET[ 'entry_date' ] ) ) {
+					$entry = $_GET[ 'entry_date' ];
+					$end = $_GET[ 'end_date' ];
+				}?>
+					<input type="date" id="jquery-datepicker-entry" name="entry_date" value="<?php echo $entry; ?>" />
+					<input type="date" id="jquery-datepicker-end" name="end_date" value="<?php echo $end; ?>" />
+					<span class="trash" ><a id="unset-date" href="#" >Reset</a></span>
+				<?php submit_button( 'Apply', 'action', 'date-submit', false ); ?>
 			<?php
 		}
 	}
@@ -246,6 +300,15 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		foreach ( $args as $key => $arg){
 			echo '<p>'. $key .' => ' . $arg .'</p>';
 		}
+		add_thickbox(); ?>
+		<div id="arg-content-id" style="display:none;">
+			<p>
+				<?php var_dump( '<pre>', $args ); ?>
+			</p>
+		</div>
+
+		<a href="#TB_inline?&width=1000&height=700&inlineId=arg-content-id" class="thickbox">View more...</a>
+		<?php
 	}
 
 	/**
@@ -283,6 +346,26 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	public function column_date_created( I_BTM_Task $item ) {
 		$iso_date = date( 'Y-m-d H:i:s', $item->get_date_created_timestamp() );
 		echo $iso_date;
+	}
+
+	/**
+	 * Show logs column
+	 *
+	 * @param I_BTM_Task $item
+	 */
+	public function column_view_logs( I_BTM_Task $item ) {
+		$item->get_id();
+		$dao = BTM_Task_Run_Log_Dao::get_instance();
+		$log = $dao->get_by_id( $item->get_id() );
+		add_thickbox(); ?>
+		<div id="content-id" style="display:none;">
+			<p>
+				<?php var_dump( '<pre>', $log ); ?>
+			</p>
+		</div>
+
+		<a href="#TB_inline?&width=1000&height=700&inlineId=content-id" class="thickbox">View log</a>
+	<?php
 	}
 
 	// endregion

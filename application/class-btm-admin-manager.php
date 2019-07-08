@@ -30,10 +30,15 @@ final class BTM_Admin_Manager {
 		add_action( 'load-bg-task-manager_page_btm-bulk-tasks', array($this, 'on_load_bg_task_manager_page_btm_bulk_tasks') );
 		add_action( 'load-bg-task-manager_page_btm-logs', array($this, 'on_load_bg_task_manager_page_btm_logs') );
 		add_action( 'admin_menu', array( $this, 'btm_plugin_setup_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'on_hook_admin_scripts' ) );
 	}
 
 	private function __clone() {}
 	private function __wakeup() {}
+
+	function on_hook_admin_scripts() {
+		wp_enqueue_script( 'wp-jquery-date-picker', plugins_url( 'wp-task-manager/assets/js/admin.js' ), array( 'jquery','jquery-ui-datepicker' ), '1.0.0' , true );
+	}
 
 	// endregion
 
