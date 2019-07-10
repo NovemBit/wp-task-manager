@@ -131,6 +131,66 @@ final class BTM_Admin_Manager {
 				'btm_admin_logs_sub_page'
 			)
 		);
+
+		// Admin Settings submenu page init
+		add_submenu_page(
+			'btm',
+			'Settings',
+			'Settings',
+			'manage_options',
+			'btm-settings',
+			array(
+				$this,
+				'btm_admin_settings_sub_page'
+			)
+		);
+	}
+
+	/**
+	 * Show Settings submenu page
+	 */
+	public function btm_admin_settings_sub_page(){
+		if( isset( $_POST[ "btm-cron-interval" ] ) ){
+			$interval = $_POST[ "btm-cron-interval" ];
+			if( ctype_digit( $interval ) ){
+				update_option( 'btm_cron_interval', (int)$interval, 'no' );
+			}
+		}
+		if( isset( $_POST[ "btm-cron-duration" ] ) ){
+			$duration = $_POST[ "btm-cron-duration" ];
+			if( ctype_digit( $duration ) ){
+				update_option( 'btm_cron_duration', (int)$duration, 'no' );
+			}
+		}
+
+		?>
+
+		<div class="wrap">
+			<h1>Background Task Manager Settings</h1>
+			<form method="post">
+				<table class="form-table">
+					<tbody>
+						<tr>
+							<th scope="row"><label for="cron-job">Cron Job Interval</label></th>
+							<td>
+								<input name="btm-cron-interval" id="cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_interval' ); ?>" >
+								<p class="description" id="cron-job" >The cron job recurrence interval in minutes</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="duration">Total Execution Duration </label></th>
+							<td>
+								<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration' ); ?>" >
+								<p class="description" id="duration" >Total execution allowed duration in seconds</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<?php submit_button( 'Save Changes', 'primary', 'submit', true, array() ); ?>
+			</form>
+		</div>
+
+		<?php
 	}
 
 	/**
