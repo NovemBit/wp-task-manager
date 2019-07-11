@@ -162,6 +162,8 @@ final class BTM_Plugin_Options{
 	 * @return int
 	 */
 	public function get_total_execution_allowed_duration_in_seconds(){
+		$this->total_execution_allowed_duration_in_seconds = (int)get_option( $this->get_db_table_prefix() . 'cron_duration' , 60 );
+
 		return  $this->total_execution_allowed_duration_in_seconds;
 	}
 	/**
@@ -184,8 +186,9 @@ final class BTM_Plugin_Options{
 	 * Initializes total execution allowed duration in seconds
 	 */
 	private function init_total_execution_allowed_duration_in_seconds(){
-		// @todo: make it configurable, read from DB
-		$this->set_total_execution_allowed_duration_in_seconds( 60 * 1 );
+		$duration = $this->get_total_execution_allowed_duration_in_seconds();
+
+		$this->set_total_execution_allowed_duration_in_seconds( $duration );
 	}
 
 	/**
@@ -332,6 +335,8 @@ final class BTM_Plugin_Options{
 	 * @return int
 	 */
 	public function get_cron_job_interval_in_minutes(){
+		$this->interval_in_minutes = (int)get_option( $this->get_db_table_prefix() . 'cron_interval' , 5 );
+
 		return $this->interval_in_minutes;
 	}
 	/**
@@ -353,7 +358,8 @@ final class BTM_Plugin_Options{
 	 * Initializes the cron job recurrence interval in minutes
 	 */
 	private function init_cron_job_interval_in_minutes(){
-		// @todo: make it configurable, read from DB
-		$this->set_cron_job_interval_in_minutes( 5 );
+		$interval = $this->get_cron_job_interval_in_minutes();
+
+		$this->set_cron_job_interval_in_minutes( $interval );
 	}
 }
