@@ -34,11 +34,12 @@ class BTM_Migration_Base implements I_BTM_Migration{
 
 	// endregion
 
+	// todo: read table prefix from options
 	public function up(){
 		global $wpdb;
 
 		$wpdb->query('
-			CREATE TABLE `btm_tasks` (
+			CREATE TABLE IF NOT EXISTS `btm_tasks` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			  `callback_action` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  `callback_arguments` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -57,7 +58,7 @@ class BTM_Migration_Base implements I_BTM_Migration{
 		');
 
 		$wpdb->query('
-			CREATE TABLE `btm_task_bulk_arguments` (
+			CREATE TABLE IF NOT EXISTS `btm_task_bulk_arguments` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			  `task_id` bigint(20) unsigned NOT NULL,
 			  `callback_arguments` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -74,7 +75,7 @@ class BTM_Migration_Base implements I_BTM_Migration{
 		');
 
 		$wpdb->query('
-			CREATE TABLE `btm_task_run_logs` (
+			CREATE TABLE IF NOT EXISTS `btm_task_run_logs` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			  `task_id` bigint(20) unsigned NOT NULL,
 			  `session_id` timestamp NOT NULL,
@@ -86,10 +87,20 @@ class BTM_Migration_Base implements I_BTM_Migration{
 		');
 
 		$wpdb->query('
-			CREATE TABLE `btm_task_manager_logs` (
+			CREATE TABLE IF NOT EXISTS `btm_task_manager_logs` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			  `session_id` timestamp NOT NULL,
 			  `log` longtext COLLATE utf8mb4_unicode_ci,
+			  PRIMARY KEY (`id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+		');
+
+		$wpdb->query('
+			CREATE TABLE IF NOT EXISTS `btm_notificatoin_settings` (
+			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			  `callaback_action` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `user_id` int(11) NOT NULL,
 			  PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');
