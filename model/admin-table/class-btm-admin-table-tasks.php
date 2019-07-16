@@ -300,14 +300,14 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		foreach ( $args as $key => $arg){
 			echo '<p>'. $key .' => ' . $arg .'</p>';
 		}
-		add_thickbox(); ?>
-		<div id="arg-content-id" style="display:none;">
-			<p>
-				<?php var_dump( '<pre>', $args ); ?>
-			</p>
-		</div>
+		?>
+		<a id="btm-arg-data" href="#arg-data">View log</a>
 
-		<a href="#TB_inline?&width=1000&height=700&inlineId=arg-content-id" class="thickbox">View more...</a>
+		<div style="display:none">
+			<div id="arg-data" data-selectable="true">
+				<?php var_dump( '<pre>', $args ); ?>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -357,14 +357,14 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		$item->get_id();
 		$dao = BTM_Task_Run_Log_Dao::get_instance();
 		$log = $dao->get_by_id( $item->get_id() );
-		add_thickbox(); ?>
-		<div id="content-id" style="display:none;">
-			<p>
-				<?php var_dump( '<pre>', $log ); ?>
-			</p>
-		</div>
+		?>
+		<a id="btm-log-data" href="#log-data">View log</a>
 
-		<a href="#TB_inline?&width=1000&height=700&inlineId=content-id" class="thickbox">View log</a>
+		<div style="display:none">
+			<div id="log-data" data-selectable="true">
+				<?php var_dump( '<pre>', $log ); ?>
+			</div>
+		</div>
 	<?php
 	}
 

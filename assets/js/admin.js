@@ -9,6 +9,16 @@
 		$( '#date-submit' ).trigger( 'click' )
 	});
 
+	/* Using custom settings */
+
+	$("a#btm-log-data").fancybox({
+		'centerOnScroll' : true
+	});
+
+	$("a#btm-arg-data").fancybox({
+		'centerOnScroll' : true
+	});
+
 	//select2
 	$(document).ready(function() {
 		$('.btm-callback-action-settings').select2();
