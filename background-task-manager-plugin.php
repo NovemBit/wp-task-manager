@@ -78,6 +78,7 @@ final class BTM_Plugin {
 
 		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
 		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
+		require_once( $data_provider_path . 'class-btm-notification-dao.php' );
 		require_once( $data_provider_path . 'class-btm-db-transaction.php' );
 		require_once( $data_provider_path . 'class-btm-task-dao.php' );
 		require_once( $data_provider_path . 'class-btm-task-bulk-argument-dao.php' );

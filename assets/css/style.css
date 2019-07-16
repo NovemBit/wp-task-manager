@@ -1,0 +1,54 @@
+.select2-selection--multiple{
+    width: 352px;
+}
+
+.btm-notify-table{
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 70%;
+}
+
+.btm-th-td{
+    border: 1px solid #dddddd;
+}
+
+.btm-th-td input[type=checkbox] {
+    margin: 0;
+}
+
+.btm-notify-table tr th:first-child,
+.btm-notify-table tr td:first-child{
+    width: 3%;
+    text-align: center;
+}
+
+.form-table th.btm-th-td{
+    padding: 15px 10px;
+}
+
+.btm-tr:nth-child(even) {
+    background-color: white;
+}
+
+.btm-user{
+    background-color: #e4e4e4;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: default;
+    float: left;
+    margin-right: 5px;
+    margin-top: 5px;
+    padding: 0 5px;
+}
+
+.btm-user-remove{
+    color: #999;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+.btm-bulk-action{
+    margin-bottom: 7px;
+}
