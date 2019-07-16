@@ -224,8 +224,21 @@ class BTM_Admin_Table_Logs extends WP_List_Table{
 	 */
 	public function column_logs( BTM_Task_Run_Log $item ) {
 		$logs = $item->get_logs();
-		foreach ( $logs as $key => $log){
-			echo '<p>'. $key .' => ' . $log .'</p>';
+
+		if( count( $logs ) < 2 ){
+			foreach ( $logs as $key => $value ){
+				highlight_string( $value );
+			}
+		}else {
+			?>
+			<a id="btm-log-data" href="#log-data">View log</a>
+
+			<div style="display:none">
+				<div id="log-data" data-selectable="true">
+					<?php highlight_string( "<?php\n\$log =\n" . var_export( $logs, true ) . ";\n?>" ); ?>
+				</div>
+			</div>
+			<?php
 		}
 	}
 
