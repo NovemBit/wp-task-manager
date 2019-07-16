@@ -225,10 +225,10 @@ class BTM_Task_Bulk_Argument_Dao{
 		$status_registered = BTM_Task_Run_Status::STATUS_REGISTERED;
 
 		$query = $wpdb->prepare('
-			SELECT `id`
+			SELECT `t1`.`id`
 			FROM `' . $this->get_table_name() . '` AS `t1`
 			JOIN (
-				SELECT `t2`.`argument_hash`, MIN(`t2`.`priority`) AS `priority`
+				SELECT `t2`.`argument_hash`, MIN(`t2`.`priority`) AS `priority`, `t2`.`id`
 				FROM `' . $this->get_table_name() . '` AS `t2`
 				JOIN `' . $this->get_table_name() . '` AS `t3`
 					ON `t2`.`id` != `t3`.`id`
@@ -240,7 +240,7 @@ class BTM_Task_Bulk_Argument_Dao{
 				GROUP BY `t2`.`argument_hash`
 			) AS `max_p`
 				ON `t1`.`argument_hash` = `max_p`.`argument_hash`
-				AND `t1`.`priority` != `max_p`.`priority`
+				AND `t1`.`id` != `max_p`.`id`
 			WHERE `t1`.`task_id` = %d
 				AND `t1`.`status` = %s
 		',
