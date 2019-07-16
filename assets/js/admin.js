@@ -67,10 +67,6 @@
 				if( data ){
 					$( e.target ).parent().text( 'User removed' );
 					$( e.target ).hide();
-					setTimeout( function(){
-						console.log( e )
-						} , 2000
-					);
 				}
 			});
 
