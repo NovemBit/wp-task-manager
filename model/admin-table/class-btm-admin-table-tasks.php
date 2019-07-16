@@ -305,7 +305,7 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 
 		<div style="display:none">
 			<div id="arg-data" data-selectable="true">
-				<?php var_dump( '<pre>', $args ); ?>
+				<?php highlight_string("<?php\n\$args =\n" . var_export($args, true) . ";\n?>"); ?>
 			</div>
 		</div>
 		<?php
@@ -362,7 +362,7 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 
 		<div style="display:none">
 			<div id="log-data" data-selectable="true">
-				<?php var_dump( '<pre>', $log ); ?>
+				<?php highlight_string("<?php\n\$log =\n" . var_export($log, true) . ";\n?>"); ?>
 			</div>
 		</div>
 	<?php
