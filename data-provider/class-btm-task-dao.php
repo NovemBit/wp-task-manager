@@ -178,6 +178,8 @@ class BTM_Task_Dao{
 			if( $order !== '' ){
 				$query.= ' '.$order;
 			}
+		}else{
+			$query.= 'ORDER BY '. 'date_created DESC';
 		}
 		$tasks = $wpdb->get_results( $query, 'OBJECT' );
 		if( empty( $tasks ) ){

@@ -39,10 +39,12 @@ final class BTM_Admin_Manager {
 	private function __wakeup() {}
 
 	function on_hook_admin_scripts() {
-		wp_enqueue_script( 'btm-admin-scripts', plugins_url( 'wp-task-manager/assets/js/admin.js' ), array( 'jquery' ), '1.0.0' , true );
-		wp_enqueue_script( 'select2-script', plugins_url( 'wp-task-manager/assets/js/select2/dist/js/select2.js' ), array( 'jquery' ), '1.0.0' , true );
-		wp_enqueue_style( 'select2-style', plugins_url( 'wp-task-manager/assets/js/select2/dist/css/select2.css' ) );
-		wp_enqueue_style( 'admin-style', plugins_url( 'wp-task-manager/assets/css/style.css' ) );
+		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' , 'fancybox-script' ), '1.0.0' , true );
+		wp_enqueue_script( 'select2-script', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/js/select2.js', array( 'jquery' ), '1.0.0' , true );
+		wp_enqueue_style( 'select2-style', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/css/select2.css' );
+		wp_enqueue_script( 'fancybox-script', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js', array( 'jquery' ), '1.0.0' , true );
+		wp_enqueue_style( 'fancybox-style', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.css' );
+		wp_enqueue_style( 'admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css' );
 		wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 	}
 
@@ -183,7 +185,7 @@ final class BTM_Admin_Manager {
 		$tasks = new BTM_Admin_Table_Tasks();
 		$callback_actions = $tasks->get_callback_actions();
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
-		$users = get_users();
+		$users = get_users( [ 'role__in' => [ 'administrator' ] ] );
 		$callbacks_and_statuses = $notification->get_callback_actions_and_statuses();
 		$users_data = $notification->get_users();
 		?>
@@ -299,6 +301,7 @@ final class BTM_Admin_Manager {
 		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title(); ?></h1>
+			<?php $this->table_task->views(); ?>
 			<form id="tasks-filter" method="get">
 				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 				<?php $this->table_task->search_box('Search', 'search_id'); ?>
@@ -317,6 +320,7 @@ final class BTM_Admin_Manager {
 		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title(); ?></h1>
+			<?php $this->table_bulk_tasks->views(); ?>
 			<form id="bulk-tasks-filter" method="get">
 				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 				<?php $this->table_bulk_tasks->search_box('Search', 'search_id'); ?>
@@ -362,6 +366,6 @@ final class BTM_Admin_Manager {
 			foreach ( $notification_ids as $notification_id){
 				$responses[] = $notification->delete_notification_rule( $notification_id );
 			}
-		}
+	}
 
 	}

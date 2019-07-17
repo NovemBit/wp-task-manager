@@ -386,10 +386,11 @@ class BTM_Task_Bulk_Argument_Dao{
 	 * @param string $order to order by ASC or DESC
 	 * @param string $search to search in table some value
 	 * @param string $status to get table data by status
+	 * @param string $task_id to get bulk tasks where task_id equal to $task_id
 	 *
 	 * @return array|bool
 	 */
-	public function get_bulk_tasks( $orderby = '', $order = '', $search = '', $status = '' ){
+	public function get_bulk_tasks( $orderby = '', $order = '', $search = '', $status = '', $task_id = '' ){
 		global $wpdb;
 
 		$query = '
@@ -398,6 +399,12 @@ class BTM_Task_Bulk_Argument_Dao{
 		';
 		if( $status !== '' && $search == '' ){
 			$query.= ' WHERE status = "'. $status .'" ';
+			if( $task_id !== '' ){
+				$query.= ' AND task_id = "'. $task_id .'" ';
+			}
+		}
+		if( $status === '' && $search === '' && $task_id !== '' ){
+			$query.=' WHERE task_id = "'. $task_id .'" ';
 		}
 
 		if( $search !== '' ){
@@ -412,6 +419,9 @@ class BTM_Task_Bulk_Argument_Dao{
 			if( $status !== '' ){
 				$query.= ' AND status = "'. $status .'" ';
 			}
+			if( $task_id !== '' ){
+				$query.= ' AND task_id = "'. $task_id .'" ';
+			}
 		}
 
 		if( $orderby !== '' ){
@@ -419,6 +429,8 @@ class BTM_Task_Bulk_Argument_Dao{
 			if( $order !== '' ){
 				$query.= ' '.$order;
 			}
+		}else{
+			$query.= 'ORDER BY '. 'date_created DESC';
 		}
 		$tasks = $wpdb->get_results( $query, 'OBJECT' );
 

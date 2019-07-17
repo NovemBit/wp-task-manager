@@ -36,6 +36,7 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 		$order = '';
 		$search = '';
 		$status = '';
+		$task_id = '';
 		if( isset( $_GET[ 'orderby' ] ) ){
 			$orderby = $_GET[ 'orderby' ];
 		}
@@ -48,8 +49,11 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 		if( isset( $_GET[ 'status' ] ) ){
 			$status = $_GET[ 'status' ];
 		}
+		if( isset( $_GET[ 'task_id' ] ) ){
+			$task_id = $_GET[ 'task_id' ];
+		}
 		$dao = BTM_Task_Bulk_Argument_Dao::get_instance();
-		$bulk_tasks = $dao->get_bulk_tasks( $orderby, $order, $search, $status );
+		$bulk_tasks = $dao->get_bulk_tasks( $orderby, $order, $search, $status, $task_id );
 		if( $bulk_tasks === false ){
 			return array();
 		}
@@ -170,6 +174,25 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 		}
 	}
 
+	protected function get_views() {
+		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
+		$views = array();
+		$current = ( !empty($_REQUEST['status']) ? $_REQUEST['status'] : 'all');
+
+		//All link
+		$class = ($current == 'all' ? ' class="current"' :'');
+		$all_url = remove_query_arg('status');
+		$views['all'] = "<a href='{$all_url }' {$class} >All</a>";
+
+		foreach ( $task_run_statuses as $status => $display_name ){
+			$foo_url = add_query_arg( 'status',$status );
+			$class = ( $current == $status ? ' class="current"' :'' );
+			$views[ $status ] = "<a href='{$foo_url}' {$class} >{$display_name}</a>";
+		}
+
+		return $views;
+	}
+
 	/**
 	 * Delete a task.
 	 * * @param int $id ID
@@ -186,21 +209,9 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 	 */
 	protected function extra_tablenav($which) {
 		if ( $which == "top" ) {
-			$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 			?>
-			<select name="status">
-				<?php if( !isset( $_GET[ 'status' ] ) || empty( $_GET[ 'status' ] ) ){ ?>
-					<option value="">No status selected</option>
-				<?php } ?>
-				<?php foreach ( $task_run_statuses as $status => $display_name ) {
-					if( isset( $_GET[ 'status' ] ) && $_GET[ 'status' ] == $status ){
-						?><option selected="selected" value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
-					}else {
-						?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
-					}
-				} ?>
-			</select>
-			<?php submit_button( 'Apply', 'action', 'status-submit', false ); ?>
+
+<!--			--><?php //submit_button( 'Apply', 'action', 'status-submit', false ); ?>
 			<?php
 		}
 	}

@@ -1,12 +1,22 @@
 (function( $ ) {
 	//filer
 	$( '#unset-date' ).click(function(){
-		$( '#jquery-datepicker-entry' ).attr('value', '');
-		$( '#jquery-datepicker-end' ).attr('value', '');
-		$( '#status-filter' ).attr('value', '');
-		$( '#callback-filter' ).attr('value', '');
-		$( '#search_id-search-input' ).attr('value', '');
+		$( '#jquery-datepicker-entry' ).val( '' );
+		$( '#jquery-datepicker-end' ).val( '' );
+		$( '#status-filter' ).val( '' );
+		$( '#callback-filter' ).val( '' );
+		$( '#search_id-search-input' ).val( '' );
 		$( '#date-submit' ).trigger( 'click' )
+	});
+
+	/* Using custom settings */
+
+	$("a#btm-log-data").fancybox({
+		'centerOnScroll' : true
+	});
+
+	$("a#btm-arg-data").fancybox({
+		'centerOnScroll' : true
 	});
 
 	//select2

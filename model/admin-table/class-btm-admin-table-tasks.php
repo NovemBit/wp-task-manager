@@ -221,18 +221,7 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	 */
 	protected function extra_tablenav($which) {
 		if ( $which == "top" ) {
-			$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 			?>
-			<select name="status" id="status-filter">
-				<option value="">Status</option>
-				<?php foreach ( $task_run_statuses as $status => $display_name ) {
-					if( isset( $_GET[ 'status' ] ) && $_GET[ 'status' ] == $status ){
-						?><option selected="selected" value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
-					}else {
-						?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
-					}
-				} ?>
-			</select>
 			<select name="callback" id="callback-filter">
 				<?php $callback_actions = $this->get_callback_actions(); ?>
 				<option value="">Callback Actions</option>
@@ -259,6 +248,25 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		}
 	}
 
+	protected function get_views() {
+		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
+		$views = array();
+		$current = ( !empty($_REQUEST['status']) ? $_REQUEST['status'] : 'all');
+
+		//All link
+		$class = ($current == 'all' ? ' class="current"' :'');
+		$all_url = remove_query_arg('status');
+		$views['all'] = "<a href='{$all_url }' {$class} >All</a>";
+
+		foreach ( $task_run_statuses as $status => $display_name ){
+			$foo_url = add_query_arg( 'status',$status );
+			$class = ( $current == $status ? ' class="current"' :'' );
+			$views[ $status ] = "<a href='{$foo_url}' {$class} >{$display_name}</a>";
+		}
+
+		return $views;
+	}
+
 	//region Columns
 
 	/**
@@ -278,7 +286,9 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	 * @param I_BTM_Task $item
 	 */
 	public function column_id( I_BTM_Task $item ) {
-		echo $item->get_id();
+		$item_id = $item->get_id();
+
+		echo '<a href="'. admin_url( 'admin.php?page=btm-bulk-tasks&task_id='.$item_id ) .'">'. $item_id .'</a>';
 	}
 
 	/**
@@ -300,14 +310,14 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		foreach ( $args as $key => $arg){
 			echo '<p>'. $key .' => ' . $arg .'</p>';
 		}
-		add_thickbox(); ?>
-		<div id="arg-content-id" style="display:none;">
-			<p>
-				<?php var_dump( '<pre>', $args ); ?>
-			</p>
-		</div>
+		?>
+		<a id="btm-arg-data" href="#arg-data">View log</a>
 
-		<a href="#TB_inline?&width=1000&height=700&inlineId=arg-content-id" class="thickbox">View more...</a>
+		<div style="display:none">
+			<div id="arg-data" data-selectable="true">
+				<?php highlight_string("<?php\n\$args =\n" . var_export($args, true) . ";\n?>"); ?>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -357,14 +367,14 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		$item->get_id();
 		$dao = BTM_Task_Run_Log_Dao::get_instance();
 		$log = $dao->get_by_id( $item->get_id() );
-		add_thickbox(); ?>
-		<div id="content-id" style="display:none;">
-			<p>
-				<?php var_dump( '<pre>', $log ); ?>
-			</p>
-		</div>
+		?>
+		<a id="btm-log-data" href="#log-data">View log</a>
 
-		<a href="#TB_inline?&width=1000&height=700&inlineId=content-id" class="thickbox">View log</a>
+		<div style="display:none">
+			<div id="log-data" data-selectable="true">
+				<?php highlight_string("<?php\n\$log =\n" . var_export($log, true) . ";\n?>"); ?>
+			</div>
+		</div>
 	<?php
 	}
 
