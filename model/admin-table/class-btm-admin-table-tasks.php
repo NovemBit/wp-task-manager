@@ -250,18 +250,19 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 
 	protected function get_views() {
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
+		$dao = BTM_Task_Dao::get_instance();
 		$views = array();
 		$current = ( !empty($_REQUEST['status']) ? $_REQUEST['status'] : 'all');
 
-		//All link
 		$class = ($current == 'all' ? ' class="current"' :'');
 		$all_url = remove_query_arg('status');
 		$views['all'] = "<a href='{$all_url }' {$class} >All</a>";
 
 		foreach ( $task_run_statuses as $status => $display_name ){
+			$status_count = $dao->get_task_status_count( $status );
 			$foo_url = add_query_arg( 'status',$status );
 			$class = ( $current == $status ? ' class="current"' :'' );
-			$views[ $status ] = "<a href='{$foo_url}' {$class} >{$display_name}</a>";
+			$views[ $status ] = "<a href='{$foo_url}' {$class} >{$display_name} ({$status_count[ 'count(*)' ]})</a>";
 		}
 
 		return $views;

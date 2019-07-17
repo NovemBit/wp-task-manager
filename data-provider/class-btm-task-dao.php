@@ -194,6 +194,21 @@ class BTM_Task_Dao{
 		return $tasks_arr;
 	}
 
+
+	public function get_task_status_count( $status ){
+		global $wpdb;
+
+		$query = '
+			SELECT count(*) 
+			FROM `' . $this->get_table_name() . '`
+			WHERE ' . $this->get_table_name() . '.status = "'. $status .'"
+		';
+
+		$status_count = $wpdb->get_row( $query, 'ARRAY_A' );
+
+		return $status_count;
+	}
+
 	/**
 	 * @param int $id
 	 *
