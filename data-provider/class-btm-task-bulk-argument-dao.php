@@ -419,6 +419,8 @@ class BTM_Task_Bulk_Argument_Dao{
 			if( $order !== '' ){
 				$query.= ' '.$order;
 			}
+		}else{
+			$query.= 'ORDER BY '. 'date_created DESC';
 		}
 		$tasks = $wpdb->get_results( $query, 'OBJECT' );
 

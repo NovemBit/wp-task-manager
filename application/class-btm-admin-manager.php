@@ -301,6 +301,7 @@ final class BTM_Admin_Manager {
 		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title(); ?></h1>
+			<?php $this->table_task->views(); ?>
 			<form id="tasks-filter" method="get">
 				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 				<?php $this->table_task->search_box('Search', 'search_id'); ?>
@@ -319,6 +320,7 @@ final class BTM_Admin_Manager {
 		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title(); ?></h1>
+			<?php $this->table_bulk_tasks->views(); ?>
 			<form id="bulk-tasks-filter" method="get">
 				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 				<?php $this->table_bulk_tasks->search_box('Search', 'search_id'); ?>

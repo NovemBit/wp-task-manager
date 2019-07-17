@@ -125,6 +125,8 @@ class BTM_Task_Run_Log_Dao{
 			if( $order !== '' ){
 				$query.= ' '.$order;
 			}
+		}else{
+			$query.= 'ORDER BY '. 'date_finished DESC';
 		}
 		$logs = $wpdb->get_results( $query, 'OBJECT' );
 		if( empty( $logs ) ){
