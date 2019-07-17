@@ -48,12 +48,14 @@ class BTM_Migration_Base implements I_BTM_Migration{
 			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			  `type` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `is_system` tinyint(1) NOT NULL,
 			  `argument_hash` char(32) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  PRIMARY KEY (`id`),
 			  KEY `priority` (`priority`),
 			  KEY `status` (`status`),
 			  KEY `date_created` (`date_created`),
-			  KEY `argument_hash` (`argument_hash`)
+			  KEY `argument_hash` (`argument_hash`),
+			  KEY `is_system` (`is_system`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');
 

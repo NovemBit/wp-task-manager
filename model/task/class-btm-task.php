@@ -24,6 +24,7 @@ class BTM_Task implements I_BTM_Task{
 		);
 
 		$task->set_id( (int) $task_obj->id );
+		$task->set_is_system( (bool) $task_obj->is_system );
 
 		return $task;
 	}
@@ -194,6 +195,30 @@ class BTM_Task implements I_BTM_Task{
 		}
 
 		$this->date_created_timestamp = $date_created_timestamp;
+	}
+
+	/**
+	 * @var bool
+	 */
+	protected $is_system = false;
+	/**
+	 * @return bool
+	 */
+	public function is_system(){
+		return $this->is_system;
+	}
+	/**
+	 * @param $is_system
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $is_system is not bool
+	 */
+	public function set_is_system( $is_system ){
+		if( ! is_bool( $is_system ) ){
+			throw new InvalidArgumentException( 'Argument $is_system should be bool. Input was: ' . $is_system );
+		}
+
+		$this->is_system = $is_system;
 	}
 
 	/**

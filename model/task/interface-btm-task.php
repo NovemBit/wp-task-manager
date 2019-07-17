@@ -77,4 +77,16 @@ interface I_BTM_Task{
 	 * @param int $date_created_timestamp
 	 */
 	public function set_date_created_timestamp( $date_created_timestamp );
+
+	/**
+	 * @return bool
+	 */
+	public function is_system();
+	/**
+	 * @param $is_system
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $is_system is not bool
+	 */
+	public function set_is_system( $is_system );
 }

@@ -57,15 +57,16 @@ class BTM_Task_Dao{
 		}
 
 		$data = array(
-			'callback_action' => $task->get_callback_action(),
-			'callback_arguments' => serialize( $task->get_callback_arguments() ),
-			'priority' => $task->get_priority(),
-			'bulk_size' => $task->get_bulk_size(),
-			'status' => $task->get_status()->get_value(),
-			'date_created' => date( 'Y-m-d H:i:s', $task->get_date_created_timestamp() ),
-			'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task )
+			'callback_action'       => $task->get_callback_action(),
+			'callback_arguments'    => serialize( $task->get_callback_arguments() ),
+			'priority'              => $task->get_priority(),
+			'bulk_size'             => $task->get_bulk_size(),
+			'status'                => $task->get_status()->get_value(),
+			'date_created'          => date( 'Y-m-d H:i:s', $task->get_date_created_timestamp() ),
+			'type'                  => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
+			'is_system'             => $task->is_system()
 		);
-		$format = array( '%s', '%s', '%d', '%d', '%s', '%s', '%s' );
+		$format = array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%d' );
 		$data['argument_hash'] = md5( $data['callback_arguments'] );
 		$format[] = '%s';
 
@@ -322,19 +323,20 @@ class BTM_Task_Dao{
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
-				'callback_action' => $task->get_callback_action(),
-				'callback_arguments' => $callback_arguments,
-				'priority' => $task->get_priority(),
-				'bulk_size' => $task->get_bulk_size(),
-				'status' => $task->get_status()->get_value(),
-				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
-				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
-				'argument_hash' => md5( $callback_arguments )
+				'callback_action'       => $task->get_callback_action(),
+				'callback_arguments'    => $callback_arguments,
+				'priority'              => $task->get_priority(),
+				'bulk_size'             => $task->get_bulk_size(),
+				'status'                => $task->get_status()->get_value(),
+				'date_created'          => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
+				'type'                  => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
+				'argument_hash'         => md5( $callback_arguments ),
+				'is_system'             => $task->is_system()
 			),
 			array(
 				'id' => $task->get_id()
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%d' ),
 			array( '%d' )
 		);
 
