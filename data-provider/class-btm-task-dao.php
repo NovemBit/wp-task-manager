@@ -106,7 +106,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return array|bool
 	 */
-	public function get_tasks( $orderby = '', $order = '', $search = '', $status = '', $callback = '', $entry_date = '', $end_date = '' ){
+	public function get_tasks( $orderby = '', $order = '', $search = '', $status = '', $callback = '', $entry_date = '', $end_date = '', $system  ){
 		global $wpdb;
 
 		$query = '
@@ -116,12 +116,25 @@ class BTM_Task_Dao{
 		if( $search === '' ) {
 			if ( $status !== '' || $callback !== '' ) {
 				if ( $callback === '' ) {
-					$query .= ' WHERE status = "' . $status . '" ';
+					if( $system === 0 ){
+						$query .= ' WHERE status = "' . $status . '" AND is_system = "' . $system . '" ';
+					}elseif ( $system === 1 ){
+						$query .= ' WHERE status = "' . $status . '" ';
+					}
+
 				}
 				if ( $status === '' ) {
-					$query .= ' WHERE callback_action = "' . $callback . '" ';
+					if( $system === 0 ){
+						$query .= ' WHERE callback_action = "' . $callback . '" AND is_system = "' . $system . '" ';
+					}elseif ( $system === 1 ){
+						$query .= ' WHERE callback_action = "' . $callback . '" ';
+					}
 				}
-				if ( $status !== '' && $callback !== '' ) {
+
+				if ( $status !== '' && $callback !== '' && $system === 0  ) {
+					$query .= ' WHERE callback_action = "' . $callback . '" AND status = "' . $status . '" AND is_system = "' . $system . '" ';
+				}
+				if ( $status !== '' && $callback !== '' && $system === 1  ) {
 					$query .= ' WHERE callback_action = "' . $callback . '" AND status = "' . $status . '" ';
 				}
 				if( $entry_date !== '' && $end_date === ''){
@@ -161,6 +174,9 @@ class BTM_Task_Dao{
 			}
 			if( $callback !== '' ){
 				$query.= ' AND callback_action = "'. $callback .'" ';
+			}
+			if( $system === 0 ){
+				$query.= ' AND is_system = "'. $system .'" ';
 			}
 			if( $entry_date !== '' && $end_date === ''){
 				$query .= ' AND date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . date('Y-m-d H:i:s') . ' 00:00:00"';

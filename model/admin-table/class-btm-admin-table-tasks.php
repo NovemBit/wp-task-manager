@@ -39,6 +39,7 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		$callback = '';
 		$date_start = '';
 		$date_end = '';
+		$system = 0;
 		if( isset( $_GET[ 'orderby' ] ) ){
 			$orderby = $_GET[ 'orderby' ];
 		}
@@ -60,6 +61,9 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 		if( isset( $_GET[ 'end_date' ] ) ){
 			$date_end = $_GET[ 'end_date' ];
 		}
+		if( isset( $_GET[ 'system' ] ) ){
+			$system = (int)$_GET[ 'system' ];
+		}
 		$dao = BTM_Task_Dao::get_instance();
 		$tasks = $dao->get_tasks(   $orderby,
 									$order,
@@ -67,7 +71,8 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 									$status,
 									$callback,
 									$date_start,
-									$date_end
+									$date_end,
+									$system
 								);
 		if( $tasks === false ){
 			return array();
@@ -222,6 +227,8 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	protected function extra_tablenav($which) {
 		if ( $which == "top" ) {
 			?>
+			<label for="system">Show system tasks</label>
+			<input type="checkbox" id="system" name="system" value="1" />
 			<select name="callback" id="callback-filter">
 				<?php $callback_actions = $this->get_callback_actions(); ?>
 				<option value="">Callback Actions</option>
