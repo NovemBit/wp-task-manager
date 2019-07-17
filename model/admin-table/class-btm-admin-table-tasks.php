@@ -286,7 +286,9 @@ class BTM_Admin_Table_Tasks extends WP_List_Table{
 	 * @param I_BTM_Task $item
 	 */
 	public function column_id( I_BTM_Task $item ) {
-		echo $item->get_id();
+		$item_id = $item->get_id();
+
+		echo '<a href="'. admin_url( 'admin.php?page=btm-bulk-tasks&task_id='.$item_id ) .'">'. $item_id .'</a>';
 	}
 
 	/**

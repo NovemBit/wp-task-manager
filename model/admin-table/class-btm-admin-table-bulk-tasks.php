@@ -36,6 +36,7 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 		$order = '';
 		$search = '';
 		$status = '';
+		$task_id = '';
 		if( isset( $_GET[ 'orderby' ] ) ){
 			$orderby = $_GET[ 'orderby' ];
 		}
@@ -48,8 +49,11 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 		if( isset( $_GET[ 'status' ] ) ){
 			$status = $_GET[ 'status' ];
 		}
+		if( isset( $_GET[ 'task_id' ] ) ){
+			$task_id = $_GET[ 'task_id' ];
+		}
 		$dao = BTM_Task_Bulk_Argument_Dao::get_instance();
-		$bulk_tasks = $dao->get_bulk_tasks( $orderby, $order, $search, $status );
+		$bulk_tasks = $dao->get_bulk_tasks( $orderby, $order, $search, $status, $task_id );
 		if( $bulk_tasks === false ){
 			return array();
 		}
