@@ -97,136 +97,6 @@ class BTM_Task_Dao{
 	// region READ
 
 	/**
-	 * Function to get all tasks from db
-	 *
-	 * @param string $orderby to order by column
-	 * @param string $order to order by ASC or DESC
-	 * @param string $search to search in table some value
-	 * @param string $status to get table data by status
-	 *
-	 * @return array|bool
-	 */
-	public function get_tasks( $orderby = '', $order = '', $search = '', $status = '', $callback = '', $entry_date = '', $end_date = '', $system  ){
-		global $wpdb;
-
-		$query = '
-			SELECT * 
-			FROM `' . $this->get_table_name() . '`
-		';
-		if( $search === '' ) {
-			if ( $status !== '' || $callback !== '' ) {
-				if ( $callback === '' ) {
-					if( $system === 0 ){
-						$query .= ' WHERE status = "' . $status . '" AND is_system = "' . $system . '" ';
-					}elseif ( $system === 1 ){
-						$query .= ' WHERE status = "' . $status . '" ';
-					}
-
-				}
-				if ( $status === '' ) {
-					if( $system === 0 ){
-						$query .= ' WHERE callback_action = "' . $callback . '" AND is_system = "' . $system . '" ';
-					}elseif ( $system === 1 ){
-						$query .= ' WHERE callback_action = "' . $callback . '" ';
-					}
-				}
-
-				if ( $status !== '' && $callback !== '' && $system === 0  ) {
-					$query .= ' WHERE callback_action = "' . $callback . '" AND status = "' . $status . '" AND is_system = "' . $system . '" ';
-				}
-				if ( $status !== '' && $callback !== '' && $system === 1  ) {
-					$query .= ' WHERE callback_action = "' . $callback . '" AND status = "' . $status . '" ';
-				}
-				if( $entry_date !== '' && $end_date === ''){
-					$query .= ' AND date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . date('Y-m-d H:i:s') . ' 00:00:00"';
-				}
-				if( $end_date !== '' && $entry_date === '' ){
-					$query .= ' AND date_created BETWEEN "' . gmdate("Y-m-d H:i:s", 0) . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-				}
-				if( $entry_date !== '' && $end_date !== '' ){
-					$query .= ' AND date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-				}
-			}else{
-				if( $entry_date !== '' && $end_date === ''){
-					$query .= ' WHERE date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . date('Y-m-d H:i:s') . ' 00:00:00"';
-				}
-				if( $end_date !== '' && $entry_date === '' ){
-					$query .= ' WHERE date_created BETWEEN "' . gmdate("Y-m-d H:i:s", 0) . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-				}
-				if( $entry_date !== '' && $end_date !== '' ){
-					$query .= ' WHERE date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-				}
-			}
-		}
-
-		if( $search !== '' ){
-			$query.= ' WHERE
-					id LIKE "%'. $search .'%" OR
-					callback_action LIKE "%'. $search .'%" OR
-					callback_arguments LIKE "%'. $search .'%" OR
-					priority LIKE "%'. $search .'%" OR
-					bulk_size LIKE "%'. $search .'%" OR
-					status LIKE "%'. $search .'%" OR
-					date_created LIKE "%'. $search .'%"
-			';
-			if( $status !== '' ){
-				$query.= ' AND status = "'. $status .'" ';
-			}
-			if( $callback !== '' ){
-				$query.= ' AND callback_action = "'. $callback .'" ';
-			}
-			if( $system === 0 ){
-				$query.= ' AND is_system = "'. $system .'" ';
-			}
-			if( $entry_date !== '' && $end_date === ''){
-				$query .= ' AND date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . date('Y-m-d H:i:s') . ' 00:00:00"';
-			}
-			if( $end_date !== '' && $entry_date === '' ){
-				$query .= ' AND date_created BETWEEN "' . gmdate("Y-m-d H:i:s", 0) . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-			}
-			if( $entry_date !== '' && $end_date !== '' ){
-				$query .= ' AND date_created BETWEEN "' . $entry_date . ' 00:00:00" AND "' . $end_date . ' 00:00:00"';
-			}
-		}
-
-		if( $orderby !== '' ){
-			$query.= 'ORDER BY '. $orderby;
-			if( $order !== '' ){
-				$query.= ' '.$order;
-			}
-		}else{
-			$query.= 'ORDER BY '. 'date_created DESC';
-		}
-		$tasks = $wpdb->get_results( $query, 'OBJECT' );
-		if( empty( $tasks ) ){
-			return false;
-		}
-
-		$tasks_arr = [];
-		foreach ( $tasks as $task){
-			if( !empty( $task ) ){
-				$tasks_arr[] = $this->create_task_from_db_obj( $task );
-			}
-		}
-		return $tasks_arr;
-	}
-
-
-	public function get_task_status_count( $status ){
-		global $wpdb;
-
-		$query = '
-			SELECT count(*) 
-			FROM `' . $this->get_table_name() . '`
-			WHERE ' . $this->get_table_name() . '.status = "'. $status .'"
-		';
-
-		$status_count = $wpdb->get_row( $query, 'ARRAY_A' );
-
-		return $status_count;
-	}
-
-	/**
 	 * @param int $id
 	 *
 	 * @return I_BTM_Task|false
@@ -316,28 +186,6 @@ class BTM_Task_Dao{
 		}
 
 		return $this->create_task_from_db_obj( $task_obj );
-	}
-
-	/**
-	 * Return Distinct callback actions
-	 *
-	 * @return array|bool|object|null
-	 */
-	public function get_callback_actions(){
-		global $wpdb;
-
-		$query = '
-					SELECT DISTINCT callback_action
-					FROM `' . $this->get_table_name() . '`
-				';
-
-		$callback_actions = $wpdb->get_results( $query, 'OBJECT' );
-
-		if( empty( $callback_actions ) ){
-			return false;
-		}
-
-		return $callback_actions;
 	}
 
 	// endregion
@@ -456,6 +304,24 @@ class BTM_Task_Dao{
 		}
 
 		return true;
+	}
+
+	/**
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function delete_many_by_ids( array $ids ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			DELETE FROM `' . $this->get_table_name() . '` 
+			WHERE `id` IN ( %s )
+		', implode( ',', $ids ) );
+
+		$deleted = $wpdb->query( $query );
+
+		return false !== $deleted;
 	}
 
 	// endregion

@@ -12,113 +12,78 @@ final class BTM_Admin_Manager {
 	 */
 	private static $created = false;
 	/**
-	 * @return BTM_Admin_Manager
-	 *
-	 * @throws Exception
+	 * @throws LogicException
 	 *      in the case this method called more than once
 	 */
 	public static function run(){
 		if( false === self::$created ){
-			return new self();
+			new self();
 		}else{
-			throw new Exception('The instance should only be created once and used from the class BTM_Admin_Manager');
+			throw new LogicException('BTM_Admin_Manager should only run once inside this plugin');
 		}
 	}
 
 	private function __construct() {
-		add_action( 'load-toplevel_page_btm', array($this, 'on_load_toplevel_page_btm') );
+		add_action( 'admin_menu', array( $this, 'on_hook_admin_menu_setup' ) );
+
 		add_action( 'load-bg-task-manager_page_btm-bulk-tasks', array($this, 'on_load_bg_task_manager_page_btm_bulk_tasks') );
 		add_action( 'load-bg-task-manager_page_btm-logs', array($this, 'on_load_bg_task_manager_page_btm_logs') );
-		add_action( 'admin_menu', array( $this, 'btm_plugin_setup_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'on_hook_admin_scripts' ) );
+
 		add_action( 'wp_ajax_btm_ajax', array( $this, 'btm_ajax_handler') );
 		add_action( 'wp_ajax_btm_bulk_delete_ajax', array( $this, 'on_hook_wp_ajax_btm_bulk_delete_ajax') );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'on_hook_admin_enqueue_scripts' ) );
 	}
 
 	private function __clone() {}
 	private function __wakeup() {}
 
-	function on_hook_admin_scripts() {
-		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' , 'fancybox-script' ), '1.0.0' , true );
-		wp_enqueue_script( 'select2-script', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/js/select2.js', array( 'jquery' ), '1.0.0' , true );
-		wp_enqueue_style( 'select2-style', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/css/select2.css' );
-		wp_enqueue_script( 'fancybox-script', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js', array( 'jquery' ), '1.0.0' , true );
-		wp_enqueue_style( 'fancybox-style', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.css' );
-		wp_enqueue_style( 'admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css' );
-		wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-	}
-
 	// endregion
 
 	/**
-	 * @var $table_task BTM_Admin_Table_Tasks object
+	 * Should only be called from hook admin_enqueue_scripts
+	 * @see https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
 	 */
-	private $table_task;
+	function on_hook_admin_enqueue_scripts() {
+		$asset_version = BTM_Plugin_Options::get_instance()->get_asset_version();
 
-	/**
-	 * Callback function toplevel_page_btm
-	 */
-	public function on_load_toplevel_page_btm(){
-		$this->table_task = new BTM_Admin_Table_Tasks();
-		$this->table_task->process_bulk_action();
+		wp_enqueue_script( 'select2-script', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/js/select2.js', array( 'jquery' ), $asset_version , true );
+		wp_enqueue_style( 'select2-style', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/css/select2.css', array(), $asset_version );
+
+		wp_enqueue_script( 'fancybox-script', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js', array( 'jquery' ), $asset_version , true );
+		wp_enqueue_style( 'fancybox-style', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.css', array(), $asset_version );
+
+		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' , 'fancybox-script' ), $asset_version , true );
+		wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+		wp_enqueue_style( 'btm-admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css', array(), $asset_version );
 	}
 
-	/**
-	 * @var $table_task BTM_Admin_Table_Bulk_Tasks object
-	 */
-	private $table_bulk_tasks;
+	// region Admin Menu
 
 	/**
-	 * Callback function bg-task-manager-page_btm_bulk_tasks
+	 * Setup plugin admin menus
+	 *
+	 * Should only be called from hook admin_menu
+	 * @see https://developer.wordpress.org/reference/hooks/admin_menu/
 	 */
-	public function on_load_bg_task_manager_page_btm_bulk_tasks(){
-		$this->table_bulk_tasks = new BTM_Admin_Table_Bulk_Tasks();
-		$this->table_bulk_tasks->process_bulk_action();
-	}
+	public function on_hook_admin_menu_setup(){
+		$menu_slug = BTM_Plugin_Options::get_instance()->get_admin_menu_slug();
 
-	/**
-	 * @var $table_task BTM_Admin_Table_Logs object
-	 */
-	private $table_logs;
-
-	/**
-	 * Callback function bg-task-manager-page_btm_logs
-	 */
-	public function on_load_bg_task_manager_page_btm_logs(){
-		$this->table_logs = new BTM_Admin_Table_Logs();
-		$this->table_logs->process_bulk_action();
-	}
-
-	/**
-	 * admin_menu action callback function
-	 */
-	public function btm_plugin_setup_menu(){
 		// Admin menu Background Task Manager page init
 		add_menu_page(
-			'Background Task Manager',
-			'BG Task Manager',
+			__( 'Background Task Manager', 'background_task_manager' ),
+			__( 'BG Task Manager', 'background_task_manager' ),
 			'manage_options',
-			'btm'
+			$menu_slug
 		);
 
-		// Admin Tasks submenu page init
-		add_submenu_page(
-			'btm',
-			'Tasks',
-			'Tasks',
-			'manage_options',
-			'btm',
-			array(
-				$this,
-				'btm_admin_task_sub_page'
-			)
-		);
+		new BTM_Admin_Task_Page_Table( $menu_slug );
 
-		// Admin Bulk Tasks submenu page init
+		// Admin Bulk Arguments submenu page init
 		add_submenu_page(
 			'btm',
-			'Bulk Tasks',
-			'Bulk Tasks',
+			__( 'Bulk Arguments', 'background_task_manager' ),
+			__( 'Bulk Arguments', 'background_task_manager' ),
 			'manage_options',
 			'btm-bulk-tasks',
 			array(
@@ -127,31 +92,31 @@ final class BTM_Admin_Manager {
 			)
 		);
 
-		// Admin Logs submenu page init
-		add_submenu_page(
-			'btm',
-			'Logs',
-			'Logs',
-			'manage_options',
-			'btm-logs',
-			array(
-				$this,
-				'btm_admin_logs_sub_page'
-			)
-		);
-
-		// Admin Settings submenu page init
-		add_submenu_page(
-			'btm',
-			'Settings',
-			'Settings',
-			'manage_options',
-			'btm-settings',
-			array(
-				$this,
-				'btm_admin_settings_sub_page'
-			)
-		);
+//		// Admin Logs submenu page init
+//		add_submenu_page(
+//			'btm',
+//			__( 'Logs', 'background_task_manager' ),
+//			__( 'Logs', 'background_task_manager' ),
+//			'manage_options',
+//			'btm-logs',
+//			array(
+//				$this,
+//				'btm_admin_logs_sub_page'
+//			)
+//		);
+//
+//		// Admin Settings submenu page init
+//		add_submenu_page(
+//			'btm',
+//			__( 'Settings', 'background_task_manager' ),
+//			__( 'Settings', 'background_task_manager' ),
+//			'manage_options',
+//			'btm-settings',
+//			array(
+//				$this,
+//				'btm_admin_settings_sub_page'
+//			)
+//		);
 	}
 
 	/**
@@ -178,9 +143,9 @@ final class BTM_Admin_Manager {
 
 			$last_insert_id = $notification->create_callback( $callback );
 			if( $last_insert_id !== false )
-			foreach ( $users as $user_id ){
-				$notification->create_users( $user_id, $last_insert_id );
-			}
+				foreach ( $users as $user_id ){
+					$notification->create_users( $user_id, $last_insert_id );
+				}
 		}
 		$tasks = new BTM_Admin_Table_Tasks();
 		$callback_actions = $tasks->get_callback_actions();
@@ -195,50 +160,50 @@ final class BTM_Admin_Manager {
 			<form method="post">
 				<table class="form-table">
 					<tbody>
-						<tr>
-							<th scope="row"><label for="cron-job">Cron Job Interval</label></th>
-							<td>
-								<input name="btm-cron-interval" id="cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_interval' ); ?>" >
-								<p class="description" id="cron-job" >The cron job recurrence interval in minutes</p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="duration">Total Execution Duration </label></th>
-							<td>
-								<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration' ); ?>" >
-								<p class="description" id="duration" >Total execution allowed duration in seconds</p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="callback">Email Notifications</label></th>
-							<td>
+					<tr>
+						<th scope="row"><label for="cron-job">Cron Job Interval</label></th>
+						<td>
+							<input name="btm-cron-interval" id="cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_interval' ); ?>" >
+							<p class="description" id="cron-job" >The cron job recurrence interval in minutes</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="duration">Total Execution Duration </label></th>
+						<td>
+							<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration' ); ?>" >
+							<p class="description" id="duration" >Total execution allowed duration in seconds</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="callback">Email Notifications</label></th>
+						<td>
 							<?php //region Selects ?>
-								<label for="callback">If callback action</label>
-								<select name="callback_action" id="callback" class="btm-callback-action-settings" >
-									<option>Callback actions</option>
-									<?php foreach ( $callback_actions as $callback_action ) {
-										?>
-										<option value="<?php echo $callback_action->callback_action; ?>" ><?php echo $callback_action->callback_action; ?></option>
-										<?php
-									} ?>
-								</select>
-								<label for="status">on status</label>
-								<select name="status" id="status" class="btm-status-settings">
-									<option>Status</option>
-									<?php foreach ( $task_run_statuses as $status => $display_name ) {
-											?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
-										  } ?>
-								</select>
-								<label for="users">notify</label>
-								<select name="users[]" is="users" class="btm-users-settings" multiple="multiple">
-									<?php foreach ( $users as $user ) {
-										?><option value="<?php echo $user->data->ID; ?>"><?php echo $user->data->display_name; ?></option><?php
-									} ?>
-								</select>
-								<p class="description" id="duration" >Select callback action to trigger a notification for the selected users</p>
+							<label for="callback">If callback action</label>
+							<select name="callback_action" id="callback" class="btm-callback-action-settings" >
+								<option>Callback actions</option>
+								<?php foreach ( $callback_actions as $callback_action ) {
+									?>
+									<option value="<?php echo $callback_action->callback_action; ?>" ><?php echo $callback_action->callback_action; ?></option>
+									<?php
+								} ?>
+							</select>
+							<label for="status">on status</label>
+							<select name="status" id="status" class="btm-status-settings">
+								<option>Status</option>
+								<?php foreach ( $task_run_statuses as $status => $display_name ) {
+									?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
+								} ?>
+							</select>
+							<label for="users">notify</label>
+							<select name="users[]" is="users" class="btm-users-settings" multiple="multiple">
+								<?php foreach ( $users as $user ) {
+									?><option value="<?php echo $user->data->ID; ?>"><?php echo $user->data->display_name; ?></option><?php
+								} ?>
+							</select>
+							<p class="description" id="duration" >Select callback action to trigger a notification for the selected users</p>
 							<?php //endregion   ?>
-							</td>
-						</tr>
+						</td>
+					</tr>
 
 					</tbody>
 				</table>
@@ -253,60 +218,42 @@ final class BTM_Admin_Manager {
 						</select>
 						<button class="button btm-bulk-delete-button">Apply</button>
 					</div>
-				<table class="btm-notify-table">
-				<tr class="btm-tr">
-					<th class="btm-th-td"><input type="checkbox" class="btm-bulk-delete" name="bulk-delete" value="all" /></th>
-					<th class="btm-th-td">Callback Action</th>
-					<th class="btm-th-td">Status</th>
-					<th class="btm-th-td">Users</th>
-				</tr>
-				<?php
-				foreach ( $callbacks_and_statuses as $value ){
-					?>
-					<tr class="btm-tr">
-						<td class="btm-th-td"><input type="checkbox" class="btm-delete" name="delete" value="<?php echo $value->id; ?>" /></td>
-						<td class="btm-th-td" ><?php echo $value->callback_action; ?></td>
-						<td class="btm-th-td"><?php echo $value->status; ?></td>
-						<td class="btm-th-td">
-							<?php
-							foreach ( $users_data as $user_data ){
-								if( $value->id === $user_data->notification_callback_id ){
-									$user = get_userdata( $user_data->user_id );
-
-									?><span class="btm-user" >
-									<span class="btm-user-remove" data_user_id="<?php echo $user_data->user_id; ?>" data_notification_callback_id="<?php echo $user_data->notification_callback_id; ?>">×</span>
-									<?php echo $user->display_name; ?>
-
-									</span><?php
-								}
-							}
+					<table class="btm-notify-table">
+						<tr class="btm-tr">
+							<th class="btm-th-td"><input type="checkbox" class="btm-bulk-delete" name="bulk-delete" value="all" /></th>
+							<th class="btm-th-td">Callback Action</th>
+							<th class="btm-th-td">Status</th>
+							<th class="btm-th-td">Users</th>
+						</tr>
+						<?php
+						foreach ( $callbacks_and_statuses as $value ){
 							?>
-						</td>
-					</tr>
-					<?php
-				}
-				?>
-				</table>
-			</div>
-			<?php } ?>
-		</div>
-		<?php
-	}
+							<tr class="btm-tr">
+								<td class="btm-th-td"><input type="checkbox" class="btm-delete" name="delete" value="<?php echo $value->id; ?>" /></td>
+								<td class="btm-th-td" ><?php echo $value->callback_action; ?></td>
+								<td class="btm-th-td"><?php echo $value->status; ?></td>
+								<td class="btm-th-td">
+									<?php
+									foreach ( $users_data as $user_data ){
+										if( $value->id === $user_data->notification_callback_id ){
+											$user = get_userdata( $user_data->user_id );
 
-	/**
-	 * Show Task submenu page
-	 */
-	public function btm_admin_task_sub_page(){
-		$this->table_task->prepare_items();
-		?>
-		<div class="wrap">
-			<h1><?php echo get_admin_page_title(); ?></h1>
-			<?php $this->table_task->views(); ?>
-			<form id="tasks-filter" method="get">
-				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-				<?php $this->table_task->search_box('Search', 'search_id'); ?>
-				<?php $this->table_task->display(); ?>
-			</form>
+											?><span class="btm-user" >
+											<span class="btm-user-remove" data_user_id="<?php echo $user_data->user_id; ?>" data_notification_callback_id="<?php echo $user_data->notification_callback_id; ?>">×</span>
+											<?php echo $user->display_name; ?>
+
+											</span><?php
+										}
+									}
+									?>
+								</td>
+							</tr>
+							<?php
+						}
+						?>
+					</table>
+				</div>
+			<?php } ?>
 		</div>
 		<?php
 	}
@@ -347,6 +294,34 @@ final class BTM_Admin_Manager {
 		<?php
 	}
 
+	// endregion
+
+	/**
+	 * @var $table_task BTM_Admin_Table_Bulk_Tasks object
+	 */
+	private $table_bulk_tasks;
+
+	/**
+	 * Callback function bg-task-manager-page_btm_bulk_tasks
+	 */
+	public function on_load_bg_task_manager_page_btm_bulk_tasks(){
+		$this->table_bulk_tasks = new BTM_Admin_Table_Bulk_Tasks();
+		$this->table_bulk_tasks->process_bulk_action();
+	}
+
+	/**
+	 * @var $table_task BTM_Admin_Table_Logs object
+	 */
+	private $table_logs;
+
+	/**
+	 * Callback function bg-task-manager-page_btm_logs
+	 */
+	public function on_load_bg_task_manager_page_btm_logs(){
+		$this->table_logs = new BTM_Admin_Table_Logs();
+		$this->table_logs->process_bulk_action();
+	}
+
 	public function btm_ajax_handler(){
 		$notification = BTM_Notification_Dao::get_instance();
 		$callback_id = (int)$_POST['notification_callback_id'];
@@ -367,5 +342,4 @@ final class BTM_Admin_Manager {
 				$responses[] = $notification->delete_notification_rule( $notification_id );
 			}
 	}
-
-	}
+}

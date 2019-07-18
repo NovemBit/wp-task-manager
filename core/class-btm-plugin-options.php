@@ -362,4 +362,26 @@ final class BTM_Plugin_Options{
 
 		$this->set_cron_job_interval_in_minutes( $interval );
 	}
+
+	/**
+	 * @var string
+	 */
+	private $asset_version = '1.0.1';
+	/**
+	 * @return string
+	 */
+	public function get_asset_version(){
+		return $this->asset_version;
+	}
+
+	/**
+	 * @var string
+	 */
+	private $admin_menu_slug = 'btm';
+	/**
+	 * @return string
+	 */
+	public function get_admin_menu_slug(){
+		return $this->admin_menu_slug;
+	}
 }

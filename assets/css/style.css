@@ -52,3 +52,10 @@
 .btm-bulk-action{
     margin-bottom: 7px;
 }
+
+.column-priority, .column-bulk_size, .column-date_created{
+	width: 150px;
+}
+.column-callback_action, .column-status{
+	width: 250px;
+}
