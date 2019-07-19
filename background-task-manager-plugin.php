@@ -74,7 +74,11 @@ final class BTM_Plugin {
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-filter-log.php' );
 
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-view.php' );
+		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view.php' );
+		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-filter.php' );
+		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-search-status-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-view-filter.php' );
+		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view-filter.php' );
 
 		$data_provider_path = $plugin_path . DIRECTORY_SEPARATOR . 'data-provider' . DIRECTORY_SEPARATOR;
 		require_once( $data_provider_path . 'class-btm-task-type-service.php' );
@@ -86,6 +90,7 @@ final class BTM_Plugin {
 		require_once( $data_provider_path . 'class-btm-task-manager-log-dao.php' );
 
 		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-view-dao.php' );
+		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view-dao.php' );
 
 		$migration_path = $plugin_path . DIRECTORY_SEPARATOR . 'migration' . DIRECTORY_SEPARATOR;
 		require_once( $migration_path . 'interface-btm-migration-manager.php' );
@@ -99,6 +104,7 @@ final class BTM_Plugin {
 
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-page-table.php' );
+		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-bulk-argument-page-table.php' );
 
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );

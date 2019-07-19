@@ -26,7 +26,6 @@ final class BTM_Admin_Manager {
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'on_hook_admin_menu_setup' ) );
 
-		add_action( 'load-bg-task-manager_page_btm-bulk-tasks', array($this, 'on_load_bg_task_manager_page_btm_bulk_tasks') );
 		add_action( 'load-bg-task-manager_page_btm-logs', array($this, 'on_load_bg_task_manager_page_btm_logs') );
 
 		add_action( 'wp_ajax_btm_ajax', array( $this, 'btm_ajax_handler') );
@@ -79,18 +78,7 @@ final class BTM_Admin_Manager {
 
 		new BTM_Admin_Task_Page_Table( $menu_slug );
 
-		// Admin Bulk Arguments submenu page init
-		add_submenu_page(
-			'btm',
-			__( 'Bulk Arguments', 'background_task_manager' ),
-			__( 'Bulk Arguments', 'background_task_manager' ),
-			'manage_options',
-			'btm-bulk-tasks',
-			array(
-				$this,
-				'btm_admin_bulk_task_sub_page'
-			)
-		);
+		new BTM_Admin_Task_Bulk_Argument_Page_Table( $menu_slug );
 
 //		// Admin Logs submenu page init
 //		add_submenu_page(
@@ -259,25 +247,6 @@ final class BTM_Admin_Manager {
 	}
 
 	/**
-	 * Show Bulk Task submenu page
-	 */
-	public function btm_admin_bulk_task_sub_page(){
-		$this->table_bulk_tasks->prepare_items();
-
-		?>
-		<div class="wrap">
-			<h1><?php echo get_admin_page_title(); ?></h1>
-			<?php $this->table_bulk_tasks->views(); ?>
-			<form id="bulk-tasks-filter" method="get">
-				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-				<?php $this->table_bulk_tasks->search_box('Search', 'search_id'); ?>
-				<?php $this->table_bulk_tasks->display(); ?>
-			</form>
-		</div>
-		<?php
-	}
-
-	/**
 	 * Show Logs submenu page
 	 */
 	public function btm_admin_logs_sub_page(){
@@ -295,19 +264,6 @@ final class BTM_Admin_Manager {
 	}
 
 	// endregion
-
-	/**
-	 * @var $table_task BTM_Admin_Table_Bulk_Tasks object
-	 */
-	private $table_bulk_tasks;
-
-	/**
-	 * Callback function bg-task-manager-page_btm_bulk_tasks
-	 */
-	public function on_load_bg_task_manager_page_btm_bulk_tasks(){
-		$this->table_bulk_tasks = new BTM_Admin_Table_Bulk_Tasks();
-		$this->table_bulk_tasks->process_bulk_action();
-	}
 
 	/**
 	 * @var $table_task BTM_Admin_Table_Logs object

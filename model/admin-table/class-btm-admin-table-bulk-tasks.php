@@ -225,8 +225,8 @@ class BTM_Admin_Table_Bulk_Tasks extends WP_List_Table{
 	 *
 	 * @return string|void
 	 */
-	public function column_cb($item) {
-		return sprintf('<input type="checkbox" name="bulk-delete[]" value="%s" />', $item->get_id() );
+	public function column_cb( $item ) {
+		echo sprintf('<input type="checkbox" name="bulk-delete[]" value="%s" />', $item->get_id() );
 	}
 
 	/**

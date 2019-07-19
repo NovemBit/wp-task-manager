@@ -4,7 +4,7 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 	exit;
 }
 
-final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
+final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table{
 	// region Singleton
 
 	/**
@@ -19,13 +19,13 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	protected function add_submenu_page(){
 		$page_hook = add_submenu_page(
 			$this->get_page_parent_slug(),
-			__( 'Tasks', 'background_task_manager' ),
-			__( 'Tasks', 'background_task_manager' ),
+			__( 'Task Bulk Arguments', 'background_task_manager' ),
+			__( 'Task Bulk Arguments', 'background_task_manager' ),
 			'manage_options',
-			$this->get_page_parent_slug(),
+			'btm-task-bulk-arguments',
 			array(
 				$this,
-				'on_hook_page_render_tasks'
+				'on_hook_page_render_task_bulk_arguments'
 			)
 		);
 
@@ -34,7 +34,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		}else{
 			add_action( 'admin_notices', function(){
 				$class = 'notice notice-error';
-				$message = __( 'Could not create admin page to show background tasks.', 'background_task_manager' );
+				$message = __( 'Could not create admin page to show background task bulk arguments.', 'background_task_manager' );
 
 				printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
 			} );
@@ -42,19 +42,19 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	}
 
 	/**
-	 * Show Task submenu page
+	 * Show Task Bulk Arguments submenu page
 	 *
 	 * Callback for admin page render
 	 */
-	public function on_hook_page_render_tasks(){
+	public function on_hook_page_render_task_bulk_arguments(){
 		$this->prepare_items();
 
 		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title(); ?></h1>
 			<?php $this->views(); ?>
-			<form id="tasks-filter" method="get">
-				<input type="hidden" name="page" value="<?php echo $_REQUEST['page']; ?>" />
+			<form id="task-bulk-arguments-filter" method="get">
+				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 				<?php $this->search_box('Search', 'search_id'); ?>
 				<?php $this->display(); ?>
 			</form>
@@ -70,7 +70,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 				$to_delete = array( $to_delete );
 			}
 
-			$deleted = BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
+			$deleted = BTM_Task_Bulk_Argument_Dao::get_instance()->delete_many_by_ids( $to_delete );
 			// todo: check $deleted, show admin notice success or error
 
 			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
@@ -90,7 +90,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	// region Table
 
 	/**
-	 * @var BTM_Task_View_Filter
+	 * @var BTM_Task_Bulk_Argument_View_Filter
 	 */
 	protected $filter;
 
@@ -98,13 +98,13 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * @return string
 	 */
 	protected function get_entity_singular_name(){
-		return __( 'task', 'background_task_manager' );
+		return __( 'task bulk argument', 'background_task_manager' );
 	}
 	/**
 	 * @return string
 	 */
 	protected function get_entity_plural_name(){
-		return __( 'tasks', 'background_task_manager' );
+		return __( 'task bulk arguments', 'background_task_manager' );
 	}
 
 	/**
@@ -129,9 +129,9 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	public function prepare_items() {
 		$this->prepare_filter();
 
-		$task_view_dao = BTM_Task_View_Dao::get_instance();
-		$this->items = $task_view_dao->get_tasks( $this->filter );
-		$total_items = $task_view_dao->get_tasks_count( $this->filter );
+		$task_view_dao = BTM_Task_Bulk_Argument_View_Dao::get_instance();
+		$this->items = $task_view_dao->get_task_bulk_arguments( $this->filter );
+		$total_items = $task_view_dao->get_task_bulk_arguments_count( $this->filter );
 
 		$this->set_pagination_args(
 			array(
@@ -148,7 +148,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	}
 
 	protected function prepare_filter(){
-		$filter = new BTM_Task_View_Filter();
+		$filter = new BTM_Task_Bulk_Argument_View_Filter();
 		if( ! empty( $_GET[ 'orderby' ] ) ){
 			$filter->set_order_by( $_GET[ 'orderby' ] );
 		}else{
@@ -169,62 +169,16 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			$filter->set_status( $_GET[ 'status' ] );
 		}
 
-		if( ! empty( $_GET[ 'callback' ] ) ){
-			$filter->set_callback( $_GET[ 'callback' ] );
-		}
-
-		if( ! empty( $_GET[ 'date_start' ] ) ){
-			$filter->set_date_start( $_GET[ 'date_start' ] );
-		}
-
-		if( ! empty( $_GET[ 'date_end' ] ) ){
-			$filter->set_date_end( $_GET[ 'date_end' ] );
-		}
-
-		if( ! empty( $_GET[ 'system' ] ) ){
-			$filter->set_show_system( true );
-		}else{
-			$filter->set_show_system( false );
-		}
-
 		$filter->set_items_per_page( 20 );
 		$filter->set_current_page( $this->get_pagenum() );
 
 		$this->filter = $filter;
 	}
 
-	/**
-	 * Extra controls to be displayed status filter
-	 *
-	 * @param string $which
-	 */
-	protected function extra_tablenav($which) {
-		if ( $which == "top" ) {
-			?>
-			<label for="system"><?php _e( 'Show system tasks', 'background_task_manager' ); ?></label>
-			<input type="checkbox" id="system" name="system" value="1" <?php checked( $this->filter->show_system() , 1 ); ?> />
-			<select name="callback" id="callback-filter">
-				<?php $callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions(); ?>
-				<option value=""><?php _e( 'Callback Actions', 'background_task_manager' ); ?></option>
-				<?php foreach ( $callback_actions as $callback_action ) { ?>
-					<option     value="<?php echo $callback_action->callback_action; ?>"
-								<?php selected( $this->filter->get_callback(), $callback_action->callback_action ); ?> >
-						<?php echo $callback_action->callback_action; ?>
-					</option>
-				<?php } ?>
-			</select>
-			<input type="date" id="jquery-datepicker-start" name="date_start" value="<?php echo $this->filter->get_date_start_short(); ?>" />
-			<input type="date" id="jquery-datepicker-end" name="date_end" value="<?php echo $this->filter->get_date_end_short(); ?>" />
-			<span class="trash" ><a id="btm-reset" href="#" ><?php _e( 'Reset', 'background_task_manager' ); ?></a></span>
-			<?php
-				submit_button( __( 'Apply', 'background_task_manager' ), 'action', 'btm-submit', false );
-		}
-	}
-
 	protected function get_views() {
-		$task_count_by_statuses = BTM_Task_View_Dao::get_instance()->get_task_count_by_statuses();
+		$task_bulk_argument_count_by_statuses = BTM_Task_Bulk_Argument_View_Dao::get_instance()->get_task_bulk_argument_count_by_statuses();
 		$total = 0;
-		foreach ( $task_count_by_statuses as $status => $status_data ){
+		foreach ( $task_bulk_argument_count_by_statuses as $status => $status_data ){
 			$total += $status_data[ 'count' ];
 		}
 
@@ -234,9 +188,9 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		$all_status_class = ( $this->filter->has_status() ? '' : 'class="current"' );
 		$views['all'] = '<a href="' . $all_status_url . '" ' . $all_status_class . '>'
 		                . __( 'All', 'background_task_manager' ) . "({$total})"
-						. '</a>';
+		                . '</a>';
 
-		foreach ( $task_count_by_statuses as $status => $status_data ){
+		foreach ( $task_bulk_argument_count_by_statuses as $status => $status_data ){
 			$status_url = add_query_arg( 'status', $status );
 
 			if( $this->filter->has_status() && $this->filter->get_status() === $status ){
@@ -246,8 +200,8 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			}
 
 			$views[ $status ] = "<a href='{$status_url}' {$status_class}>"
-									. $status_data[ 'display_name' ] . "(" . $status_data[ 'count' ] . ")"
-								. "</a>";
+			                    . $status_data[ 'display_name' ] . "(" . $status_data[ 'count' ] . ")"
+			                    . "</a>";
 		}
 
 		return $views;
@@ -265,10 +219,10 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		$columns = array(
 			'cb'                        => '<input type="checkbox" />',
 			'id'                        => __( 'ID', 'background_task_manager' ),
+			'task_id'                   => __( 'Task ID', 'background_task_manager' ),
 			'callback_action'           => __( 'Callback Action', 'background_task_manager' ),
 			'callback_arguments'        => __( 'Callback Arguments', 'background_task_manager' ),
 			'priority'                  => __( 'Priority', 'background_task_manager' ),
-			'bulk_size'                 => __( 'Bulk Size', 'background_task_manager' ),
 			'status'                    => __( 'Status', 'background_task_manager' ),
 			'date_created'              => __( 'Date Created', 'background_task_manager' )
 		);
@@ -298,9 +252,9 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'id'                        => array( 'id', true ),
+			'task_id'                   => array( 'task_id', true ),
 			'callback_action'           => array( 'callback_action', false ),
 			'priority'                  => array( 'priority', false ),
-			'bulk_size'                 => array( 'bulk_size', true ),
 			'status'                    => array( 'status', true ),
 			'date_created'              => array( 'date_created', true ),
 		);
@@ -315,28 +269,35 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * Show table checkboxes
 	 *
 	 * @param object $item
-	 *
-	 * @return string
 	 */
-	public function column_cb( $item ) {
+	public function column_cb($item) {
 		echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+	}
+
+	/**
+	 * Show task id
+	 *
+	 * @param BTM_Task_Bulk_Argument_View $item
+	 */
+	public function column_task_id( BTM_Task_Bulk_Argument_View $item ) {
+		echo $item->get_task_id();
 	}
 
 	/**
 	 * Show callback_action column
 	 *
-	 * @param BTM_Task_View $item
+	 * @param BTM_Task_Bulk_Argument_View $item
 	 */
-	public function column_callback_action( BTM_Task_View $item ) {
+	public function column_callback_action( BTM_Task_Bulk_Argument_View $item ) {
 		echo $item->get_callback_action();
 	}
 
 	/**
 	 * Show callback_arguments column
 	 *
-	 * @param BTM_Task_View $item
+	 * @param BTM_Task_Bulk_Argument_View $item
 	 */
-	public function column_callback_arguments( BTM_Task_View $item ) {
+	public function column_callback_arguments( BTM_Task_Bulk_Argument_View $item ) {
 		$args = $item->get_callback_arguments();
 		foreach ( $args as $key => $arg){
 			if( is_array( $arg ) ){
@@ -347,54 +308,32 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			}
 			echo '<p>'. $key .' => ' . $arg .'</p>';
 		}
-		?>
-		<a id="btm-arg-data" href="#arg-data">View more</a>
-
-		<div style="display:none">
-			<div id="arg-data" data-selectable="true">
-				<?php highlight_string("<?php\n\$args =\n" . var_export($args, true) . ";\n?>"); ?>
-			</div>
-		</div>
-		<?php
 	}
 
 	/**
 	 * Show priority column
 	 *
-	 * @param BTM_Task_View $item
+	 * @param BTM_Task_Bulk_Argument_View $item
 	 */
-	public function column_priority( BTM_Task_View $item ) {
+	public function column_priority( BTM_Task_Bulk_Argument_View $item ) {
 		echo $item->get_priority();
-	}
-
-	/**
-	 * Show bulk_size column
-	 *
-	 * @param BTM_Task_View $item
-	 */
-	public function column_bulk_size( BTM_Task_View $item ) {
-		echo $item->get_bulk_size();
 	}
 
 	/**
 	 * Show status column
 	 *
-	 * @param BTM_Task_View $item
+	 * @param BTM_Task_Bulk_Argument_View $item
 	 */
-	public function column_status( BTM_Task_View $item ) {
-		if( 0 < $item->get_bulk_size() ){
-			echo $item->get_status() . " ({$item->get_done_bulk_arguments()}/{$item->get_total_bulk_arguments()})";
-		}else{
-			echo $item->get_status();
-		}
+	public function column_status( BTM_Task_Bulk_Argument_View $item ) {
+		echo $item->get_status();
 	}
 
 	/**
 	 * Show date_created column
 	 *
-	 * @param BTM_Task_View $item
+	 * @param BTM_Task_Bulk_Argument_View $item
 	 */
-	public function column_date_created( BTM_Task_View $item ) {
+	public function column_date_created( BTM_Task_Bulk_Argument_View $item ) {
 		// todo: should be formatted by WP settings and applied user's time zone?
 		$iso_date = date( 'Y-m-d H:i:s', $item->get_date_created_timestamp() );
 		echo $iso_date;

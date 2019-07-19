@@ -769,6 +769,24 @@ class BTM_Task_Bulk_Argument_Dao{
 		return true;
 	}
 
+	/**
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function delete_many_by_ids( array $ids ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE `id` IN ( %s )
+		', implode( ',', $ids ) );
+
+		$deleted = $wpdb->query( $query );
+
+		return false !== $deleted;
+	}
+
 	// endregion
 
 	/**
