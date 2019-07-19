@@ -53,12 +53,13 @@ class BTM_Task_Run_Log_Dao{
 		}
 
 		$data = array(
-			'task_id' => $task_run_log->get_task_id(),
-			'session_id' => date( 'Y-m-d H:i:s', $task_run_log->get_session_id() ),
-			'logs' => serialize( $task_run_log->get_logs() ),
-			'date_started' => date( 'Y-m-d H:i:s', $task_run_log->get_date_started_timestamp() )
+			'task_id'       => $task_run_log->get_task_id(),
+			'session_id'    => date( 'Y-m-d H:i:s', $task_run_log->get_session_id() ),
+			'logs'          => serialize( $task_run_log->get_logs() ),
+			'status'        => $task_run_log->get_status()->get_value(),
+			'date_started'  => date( 'Y-m-d H:i:s', $task_run_log->get_date_started_timestamp() )
 		);
-		$format = array( '%d', '%s', '%s', '%s' );
+		$format = array( '%d', '%s', '%s', '%s', '%s' );
 
 		if( 0 < $task_run_log->get_id() ){
 			$data['id'] = $task_run_log->get_id();
@@ -90,58 +91,6 @@ class BTM_Task_Run_Log_Dao{
 	// endregion
 
 	// region READ
-
-	/**
-	 * Function to get all logs from db
-	 *
-	 * @param string $orderby to order by column
-	 * @param string $order to order by ASC or DESC
-	 * @param string $search to search in table some value
-	 *
-	 * @return array|bool
-	 */
-	public function get_logs( $orderby = '', $order = '', $search = '' ){
-
-		global $wpdb;
-
-		$query = '
-			SELECT * 
-			FROM `' . $this->get_table_name() . '`
-		';
-
-		if( $search !== '' ){
-			$query.= ' WHERE
-					id LIKE "%'. $search .'%" OR
-					task_id LIKE "%'. $search .'%" OR
-					session_id LIKE "%'. $search .'%" OR
-					logs LIKE "%'. $search .'%" OR
-					date_started LIKE "%'. $search .'%" OR
-					date_finished LIKE "%'. $search .'%"
-			';
-		}
-
-		if( $orderby !== '' ){
-			$query.= 'ORDER BY '. $orderby;
-			if( $order !== '' ){
-				$query.= ' '.$order;
-			}
-		}else{
-			$query.= 'ORDER BY '. 'date_finished DESC';
-		}
-		$logs = $wpdb->get_results( $query, 'OBJECT' );
-		if( empty( $logs ) ){
-			return false;
-		}
-
-		$logs_arr = [];
-		foreach ( $logs as $log){
-			if( !empty( $log ) ){
-				$logs_arr[] = $this->create_task_run_log_from_db_obj( $log );
-			}
-		}
-		return $logs_arr;
-
-	}
 
 	/**
 	 * @param int $id
@@ -187,14 +136,15 @@ class BTM_Task_Run_Log_Dao{
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
-				'logs' => serialize( $task_run_log->get_logs() ),
-				'date_started' => date( 'Y-m-d H:i:s' , $task_run_log->get_date_started_timestamp() ),
-				'date_finished' => date( 'Y-m-d H:i:s' , $task_run_log->get_date_finished_timestamp() )
+				'logs'          => serialize( $task_run_log->get_logs() ),
+				'date_started'  => date( 'Y-m-d H:i:s' , $task_run_log->get_date_started_timestamp() ),
+				'date_finished' => date( 'Y-m-d H:i:s' , $task_run_log->get_date_finished_timestamp() ),
+				'status'        => $task_run_log->get_status()->get_value()
 			),
 			array(
 				'id' => $task_run_log->get_id()
 			),
-			array( '%s', '%s', '%s' ),
+			array( '%s', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -246,6 +196,24 @@ class BTM_Task_Run_Log_Dao{
 		return true;
 	}
 
+	/**
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function delete_many_by_ids( array $ids ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE `id` IN ( %s )
+		', implode( ',', $ids ) );
+
+		$deleted = $wpdb->query( $query );
+
+		return false !== $deleted;
+	}
+
 	// endregion
 
 	/**
@@ -258,6 +226,7 @@ class BTM_Task_Run_Log_Dao{
 			(int) $task_run_log_obj->task_id,
 			strtotime( $task_run_log_obj->session_id ),
 			unserialize( $task_run_log_obj->logs ),
+			new BTM_Task_Run_Status( $task_run_log_obj->status ),
 			strtotime( $task_run_log_obj->date_started )
 		);
 

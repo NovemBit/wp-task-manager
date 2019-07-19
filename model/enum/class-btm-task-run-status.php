@@ -75,7 +75,7 @@ final class BTM_Task_Run_Status{
 	 *
 	 * @return bool
 	 */
-	public function is_valid_status( $status ){
+	public static function is_valid_status( $status ){
 		$reflectionClass = new ReflectionClass( __CLASS__ );
 		foreach ( $reflectionClass->getConstants() as $constant_name => $constant_val ) {
 			if ( 0 === strpos( $constant_name, 'STATUS_' ) && $constant_val === $status ) {

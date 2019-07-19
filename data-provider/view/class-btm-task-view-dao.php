@@ -34,11 +34,11 @@ class BTM_Task_View_Dao{
 	// region READ
 
 	/**
-	 * Function to get all tasks from db
+	 * Method to get all tasks from db  filtered
 	 *
 	 * @param BTM_Task_View_Filter $filter
 	 *
-	 * @return array|bool
+	 * @return BTM_Task_View[]
 	 */
 	public function get_tasks( BTM_Task_View_Filter $filter ){
 		global $wpdb;
@@ -72,17 +72,17 @@ class BTM_Task_View_Dao{
 					  `tasks`.`bulk_size`,
 					  `tasks`.`status`,
 					  `tasks`.`date_created`
-					FROM `btm_tasks` AS `tasks`
+					FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '` AS `tasks`
 					WHERE 1=1
 						' . $where . '
 					' . $order . '
 					' . $limit . '
 				) AS `matched_tasks`
-				LEFT JOIN `btm_task_bulk_arguments` AS `bulk_args_total`
+				LEFT JOIN `' . BTM_Task_Bulk_Argument_Dao::get_instance()->get_table_name() . '` AS `bulk_args_total`
 					ON `bulk_args_total`.`task_id` = `matched_tasks`.`id`
 				GROUP BY `matched_tasks`.`id`
 			) AS `matched_tasks_totals`
-			LEFT JOIN `btm_task_bulk_arguments` AS `bulk_args_done`
+			LEFT JOIN `' . BTM_Task_Bulk_Argument_Dao::get_instance()->get_table_name() . '` AS `bulk_args_done`
 				ON `bulk_args_done`.`task_id` = `matched_tasks_totals`.`id`
 				AND `bulk_args_done`.`status` != "' . BTM_Task_Run_Status::STATUS_REGISTERED . '"
 			GROUP BY `matched_tasks_totals`.`id`
@@ -100,6 +100,11 @@ class BTM_Task_View_Dao{
 		return $task_views;
 	}
 
+	/**
+	 * @param BTM_Task_View_Filter $filter
+	 *
+	 * @return int
+	 */
 	public function get_tasks_count( BTM_Task_View_Filter $filter ){
 		global $wpdb;
 
@@ -107,7 +112,7 @@ class BTM_Task_View_Dao{
 
 		$query = '
 			SELECT COUNT( * )
-			FROM `btm_tasks` AS `tasks`
+			FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '` AS `tasks`
 			WHERE 1=1 '
 			. $where;
 
@@ -119,19 +124,25 @@ class BTM_Task_View_Dao{
 		return (int) $total_count;
 	}
 
-	protected function generate_where_statement( BTM_Task_View_Filter $filter, $alias ){
+	/**
+	 * @param BTM_Task_View_Filter $filter
+	 * @param string $task_table_alias
+	 *
+	 * @return string
+	 */
+	protected function generate_where_statement( BTM_Task_View_Filter $filter, $task_table_alias ){
 		global $wpdb;
 
-		$query = '';
+		$where = '';
 
 		if( $filter->has_search() ){
 			$search = '%' . $wpdb->esc_like( $filter->get_search() ) . '%';
-			$query .= $wpdb->prepare( '
+			$where .= $wpdb->prepare( '
 				AND (
-					`' . $alias . '`.`id` LIKE %s
-					OR `' . $alias . '`.`callback_arguments` LIKE %s
-					OR `' . $alias . '`.`priority` LIKE %s
-					OR `' . $alias . '`.`bulk_size` LIKE %s
+					`' . $task_table_alias . '`.`id` LIKE %s
+					OR `' . $task_table_alias . '`.`callback_arguments` LIKE %s
+					OR `' . $task_table_alias . '`.`priority` LIKE %s
+					OR `' . $task_table_alias . '`.`bulk_size` LIKE %s
 				)
 			',
 				$search,
@@ -142,44 +153,44 @@ class BTM_Task_View_Dao{
 		}
 
 		if( $filter->has_status() ){
-			$query .= $wpdb->prepare('
-				AND `' . $alias . '`.`status` = %s
+			$where .= $wpdb->prepare( '
+				AND `' . $task_table_alias . '`.`status` = %s
 			',
 				$filter->get_status()
 			);
 		}
 
 		if( $filter->has_callback() ){
-			$query .= $wpdb->prepare('
-				AND `' . $alias . '`.`callback_action` = %s
+			$where .= $wpdb->prepare( '
+				AND `' . $task_table_alias . '`.`callback_action` = %s
 			',
 				$filter->get_callback()
 			);
 		}
 
 		if( $filter->has_date_start() ){
-			$query .= $wpdb->prepare('
-				AND `' . $alias . '`.`date_created` >= %s
+			$where .= $wpdb->prepare( '
+				AND `' . $task_table_alias . '`.`date_created` >= %s
 			',
 				$filter->get_date_start()
 			);
 		}
 
 		if( $filter->has_date_end() ){
-			$query .= $wpdb->prepare('
-				AND `' . $alias . '`.`date_created` <= %s
+			$where .= $wpdb->prepare( '
+				AND `' . $task_table_alias . '`.`date_created` <= %s
 			',
 				$filter->get_date_end()
 			);
 		}
 
-		$query .= $wpdb->prepare('
-				AND `' . $alias . '`.`is_system` = %d
+		$where .= $wpdb->prepare( '
+				AND `' . $task_table_alias . '`.`is_system` = %d
 			',
 			$filter->show_system()
 		);
 
-		return $query;
+		return $where;
 	}
 
 	/**
@@ -190,7 +201,7 @@ class BTM_Task_View_Dao{
 
 		$query = '
 			SELECT `status`, COUNT( `id` ) AS `count`
-			FROM `btm_tasks`
+			FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '`
 			GROUP BY `status`
 		';
 

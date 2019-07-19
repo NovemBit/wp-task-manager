@@ -113,7 +113,7 @@ class BTM_Notification_Dao{
 			FROM `' . $this->get_callbacks_table_name() . '`
 		';
 
-		$callbacks_and_statuses = $wpdb->get_results( $query, 'OBJECT' );
+		$callbacks_and_statuses = $wpdb->get_results( $query, OBJECT );
 
 		if( empty( $callbacks_and_statuses ) ){
 			return false;
@@ -130,7 +130,7 @@ class BTM_Notification_Dao{
 			FROM `' . $this->get_users_table_name() . '`
 		';
 
-		$users = $wpdb->get_results( $query, 'OBJECT' );
+		$users = $wpdb->get_results( $query, OBJECT );
 
 		if( empty( $users ) ){
 			return false;

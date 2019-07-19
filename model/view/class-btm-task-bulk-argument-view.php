@@ -5,26 +5,24 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 }
 
 /**
- * Class BTM_Task
+ * Class BTM_Task_Bulk_Argument_View
  */
-class BTM_Task_View {
+class BTM_Task_Bulk_Argument_View {
 	/**
-	 * @param stdClass $task_view_obj
+	 * @param stdClass $task_bulk_argument_view_obj
 	 *
-	 * @return BTM_Task_View
+	 * @return BTM_Task_Bulk_Argument_View
 	 */
-	public static function create_from_db_obj( stdClass $task_view_obj ){
+	public static function create_from_db_obj( stdClass $task_bulk_argument_view_obj ){
 		$task_view = new static();
 
-		$task_view->set_id( (int) $task_view_obj->id );
-		$task_view->set_callback_action( $task_view_obj->callback_action );
-		$task_view->set_callback_arguments( unserialize( $task_view_obj->callback_arguments ) );
-		$task_view->set_priority( (int) $task_view_obj->priority );
-		$task_view->set_bulk_size( (int) $task_view_obj->bulk_size );
-		$task_view->set_status( new BTM_Task_Run_Status( $task_view_obj->status ) );
-		$task_view->set_date_created_timestamp( strtotime( $task_view_obj->date_created ) );
-		$task_view->set_total_bulk_arguments( (int) $task_view_obj->total );
-		$task_view->set_done_bulk_arguments( (int) $task_view_obj->done );
+		$task_view->set_id( (int) $task_bulk_argument_view_obj->id );
+		$task_view->set_task_id( (int) $task_bulk_argument_view_obj->task_id );
+		$task_view->set_callback_action( $task_bulk_argument_view_obj->callback_action );
+		$task_view->set_callback_arguments( unserialize( $task_bulk_argument_view_obj->callback_arguments ) );
+		$task_view->set_priority( (int) $task_bulk_argument_view_obj->priority );
+		$task_view->set_status( new BTM_Task_Run_Status( $task_bulk_argument_view_obj->status ) );
+		$task_view->set_date_created_timestamp( strtotime( $task_bulk_argument_view_obj->date_created ) );
 
 		return $task_view;
 	}
@@ -51,6 +49,30 @@ class BTM_Task_View {
 		}
 
 		$this->id = $id;
+	}
+
+	/**
+	 * @var int
+	 */
+	protected $task_id;
+	/**
+	 * @return int
+	 */
+	public function get_task_id(){
+		return $this->task_id;
+	}
+	/**
+	 * @param int $task_id
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $task_id is not a positive int
+	 */
+	protected function set_task_id( $task_id ){
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException( 'Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+
+		$this->task_id = $task_id;
 	}
 
 	/**
@@ -128,30 +150,6 @@ class BTM_Task_View {
 	}
 
 	/**
-	 * @var int
-	 */
-	protected $bulk_size;
-	/**
-	 * @return int
-	 */
-	public function get_bulk_size(){
-		return $this->bulk_size;
-	}
-	/**
-	 * @param int $bulk_size
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $bulk_size is not an int or is less than 0
-	 */
-	protected function set_bulk_size( $bulk_size ){
-		if( ! is_int( $bulk_size ) || 0 > $bulk_size ){
-			throw new InvalidArgumentException( 'Argument $bulk_size should be non negative int. Input was: ' . $bulk_size );
-		}
-
-		$this->bulk_size = $bulk_size;
-	}
-
-	/**
 	 * @var BTM_Task_Run_Status
 	 */
 	protected $status;
@@ -190,53 +188,5 @@ class BTM_Task_View {
 		}
 
 		$this->date_created_timestamp = $date_created_timestamp;
-	}
-
-	/**
-	 * @var int
-	 */
-	protected $total_bulk_arguments;
-	/**
-	 * @return int
-	 */
-	public function get_total_bulk_arguments(){
-		return $this->total_bulk_arguments;
-	}
-	/**
-	 * @param int $total_bulk_arguments
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $total_bulk_arguments is not an int or is less than 0
-	 */
-	protected function set_total_bulk_arguments( $total_bulk_arguments ){
-		if( ! is_int( $total_bulk_arguments ) || 0 > $total_bulk_arguments ){
-			throw new InvalidArgumentException( 'Argument $total_bulk_arguments should be non negative int. Input was: ' . $total_bulk_arguments );
-		}
-
-		$this->total_bulk_arguments = $total_bulk_arguments;
-	}
-
-	/**
-	 * @var int
-	 */
-	protected $done_bulk_arguments;
-	/**
-	 * @return int
-	 */
-	public function get_done_bulk_arguments(){
-		return $this->done_bulk_arguments;
-	}
-	/**
-	 * @param int $done_bulk_arguments
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $done_bulk_arguments is not an int or is less than 0
-	 */
-	protected function set_done_bulk_arguments( $done_bulk_arguments ){
-		if( ! is_int( $done_bulk_arguments ) || 0 > $done_bulk_arguments ){
-			throw new InvalidArgumentException( 'Argument $done_bulk_arguments should be non negative int. Input was: ' . $done_bulk_arguments );
-		}
-
-		$this->done_bulk_arguments = $done_bulk_arguments;
 	}
 }

@@ -114,6 +114,23 @@ class BTM_Task_Run_Log{
 	}
 
 	/**
+	 * @var BTM_Task_Run_Status
+	 */
+	protected $status;
+	/**
+	 * @return BTM_Task_Run_Status
+	 */
+	public function get_status(){
+		return $this->status;
+	}
+	/**
+	 * @param BTM_Task_Run_Status $status
+	 */
+	public function set_status( BTM_Task_Run_Status $status ){
+		$this->status = $status;
+	}
+
+	/**
 	 * @var int
 	 */
 	protected $date_started_timestamp;
@@ -166,19 +183,22 @@ class BTM_Task_Run_Log{
 	 * @param int $task_id
 	 * @param int $session_id
 	 * @param string[] $logs
+	 * @param BTM_Task_Run_Status $task_run_status
 	 * @param int|null $date_started_timestamp
 	 * @param int|null $date_finished_timestamp
 	 */
 	public function __construct(
 		$task_id,
 		$session_id,
-		array $logs = array(),
+		array $logs,
+		BTM_Task_Run_Status $task_run_status,
 		$date_started_timestamp = null,
 		$date_finished_timestamp = null
 	){
 		$this->set_task_id( $task_id );
 		$this->set_session_id( $session_id );
 		$this->set_logs( $logs );
+		$this->set_status( $task_run_status );
 
 		if( null !== $date_started_timestamp ){
 			$this->set_date_started_timestamp( $date_started_timestamp );
