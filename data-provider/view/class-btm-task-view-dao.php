@@ -38,7 +38,7 @@ class BTM_Task_View_Dao{
 	 *
 	 * @param BTM_Task_View_Filter $filter
 	 *
-	 * @return array
+	 * @return BTM_Task_View[]
 	 */
 	public function get_tasks( BTM_Task_View_Filter $filter ){
 		global $wpdb;
@@ -124,6 +124,12 @@ class BTM_Task_View_Dao{
 		return (int) $total_count;
 	}
 
+	/**
+	 * @param BTM_Task_View_Filter $filter
+	 * @param string $task_table_alias
+	 *
+	 * @return string
+	 */
 	protected function generate_where_statement( BTM_Task_View_Filter $filter, $task_table_alias ){
 		global $wpdb;
 

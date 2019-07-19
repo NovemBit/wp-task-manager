@@ -26,8 +26,6 @@ final class BTM_Admin_Manager {
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'on_hook_admin_menu_setup' ) );
 
-		add_action( 'load-bg-task-manager_page_btm-logs', array($this, 'on_load_bg_task_manager_page_btm_logs') );
-
 		add_action( 'wp_ajax_btm_ajax', array( $this, 'btm_ajax_handler') );
 		add_action( 'wp_ajax_btm_bulk_delete_ajax', array( $this, 'on_hook_wp_ajax_btm_bulk_delete_ajax') );
 
@@ -80,18 +78,7 @@ final class BTM_Admin_Manager {
 
 		new BTM_Admin_Task_Bulk_Argument_Page_Table( $menu_slug );
 
-//		// Admin Logs submenu page init
-//		add_submenu_page(
-//			'btm',
-//			__( 'Logs', 'background_task_manager' ),
-//			__( 'Logs', 'background_task_manager' ),
-//			'manage_options',
-//			'btm-logs',
-//			array(
-//				$this,
-//				'btm_admin_logs_sub_page'
-//			)
-//		);
+		new BTM_Admin_Task_Run_Log_Page_Table( $menu_slug );
 //
 //		// Admin Settings submenu page init
 //		add_submenu_page(
@@ -246,37 +233,7 @@ final class BTM_Admin_Manager {
 		<?php
 	}
 
-	/**
-	 * Show Logs submenu page
-	 */
-	public function btm_admin_logs_sub_page(){
-		$this->table_logs->prepare_items();
-		?>
-		<div class="wrap">
-			<h1><?php echo get_admin_page_title(); ?></h1>
-			<form id="logs-filter" method="get">
-				<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-				<?php $this->table_logs->search_box('Search', 'search_id'); ?>
-				<?php $this->table_logs->display(); ?>
-			</form>
-		</div>
-		<?php
-	}
-
 	// endregion
-
-	/**
-	 * @var $table_task BTM_Admin_Table_Logs object
-	 */
-	private $table_logs;
-
-	/**
-	 * Callback function bg-task-manager-page_btm_logs
-	 */
-	public function on_load_bg_task_manager_page_btm_logs(){
-		$this->table_logs = new BTM_Admin_Table_Logs();
-		$this->table_logs->process_bulk_action();
-	}
 
 	public function btm_ajax_handler(){
 		$notification = BTM_Notification_Dao::get_instance();

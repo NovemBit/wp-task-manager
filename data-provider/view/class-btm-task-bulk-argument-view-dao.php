@@ -38,7 +38,7 @@ class BTM_Task_Bulk_Argument_View_Dao{
 	 *
 	 * @param BTM_Task_Bulk_Argument_View_Filter $filter
 	 *
-	 * @return array
+	 * @return BTM_Task_Bulk_Argument_View[]
 	 */
 	public function get_task_bulk_arguments( BTM_Task_Bulk_Argument_View_Filter $filter ){
 		global $wpdb;
@@ -116,6 +116,13 @@ class BTM_Task_Bulk_Argument_View_Dao{
 		return (int) $total_count;
 	}
 
+	/**
+	 * @param BTM_Task_Bulk_Argument_View_Filter $filter
+	 * @param string $task_bulk_args_table_alias
+	 * @param string $task_table_alias
+	 *
+	 * @return string
+	 */
 	protected function generate_where_statement( BTM_Task_Bulk_Argument_View_Filter $filter, $task_bulk_args_table_alias, $task_table_alias ){
 		global $wpdb;
 

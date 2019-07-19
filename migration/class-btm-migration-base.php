@@ -80,11 +80,16 @@ class BTM_Migration_Base implements I_BTM_Migration{
 			CREATE TABLE IF NOT EXISTS `btm_task_run_logs` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			  `task_id` bigint(20) unsigned NOT NULL,
-			  `session_id` timestamp NOT NULL,
+			  `session_id` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			  `logs` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-			  `date_started` timestamp NOT NULL,
+			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `date_started` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			  `date_finished` timestamp NULL DEFAULT NULL,
-			  PRIMARY KEY (`id`)
+			  PRIMARY KEY (`id`),
+			  KEY `task_id` (`task_id`),
+			  KEY `status` (`status`),
+			  KEY `date_started` (`date_started`),
+			  KEY `date_finished` (`date_finished`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');
 

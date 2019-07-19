@@ -100,6 +100,7 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
+				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
 			}else{
 				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),
@@ -126,11 +127,18 @@ final class BTM_Task_Runner{
 			$task_bulk_argument_dao->mark_many_as_succeeded( $task_bulk_arguments_succeeded );
 			$task_bulk_argument_dao->mark_many_as_failed( array_values( $task_run_filter_log->get_bulk_fails() ) );
 
+			if( $task_run_filter_log->is_failed() || 0 < count( $task_run_filter_log->get_bulk_fails() ) ){
+				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
+			}else{
+				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED );
+			}
+
 			BTM_Task_Run_Log_Dao::get_instance()->create(
 				new BTM_Task_Run_Log(
 					$task->get_id(),
 					BTM_Task_Manager_Log_Dao::get_instance()->get_session_id(),
 					$task_run_filter_log->get_logs(),
+					$task_run_log_status,
 					$start,
 					$end
 				)
@@ -177,8 +185,10 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
+				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
 			}else{
 				$task_dao::get_instance()->mark_as_succeeded( $task );
+				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED );
 			}
 
 			BTM_Task_Run_Log_Dao::get_instance()->create(
@@ -186,6 +196,7 @@ final class BTM_Task_Runner{
 					$task->get_id(),
 					BTM_Task_Manager_Log_Dao::get_instance()->get_session_id(),
 					$task_run_filter_log->get_logs(),
+					$task_run_log_status,
 					$start,
 					$end
 				)

@@ -129,9 +129,9 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 	public function prepare_items() {
 		$this->prepare_filter();
 
-		$task_view_dao = BTM_Task_Bulk_Argument_View_Dao::get_instance();
-		$this->items = $task_view_dao->get_task_bulk_arguments( $this->filter );
-		$total_items = $task_view_dao->get_task_bulk_arguments_count( $this->filter );
+		$task_bulk_argument_view_dao = BTM_Task_Bulk_Argument_View_Dao::get_instance();
+		$this->items = $task_bulk_argument_view_dao->get_task_bulk_arguments( $this->filter );
+		$total_items = $task_bulk_argument_view_dao->get_task_bulk_arguments_count( $this->filter );
 
 		$this->set_pagination_args(
 			array(
@@ -251,7 +251,6 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'id'                        => array( 'id', true ),
 			'task_id'                   => array( 'task_id', true ),
 			'callback_action'           => array( 'callback_action', false ),
 			'priority'                  => array( 'priority', false ),
