@@ -59,3 +59,14 @@
 .column-callback_action, .column-status{
 	width: 250px;
 }
+
+.btm-task-edit p.submit {
+    float: left;
+    margin-top: 0;
+}
+
+.btm-task-edit a.btm-cansle-edit {
+    float: left;
+    margin-left: 10px;
+    padding-top: 5px;
+}

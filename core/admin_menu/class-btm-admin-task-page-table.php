@@ -338,7 +338,13 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * @param BTM_Task_View $item
 	 */
 	public function column_callback_action( BTM_Task_View $item ) {
+		$item_id = $item->get_id();
 		echo $item->get_callback_action();
+
+		$actions = array(
+			'edit' => sprintf('<a href="?page=%s-task-view&action=%s&task_id=%s">Edit</a>',$_REQUEST['page'],'edit', $item_id ),
+		);
+		return sprintf('%1$s %2$s', '', $this->row_actions($actions) );
 	}
 
 	/**
