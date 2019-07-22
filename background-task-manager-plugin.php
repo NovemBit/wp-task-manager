@@ -67,6 +67,7 @@ final class BTM_Plugin {
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-simple.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-system-simple.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-normalizer.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-delete-log.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument.php' );
 
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
@@ -105,6 +106,7 @@ final class BTM_Plugin {
 
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
+		require_once( $core_path . 'class-btm-task-delete-log-manager.php' );
 		require_once( $core_path . 'class-btm-cron-job-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
@@ -135,6 +137,7 @@ final class BTM_Plugin {
 
 	public function on_cron_job_run_tasks(){
 		BTM_Task_Bulk_Argument_Manager::get_instance();
+		BTM_Task_Delete_Log_Manager::get_instance();
 		BTM_Task_Manager::get_instance()->run_the_tasks();
 	}
 
@@ -171,6 +174,10 @@ final class BTM_Plugin {
 	public function on_plugin_activation(){
 		BTM_Migration_Manager::get_instance()->migrate_up();
 		BTM_Cron_Job_Manager::get_instance()->activate_cron_job();
+		$delete_log_task = BTM_Task_Delete_Log_Manager::get_instance()->create_task();
+		if( false !== $delete_log_task ){
+			BTM_Task_Manager::get_instance()->register_simple_task( $delete_log_task );
+		}
 	}
 
 	/**

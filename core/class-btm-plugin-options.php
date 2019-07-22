@@ -36,6 +36,7 @@ final class BTM_Plugin_Options{
 		$this->init_mode_debug();
 		$this->init_request_debug();
 		$this->init_cron_job_interval_in_minutes();
+		$this->init_delete_log_interval_in_days();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
@@ -335,8 +336,6 @@ final class BTM_Plugin_Options{
 	 * @return int
 	 */
 	public function get_cron_job_interval_in_minutes(){
-		$this->interval_in_minutes = (int)get_option( $this->get_db_table_prefix() . 'cron_interval' , 5 );
-
 		return $this->interval_in_minutes;
 	}
 	/**
@@ -358,7 +357,7 @@ final class BTM_Plugin_Options{
 	 * Initializes the cron job recurrence interval in minutes
 	 */
 	private function init_cron_job_interval_in_minutes(){
-		$interval = $this->get_cron_job_interval_in_minutes();
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'cron_interval' , 5 );
 
 		$this->set_cron_job_interval_in_minutes( $interval );
 	}
@@ -383,5 +382,42 @@ final class BTM_Plugin_Options{
 	 */
 	public function get_admin_menu_slug(){
 		return $this->admin_menu_slug;
+	}
+
+	/**
+	 * @var int
+	 */
+	private $delete_log_interval;
+
+	/**
+	 * @return int
+	 */
+	public function get_delete_log_interval(){
+		return $this->delete_log_interval;
+	}
+
+	/**
+	 * @param int $delete_log_interval
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $delete_log_interval is not an int or is not greater than 0
+	 */
+	public function set_delete_log_interval( $delete_log_interval ){
+		if( ! is_int( $delete_log_interval ) || $delete_log_interval <= 0 ){
+			throw new InvalidArgumentException(
+				'Method set_delete_log_interval only accepts int greater than 0. Input was: ' . $delete_log_interval
+			);
+		}
+
+		$this->delete_log_interval = $delete_log_interval;
+	}
+
+	/**
+	 * Initializes the delete log recurrence interval in days
+	 */
+	private function init_delete_log_interval_in_days(){
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'delete_log_interval' , 2 );
+
+		$this->set_delete_log_interval( $interval );
 	}
 }

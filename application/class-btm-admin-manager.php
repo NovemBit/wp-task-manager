@@ -112,6 +112,12 @@ final class BTM_Admin_Manager {
 				update_option( 'btm_cron_duration', (int)$duration, 'no' );
 			}
 		}
+		if( isset( $_POST[ "btm-delete-log-interval" ] ) ){
+			$delete_log_interval = $_POST[ "btm-delete-log-interval" ];
+			if( ctype_digit( $delete_log_interval ) ){
+				update_option( 'btm_delete_log_interval', (int)$delete_log_interval, 'no' );
+			}
+		}
 		if( isset( $_POST[ "callback_action" ] ) && isset( $_POST[ "status" ] ) && isset( $_POST[ "users" ] ) ){
 			$callback[ "callback_action" ] = $_POST[ "callback_action" ];
 			$callback[ "status" ] = $_POST[ "status" ];
@@ -123,8 +129,7 @@ final class BTM_Admin_Manager {
 					$notification->create_users( $user_id, $last_insert_id );
 				}
 		}
-		$tasks = new BTM_Admin_Table_Tasks();
-		$callback_actions = $tasks->get_callback_actions();
+		$callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions();
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 		$users = get_users( [ 'role__in' => [ 'administrator' ] ] );
 		$callbacks_and_statuses = $notification->get_callback_actions_and_statuses();
@@ -148,6 +153,13 @@ final class BTM_Admin_Manager {
 						<td>
 							<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration' ); ?>" >
 							<p class="description" id="duration" >Total execution allowed duration in seconds</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="delete-log">Logs Delete Interval</label></th>
+						<td>
+							<input name="btm-delete-log-interval" id="delete-log" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_log_interval' ); ?>" >
+							<p class="description" id="delete-log" >The log delete recurrence interval in days</p>
 						</td>
 					</tr>
 					<tr>
