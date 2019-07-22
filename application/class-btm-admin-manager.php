@@ -79,19 +79,19 @@ final class BTM_Admin_Manager {
 		new BTM_Admin_Task_Bulk_Argument_Page_Table( $menu_slug );
 
 		new BTM_Admin_Task_Run_Log_Page_Table( $menu_slug );
-//
-//		// Admin Settings submenu page init
-//		add_submenu_page(
-//			'btm',
-//			__( 'Settings', 'background_task_manager' ),
-//			__( 'Settings', 'background_task_manager' ),
-//			'manage_options',
-//			'btm-settings',
-//			array(
-//				$this,
-//				'btm_admin_settings_sub_page'
-//			)
-//		);
+
+		// Admin Settings submenu page init
+		add_submenu_page(
+			'btm',
+			__( 'Settings', 'background_task_manager' ),
+			__( 'Settings', 'background_task_manager' ),
+			'manage_options',
+			'btm-settings',
+			array(
+				$this,
+				'btm_admin_settings_sub_page'
+			)
+		);
 	}
 
 	/**

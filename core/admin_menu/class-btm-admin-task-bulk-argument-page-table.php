@@ -16,13 +16,20 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 
 	// region Page
 
+	/**
+	 * @return string
+	 */
+	public static function get_page_slug(){
+		return 'btm-task-bulk-arguments';
+	}
+
 	protected function add_submenu_page(){
 		$page_hook = add_submenu_page(
 			$this->get_page_parent_slug(),
 			__( 'Task Bulk Arguments', 'background_task_manager' ),
 			__( 'Task Bulk Arguments', 'background_task_manager' ),
 			'manage_options',
-			'btm-task-bulk-arguments',
+			self::get_page_slug(),
 			array(
 				$this,
 				'on_hook_page_render_task_bulk_arguments'

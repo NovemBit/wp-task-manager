@@ -45,6 +45,16 @@ abstract class BTM_Admin_Page_Table extends WP_List_Table{
 	// region Page
 
 	/**
+	 * @return string
+	 *
+	 * @throws LogicException
+	 *      should be overwritten
+	 */
+	public static function get_page_slug(){
+		throw new LogicException( 'should be overwritten' );
+	}
+
+	/**
 	 * @var string
 	 */
 	protected $page_parent_slug;

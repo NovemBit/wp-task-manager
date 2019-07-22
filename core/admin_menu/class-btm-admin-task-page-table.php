@@ -16,6 +16,13 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 
 	// region Page
 
+	/**
+	 * @return string
+	 */
+	public static function get_page_slug(){
+		throw new LogicException( 'uses parent page slug' );
+	}
+
 	protected function add_submenu_page(){
 		$page_hook = add_submenu_page(
 			$this->get_page_parent_slug(),
@@ -327,7 +334,23 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * @param BTM_Task_View $item
 	 */
 	public function column_callback_action( BTM_Task_View $item ) {
-		echo $item->get_callback_action();
+		$actions = array();
+
+		$url = admin_url() . 'admin.php';
+
+		if ( $item->get_status() != BTM_Task_Run_Status::STATUS_REGISTERED ){
+			$logs_url = add_query_arg('page', BTM_Admin_Task_Run_Log_Page_Table::get_page_slug(), $url );
+			$actions['view_logs'] =
+			'<a href="' . $logs_url . '">'
+				. __( 'Logs', 'background_task_manager' ) .
+			'</a>';
+		}
+
+		return sprintf(
+			'%1$s %2$s',
+			$item->get_callback_action(),
+			$this->row_actions( $actions )
+		);
 	}
 
 	/**
@@ -397,6 +420,24 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		// todo: should be formatted by WP settings and applied user's time zone?
 		$iso_date = date( 'Y-m-d H:i:s', $item->get_date_created_timestamp() );
 		echo $iso_date;
+	}
+
+	protected function row_actions( $actions, $always_visible = false ) {
+		if( ! is_array( $actions ) || 0 >= count( $actions ) ){
+			return '';
+		}
+		$action_count = count( $actions );
+		$i = 0;
+
+		$out = '<div class="' . ( $always_visible ? 'row-actions visible' : 'row-actions' ) . '">';
+		foreach ( $actions as $action => $link ) {
+			++$i;
+			( $i == $action_count ) ? $sep = '' : $sep = ' | ';
+			$out .= "<span class='$action'>$link$sep</span>";
+		}
+		$out .= '</div>';
+
+		return $out;
 	}
 
 	// endregion
