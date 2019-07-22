@@ -75,6 +75,7 @@ final class BTM_Admin_Manager {
 		);
 
 		new BTM_Admin_Task_Page_Table( $menu_slug );
+		 new BTM_Admin_Task_Single_Page();
 
 		new BTM_Admin_Task_Bulk_Argument_Page_Table( $menu_slug );
 

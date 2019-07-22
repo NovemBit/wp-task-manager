@@ -332,11 +332,21 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * Show callback_action column
 	 *
 	 * @param BTM_Task_View $item
+	 *
+	 * @return string
 	 */
 	public function column_callback_action( BTM_Task_View $item ) {
 		$actions = array();
 
 		$url = admin_url() . 'admin.php';
+
+		$item_id = $item->get_id();
+		$actions[ 'edit' ] = sprintf(
+			'<a href="?page=%s-task-view&action=%s&task_id=%d">' . __( 'Edit', 'background_task_manager' ) . '</a>',
+			$_REQUEST['page'],
+			'edit',
+			$item_id
+		);
 
 		if ( $item->get_status() != BTM_Task_Run_Status::STATUS_REGISTERED ){
 			$logs_url = add_query_arg('page', BTM_Admin_Task_Run_Log_Page_Table::get_page_slug(), $url );

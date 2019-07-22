@@ -74,10 +74,13 @@ final class BTM_Plugin {
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-filter-log.php' );
 
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-view.php' );
+
+		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-single-view.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log-view.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-search-status-filter.php' );
+
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log-view-filter.php' );
@@ -92,6 +95,7 @@ final class BTM_Plugin {
 		require_once( $data_provider_path . 'class-btm-task-manager-log-dao.php' );
 
 		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-view-dao.php' );
+		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-single-view-dao.php' );
 		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view-dao.php' );
 		require_once( $data_provider_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log-view-dao.php' );
 
@@ -106,6 +110,7 @@ final class BTM_Plugin {
 		require_once( $core_path . 'class-btm-task-runner.php' );
 
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-table.php' );
+		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-task-single.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-bulk-argument-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-run-log-page-table.php' );
