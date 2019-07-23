@@ -123,8 +123,8 @@ final class BTM_Admin_Manager {
 					$notification->create_users( $user_id, $last_insert_id );
 				}
 		}
-		$tasks = new BTM_Admin_Table_Tasks();
-		$callback_actions = $tasks->get_callback_actions();
+
+		$callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions();
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 		$users = get_users( [ 'role__in' => [ 'administrator' ] ] );
 		$callbacks_and_statuses = $notification->get_callback_actions_and_statuses();
