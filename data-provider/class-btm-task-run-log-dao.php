@@ -214,6 +214,25 @@ class BTM_Task_Run_Log_Dao{
 		return false !== $deleted;
 	}
 
+	public function delete_by_date_interval( $interval ){
+		global $wpdb;
+
+		if( ! is_int( $interval ) || 0 >= $interval ){
+			throw new InvalidArgumentException( 'Argument $interval should be positive int. Input was: ' . $interval );
+		}
+
+		$deleted = $wpdb->query(
+			'DELETE FROM `' . $this->get_table_name() . '`
+            		WHERE `date_finished` < (NOW() - INTERVAL '. $interval .' DAY)'
+		);
+
+		if( false === $deleted || 0 === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
+
 	// endregion
 
 	/**
