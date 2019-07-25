@@ -9,6 +9,11 @@
 		$( '#date-submit' ).trigger( 'click' )
 	});
 
+	//Bulk verify alert
+	$( '#doaction' ).click(function (e) {
+		alert( 'Are you sure?' );
+	});
+
 	/* Using custom settings */
 
 	$("a#btm-log-data").fancybox({

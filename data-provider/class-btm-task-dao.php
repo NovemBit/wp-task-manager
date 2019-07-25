@@ -286,6 +286,34 @@ class BTM_Task_Dao{
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_IN_PROGRESS ) );
 		return $this->update( $task );
 	}
+	/**
+	 * This function should be update only registered and in progress tasks to paused tasks
+	 *
+	 * @param array $ids
+	 */
+	public function mark_as_paused_many_by_ids( $ids ){
+		foreach ( $ids as $id ) {
+			$task = $this->get_by_id( (int)$id );
+			if( BTM_Task_Run_Status::STATUS_REGISTERED === $task->get_status()->get_value() || BTM_Task_Run_Status::STATUS_IN_PROGRESS === $task->get_status()->get_value() ){
+				$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_PAUSED ) );
+				$this->update( $task );
+			}
+		}
+	}
+	/**
+	 * This function should be update only paused tasks to registered tasks
+	 *
+	 * @param array $ids
+	 */
+	public function mark_as_registered_many_by_ids( $ids ){
+		foreach ( $ids as $id ) {
+			$task = $this->get_by_id( (int)$id );
+			if( BTM_Task_Run_Status::STATUS_PAUSED === $task->get_status()->get_value() ){
+				$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_REGISTERED ) );
+				$this->update( $task );
+			}
+		}
+	}
 
 	// endregion
 
@@ -349,7 +377,7 @@ class BTM_Task_Dao{
 
 		$query = $wpdb->prepare('
 			DELETE FROM `' . $this->get_table_name() . '` 
-			WHERE `id` IN ( ' . $ids_in . ' )
+			WHERE `id` IN ( ' . $ids_in . ' ) AND `status` != "running"
 		' );
 
 		$deleted = $wpdb->query( $query );
