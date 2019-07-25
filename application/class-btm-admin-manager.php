@@ -103,19 +103,33 @@ final class BTM_Admin_Manager {
 		if( isset( $_POST[ "btm-cron-interval" ] ) ){
 			$interval = $_POST[ "btm-cron-interval" ];
 			if( ctype_digit( $interval ) ){
-				update_option( 'btm_cron_interval', (int)$interval, 'no' );
+				$updated = BTM_Plugin_Options::get_instance()->update_cron_job_interval_in_minutes( (int)$interval );
+				if( $updated ){
+					BTM_Cron_Job_Manager::get_instance()->remove_cron_job();
+					BTM_Cron_Job_Manager::get_instance()->activate_cron_job();
+				}
 			}
 		}
 		if( isset( $_POST[ "btm-cron-duration" ] ) ){
 			$duration = $_POST[ "btm-cron-duration" ];
 			if( ctype_digit( $duration ) ){
-				update_option( 'btm_cron_duration', (int)$duration, 'no' );
+				BTM_Plugin_Options::get_instance()->update_total_execution_allowed_duration_in_seconds( (int)$duration );
 			}
 		}
-		if( isset( $_POST[ "btm-delete-log-interval" ] ) ){
-			$delete_log_interval = $_POST[ "btm-delete-log-interval" ];
-			if( ctype_digit( $delete_log_interval ) ){
-				update_option( 'btm_delete_log_interval', (int)$delete_log_interval, 'no' );
+		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ] ) ){
+			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ];
+			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_interval ) ){
+				BTM_Plugin_Options::get_instance()->update_delete_old_tasks_logs_bulk_arguments_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_interval );
+			}
+		}
+		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ] ) ){
+			$delete_old_tasks_logs_bulk_arguments_cron_job_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ];
+			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_cron_job_interval ) ){
+				$updated = BTM_Plugin_Options::get_instance()->update_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_cron_job_interval );
+				if( $updated ){
+					BTM_Cron_Job_Manager::get_instance()->remove_delete_old_tasks_logs_bulk_arguments_cron_job();
+					BTM_Cron_Job_Manager::get_instance()->activate_delete_old_tasks_logs_bulk_arguments_cron_job();
+				}
 			}
 		}
 		if( isset( $_POST[ "callback_action" ] ) && isset( $_POST[ "status" ] ) && isset( $_POST[ "users" ] ) ){
@@ -137,58 +151,65 @@ final class BTM_Admin_Manager {
 		?>
 
 		<div class="wrap">
-			<h1>Background Task Manager Settings</h1>
+			<h1><?php esc_html_e( 'Background Task Manager Settings','background_task_manager' ); ?></h1>
 			<form method="post">
 				<table class="form-table">
 					<tbody>
 					<tr>
-						<th scope="row"><label for="cron-job">Cron Job Interval</label></th>
+						<th scope="row"><label for="cron-job"><?php esc_html_e( 'Cron Job Interval','background_task_manager' ); ?></label></th>
 						<td>
-							<input name="btm-cron-interval" id="cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_interval' ); ?>" >
-							<p class="description" id="cron-job" >The cron job recurrence interval in minutes</p>
+							<input name="btm-cron-interval" id="cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_interval', 5 ); ?>" >
+							<p class="description" id="cron-job" ><?php esc_html_e( 'The cron job recurrence interval in minutes','background_task_manager' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="duration">Total Execution Duration </label></th>
+						<th scope="row"><label for="duration"><?php esc_html_e( 'Total Execution Duration','background_task_manager' ); ?></label></th>
 						<td>
-							<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration' ); ?>" >
-							<p class="description" id="duration" >Total execution allowed duration in seconds</p>
+							<input name="btm-cron-duration" id="duration" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_cron_duration', 240 ); ?>" >
+							<p class="description" id="duration" ><?php esc_html_e( 'Total execution allowed duration in seconds','background_task_manager' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="delete-log">Logs Delete Interval</label></th>
+						<th scope="row"><label for="delete-old-tasks-logs-bulk-arguments-cron-job"><?php esc_html_e( 'Delete Expired Tasks, Bulk arguments and Logs Cron Job Interval','background_task_manager' ); ?></label></th>
 						<td>
-							<input name="btm-delete-log-interval" id="delete-log" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_log_interval' ); ?>" >
-							<p class="description" id="delete-log" >The log delete recurrence interval in days</p>
+							<input name="btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" id="delete-old-tasks-logs-bulk-arguments-cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_old_tasks_logs_bulk_arguments_cron_job_interval', 30 ); ?>" >
+							<p class="description" id="delete-old-tasks-logs-bulk-arguments-cron-job" ><?php esc_html_e( 'The expired tasks, bulk arguments and logs cron job recurrence interval in days','background_task_manager' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="callback">Email Notifications</label></th>
+						<th scope="row"><label for="delete-old-tasks-logs-bulk-arguments"><?php esc_html_e( 'Tasks, Bulk arguments and Logs Expiration Time','background_task_manager' ); ?></label></th>
+						<td>
+							<input name="btm-delete-old-tasks-logs-bulk-arguments-interval" id="delete-old-tasks-logs-bulk-arguments" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_old_tasks_logs_bulk_arguments_interval' , 30 ); ?>" >
+							<p class="description" id="delete-old-tasks-logs-bulk-arguments" ><?php esc_html_e( 'The tasks, bulk arguments and logs expiration time in days','background_task_manager' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="callback"><?php esc_html_e( 'Email Notifications','background_task_manager' ); ?></label></th>
 						<td>
 							<?php //region Selects ?>
-							<label for="callback">If callback action</label>
+							<label for="callback"><?php esc_html_e( 'If callback action','background_task_manager' ); ?></label>
 							<select name="callback_action" id="callback" class="btm-callback-action-settings" >
-								<option>Callback actions</option>
+								<option><?php esc_html_e( 'Callback actions','background_task_manager' ); ?></option>
 								<?php foreach ( $callback_actions as $callback_action ) {
 									?>
 									<option value="<?php echo $callback_action->callback_action; ?>" ><?php echo $callback_action->callback_action; ?></option>
 									<?php
 								} ?>
 							</select>
-							<label for="status">on status</label>
+							<label for="status"><?php esc_html_e( 'on status','background_task_manager' ); ?></label>
 							<select name="status" id="status" class="btm-status-settings">
-								<option>Status</option>
+								<option><?php esc_html_e( 'Status','background_task_manager' ); ?></option>
 								<?php foreach ( $task_run_statuses as $status => $display_name ) {
 									?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
 								} ?>
 							</select>
-							<label for="users">notify</label>
+							<label for="users"><?php esc_html_e( 'notify','background_task_manager' ); ?></label>
 							<select name="users[]" is="users" class="btm-users-settings" multiple="multiple">
 								<?php foreach ( $users as $user ) {
 									?><option value="<?php echo $user->data->ID; ?>"><?php echo $user->data->display_name; ?></option><?php
 								} ?>
 							</select>
-							<p class="description" id="duration" >Select callback action to trigger a notification for the selected users</p>
+							<p class="description" id="duration" ><?php esc_html_e( 'Select callback action to trigger a notification for the selected users','background_task_manager' ); ?></p>
 							<?php //endregion   ?>
 						</td>
 					</tr>
@@ -201,17 +222,17 @@ final class BTM_Admin_Manager {
 				<div class="btm-container" >
 					<div class="btm-bulk-action">
 						<select class="btm-bulk-select">
-							<option>Bulk actions</option>
-							<option value="delete">Delete</option>
+							<option><?php esc_html_e( 'Bulk actions','background_task_manager' ); ?></option>
+							<option value="delete"><?php esc_html_e( 'Delete','background_task_manager' ); ?></option>
 						</select>
-						<button class="button btm-bulk-delete-button">Apply</button>
+						<button class="button btm-bulk-delete-button"><?php esc_html_e( 'Apply','background_task_manager' ); ?></button>
 					</div>
 					<table class="btm-notify-table">
 						<tr class="btm-tr">
 							<th class="btm-th-td"><input type="checkbox" class="btm-bulk-delete" name="bulk-delete" value="all" /></th>
-							<th class="btm-th-td">Callback Action</th>
-							<th class="btm-th-td">Status</th>
-							<th class="btm-th-td">Users</th>
+							<th class="btm-th-td"><?php esc_html_e( 'Callback Action','background_task_manager' ); ?></th>
+							<th class="btm-th-td"><?php esc_html_e( 'Status','background_task_manager' ); ?></th>
+							<th class="btm-th-td"><?php esc_html_e( 'Users','background_task_manager' ); ?></th>
 						</tr>
 						<?php
 						foreach ( $callbacks_and_statuses as $value ){

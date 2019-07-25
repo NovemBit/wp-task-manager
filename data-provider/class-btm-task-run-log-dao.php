@@ -214,6 +214,11 @@ class BTM_Task_Run_Log_Dao{
 		return false !== $deleted;
 	}
 
+	/**
+	 * @param int $interval
+	 *
+	 * @return bool
+	 */
 	public function delete_by_date_interval( $interval ){
 		global $wpdb;
 
