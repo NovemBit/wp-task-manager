@@ -126,6 +126,28 @@ class BTM_Task_Dao{
 	}
 
 	/**
+	 * @param string $callback_action
+	 *
+	 * @return I_BTM_Task|false
+	 */
+	public function get_by_callback_action( $callback_action ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+			WHERE `callback_action` = %d
+		', $callback_action);
+
+		$task_obj = $wpdb->get_row( $query, OBJECT );
+		if( null === $task_obj ){
+			return false;
+		}
+
+		return $this->create_task_from_db_obj( $task_obj );
+	}
+
+	/**
 	 * @param I_BTM_Task $task
 	 *
 	 * @return I_BTM_Task|false
@@ -324,6 +346,29 @@ class BTM_Task_Dao{
 		return false !== $deleted;
 	}
 
+	/**
+	 * @param int $interval
+	 *
+	 * @return bool
+	 */
+	public function delete_by_date_interval( $interval ){
+		global $wpdb;
+
+		if( ! is_int( $interval ) || 0 >= $interval ){
+			throw new InvalidArgumentException( 'Argument $interval should be positive int. Input was: ' . $interval );
+		}
+
+		$deleted = $wpdb->query(
+			'DELETE FROM `' . $this->get_table_name() . '`
+            		WHERE `date_created` < (NOW() - INTERVAL '. $interval .' DAY)'
+		);
+
+		if( false === $deleted || 0 === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
 	// endregion
 
 	/**

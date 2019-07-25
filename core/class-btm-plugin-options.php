@@ -36,6 +36,8 @@ final class BTM_Plugin_Options{
 		$this->init_mode_debug();
 		$this->init_request_debug();
 		$this->init_cron_job_interval_in_minutes();
+		$this->init_delete_old_tasks_logs_bulk_arguments_interval_in_days();
+		$this->init_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
@@ -47,6 +49,13 @@ final class BTM_Plugin_Options{
 	 */
 	public function get_cron_job_name(){
 		return 'btm_run_background_tasks';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_delete_old_tasks_logs_bulk_arguments_cron_job_name(){
+		return 'btm_run_background_delete_old_tasks_logs_bulk_arguments';
 	}
 
 	/**
@@ -162,8 +171,6 @@ final class BTM_Plugin_Options{
 	 * @return int
 	 */
 	public function get_total_execution_allowed_duration_in_seconds(){
-		$this->total_execution_allowed_duration_in_seconds = (int)get_option( $this->get_db_table_prefix() . 'cron_duration' , 60 );
-
 		return  $this->total_execution_allowed_duration_in_seconds;
 	}
 	/**
@@ -186,9 +193,29 @@ final class BTM_Plugin_Options{
 	 * Initializes total execution allowed duration in seconds
 	 */
 	private function init_total_execution_allowed_duration_in_seconds(){
-		$duration = $this->get_total_execution_allowed_duration_in_seconds();
+		$duration = (int)get_option( $this->get_db_table_prefix() . 'cron_duration' , 240 );
 
 		$this->set_total_execution_allowed_duration_in_seconds( $duration );
+	}
+
+	/**
+	 * @param int $duration
+	 *
+	 * @return bool
+	 */
+	public function update_total_execution_allowed_duration_in_seconds( $duration ){
+		if( ! is_int( $duration ) || $duration <= 0 ){
+			throw new InvalidArgumentException(
+				'Method update_cron_job_interval_in_minutes only accepts int greater than 0. Input was: ' . $duration
+			);
+		}
+
+		$this->total_execution_allowed_duration_in_seconds = $duration;
+		$updated = update_option( $this->get_db_table_prefix() . 'cron_duration', $this->total_execution_allowed_duration_in_seconds );
+
+		if( $updated ){
+			return true;
+		}
 	}
 
 	/**
@@ -335,8 +362,6 @@ final class BTM_Plugin_Options{
 	 * @return int
 	 */
 	public function get_cron_job_interval_in_minutes(){
-		$this->interval_in_minutes = (int)get_option( $this->get_db_table_prefix() . 'cron_interval' , 5 );
-
 		return $this->interval_in_minutes;
 	}
 	/**
@@ -358,9 +383,27 @@ final class BTM_Plugin_Options{
 	 * Initializes the cron job recurrence interval in minutes
 	 */
 	private function init_cron_job_interval_in_minutes(){
-		$interval = $this->get_cron_job_interval_in_minutes();
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'cron_interval' , 5 );
 
 		$this->set_cron_job_interval_in_minutes( $interval );
+	}
+
+	/**
+	 * @param int $interval
+	 */
+	public function update_cron_job_interval_in_minutes( $interval ){
+		if( ! is_int( $interval ) || $interval <= 0 ){
+			throw new InvalidArgumentException(
+				'Method update_cron_job_interval_in_minutes only accepts int greater than 0. Input was: ' . $interval
+			);
+		}
+
+		$this->interval_in_minutes = $interval;
+		$updated = update_option( $this->get_db_table_prefix() . 'cron_interval', $this->interval_in_minutes );
+
+		if( $updated ){
+			return true;
+		}
 	}
 
 	/**
@@ -383,5 +426,115 @@ final class BTM_Plugin_Options{
 	 */
 	public function get_admin_menu_slug(){
 		return $this->admin_menu_slug;
+	}
+
+	/**
+	 * @var int
+	 */
+	private $delete_old_tasks_logs_bulk_arguments_interval;
+
+	/**
+	 * @return int
+	 */
+	public function get_delete_old_tasks_logs_bulk_arguments_interval(){
+		return $this->delete_old_tasks_logs_bulk_arguments_interval;
+	}
+
+	/**
+	 * @param int $delete_old_tasks_logs_bulk_arguments_interval
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $delete_old_tasks_logs_bulk_arguments_interval is not an int or is not greater than 0
+	 */
+	public function set_delete_old_tasks_logs_bulk_arguments_interval( $delete_old_tasks_logs_bulk_arguments_interval ){
+		if( ! is_int( $delete_old_tasks_logs_bulk_arguments_interval ) || $delete_old_tasks_logs_bulk_arguments_interval <= 0 ){
+			throw new InvalidArgumentException(
+				'Method set_delete_old_tasks_logs_bulk_arguments_interval only accepts int greater than 0. Input was: ' . $delete_old_tasks_logs_bulk_arguments_interval
+			);
+		}
+
+		$this->delete_old_tasks_logs_bulk_arguments_interval = $delete_old_tasks_logs_bulk_arguments_interval;
+	}
+
+	/**
+	 * Initializes the delete log recurrence interval in days
+	 */
+	private function init_delete_old_tasks_logs_bulk_arguments_interval_in_days(){
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'delete_old_tasks_logs_bulk_arguments_interval' , 30 );
+
+		$this->set_delete_old_tasks_logs_bulk_arguments_interval( $interval );
+	}
+
+	/**
+	 * @param int $interval
+	 */
+	public function update_delete_old_tasks_logs_bulk_arguments_interval_in_days( $interval ){
+		if( ! is_int( $interval ) || $interval <= 0 ){
+			throw new InvalidArgumentException(
+				'Method update_delete_old_tasks_logs_bulk_arguments_interval_in_days only accepts int greater than 0. Input was: ' . $interval
+			);
+		}
+
+		$this->delete_old_tasks_logs_bulk_arguments_interval = $interval;
+		$updated = update_option( $this->get_db_table_prefix() . 'delete_old_tasks_logs_bulk_arguments_interval', $this->delete_old_tasks_logs_bulk_arguments_interval );
+
+		if( $updated ){
+			return true;
+		}
+	}
+
+	/**
+	 * @var int
+	 */
+	private $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days;
+
+	/**
+	 * @return int
+	 */
+	public function get_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days(){
+		return $this->delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days;
+	}
+
+	/**
+	 * @param int $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $delete_old_tasks_logs_bulk_arguments_interval is not an int or is not greater than 0
+	 */
+	public function set_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days( $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days ){
+		if( ! is_int( $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days ) || $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days <= 0 ){
+			throw new InvalidArgumentException(
+				'Method set_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days only accepts int greater than 0. Input was: ' . $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days
+			);
+		}
+
+		$this->delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days = $delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days;
+	}
+
+	/**
+	 * Initializes the delete log recurrence interval in days
+	 */
+	private function init_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days(){
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'delete_old_tasks_logs_bulk_arguments_cron_job_interval' , 30 );
+
+		$this->set_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days( $interval );
+	}
+
+	/**
+	 * @param int $interval
+	 */
+	public function update_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days( $interval ){
+		if( ! is_int( $interval ) || $interval <= 0 ){
+			throw new InvalidArgumentException(
+				'Method update_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days only accepts int greater than 0. Input was: ' . $interval
+			);
+		}
+
+		$this->delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days = $interval;
+		$updated = update_option( $this->get_db_table_prefix() . 'delete_old_tasks_logs_bulk_arguments_cron_job_interval', $this->delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days );
+
+		if( $updated ){
+			return true;
+		}
 	}
 }
