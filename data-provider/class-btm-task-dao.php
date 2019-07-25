@@ -336,10 +336,21 @@ class BTM_Task_Dao{
 	public function delete_many_by_ids( array $ids ){
 		global $wpdb;
 
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
 		$query = $wpdb->prepare('
 			DELETE FROM `' . $this->get_table_name() . '` 
-			WHERE `id` IN ( %s )
-		', implode( ',', $ids ) );
+			WHERE `id` IN ( ' . $ids_in . ' )
+		' );
 
 		$deleted = $wpdb->query( $query );
 
