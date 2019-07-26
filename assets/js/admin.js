@@ -10,19 +10,17 @@
 	});
 
 	//Bulk verify alert
-	$( '#doaction' ).click(function (e) {
-		alert( 'Are you sure?' );
+	$( '#doaction' ).click(function () {
+		let confirmAction;
+		confirmAction = confirm( 'Are you sure?' );
+		if( false === confirmAction ){
+			$('#tasks-filter').submit(function (evt) {
+				evt.preventDefault();
+				window.history.back();
+			});
+		}
 	});
 
-	/* Using custom settings */
-
-	$("a#btm-log-data").fancybox({
-		'centerOnScroll' : true
-	});
-
-	$("a#btm-arg-data").fancybox({
-		'centerOnScroll' : true
-	});
 
 	//select2
 	$(document).ready(function() {
