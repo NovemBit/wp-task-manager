@@ -394,7 +394,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		if ( $item->get_status() != BTM_Task_Run_Status::STATUS_REGISTERED ){
 			$logs_url = add_query_arg('page', BTM_Admin_Task_Run_Log_Page_Table::get_page_slug(), $url );
 			$actions['view_logs'] =
-			'<a href="' . $logs_url . '">'
+			'<a href="' . $logs_url . '&task_id='. $item->get_id() .'">'
 				. __( 'Logs', 'background_task_manager' ) .
 			'</a>';
 		}

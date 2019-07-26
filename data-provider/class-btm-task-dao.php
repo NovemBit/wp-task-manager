@@ -286,33 +286,79 @@ class BTM_Task_Dao{
 		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_IN_PROGRESS ) );
 		return $this->update( $task );
 	}
+
 	/**
 	 * This function should be update only registered and in progress tasks to paused tasks
 	 *
 	 * @param array $ids
+	 *
+	 * @return bool
 	 */
-	public function mark_as_paused_many_by_ids( $ids ){
-		foreach ( $ids as $id ) {
-			$task = $this->get_by_id( (int)$id );
-			if( BTM_Task_Run_Status::STATUS_REGISTERED === $task->get_status()->get_value() || BTM_Task_Run_Status::STATUS_IN_PROGRESS === $task->get_status()->get_value() ){
-				$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_PAUSED ) );
-				$this->update( $task );
-			}
+	public function mark_as_paused_many_by_ids( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
 		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+			WHERE `id` IN ( ' . $ids_in . ' )
+			AND ( 
+					`status` = "'.BTM_Task_Run_Status::STATUS_REGISTERED.'" 
+				OR 
+					`status` = "'.BTM_Task_Run_Status::STATUS_IN_PROGRESS.'" 
+				)
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
 	}
+
 	/**
 	 * This function should be update only paused tasks to registered tasks
 	 *
 	 * @param array $ids
+	 *
+	 * @return bool
 	 */
-	public function mark_as_registered_many_by_ids( $ids ){
-		foreach ( $ids as $id ) {
-			$task = $this->get_by_id( (int)$id );
-			if( BTM_Task_Run_Status::STATUS_PAUSED === $task->get_status()->get_value() ){
-				$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_REGISTERED ) );
-				$this->update( $task );
-			}
+	public function mark_as_registered_many_by_ids( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
 		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_REGISTERED.'"
+			WHERE `id` IN ( ' . $ids_in . ' ) 
+			AND `status` = "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
 	}
 
 	// endregion

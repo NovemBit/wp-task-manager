@@ -157,6 +157,9 @@ final class BTM_Admin_Task_Run_Log_Page_Table extends BTM_Admin_Page_Table{
 
 	protected function prepare_filter(){
 		$filter = new BTM_Task_Run_Log_View_Filter();
+		if( ! empty( $_GET[ 'task_id' ] ) ){
+			$filter->set_task_id( (int)$_GET[ 'task_id' ] );
+		}
 		if( ! empty( $_GET[ 'orderby' ] ) ){
 			$filter->set_order_by( $_GET[ 'orderby' ] );
 		}else{
