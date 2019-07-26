@@ -399,6 +399,14 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			'</a>';
 		}
 
+
+		$bulk_arguments_url = add_query_arg('page', BTM_Admin_Task_Bulk_Argument_Page_Table::get_page_slug(), $url );
+		$actions['view_bulk_arguments'] =
+			'<a href="' . $bulk_arguments_url . '&task_id='. $item->get_id() .'">'
+			. __( 'Bulk Arguments', 'background_task_manager' ) .
+			'</a>';
+
+
 		return sprintf(
 			'%1$s %2$s',
 			$item->get_callback_action(),
@@ -413,24 +421,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 */
 	public function column_callback_arguments( BTM_Task_View $item ) {
 		$args = $item->get_callback_arguments();
-		foreach ( $args as $key => $arg){
-			if( is_array( $arg ) ){
-				$arg = 'Array';
-			}
-			if( is_object( $arg ) ){
-				$arg = 'Object';
-			}
-			echo '<p>'. $key .' => ' . $arg .'</p>';
-		}
-		?>
-		<a id="btm-arg-data" href="#arg-data">View more</a>
-
-		<div style="display:none">
-			<div id="arg-data" data-selectable="true">
-				<?php highlight_string("<?php\n\$args =\n" . var_export($args, true) . ";\n?>"); ?>
-			</div>
-		</div>
-		<?php
+		highlight_string( var_export($args, true) );
 	}
 
 	/**
