@@ -294,7 +294,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function mark_as_paused_many_by_ids( array $ids ){
+	public function pause_tasks( array $ids ){
 		global $wpdb;
 
 		if( 0 === count( $ids ) ){
@@ -333,7 +333,7 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function mark_as_registered_many_by_ids( array $ids ){
+	public function resume_tasks( array $ids ){
 		global $wpdb;
 
 		if( 0 === count( $ids ) ){
