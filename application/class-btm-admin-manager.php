@@ -44,8 +44,8 @@ final class BTM_Admin_Manager {
 	function on_hook_admin_enqueue_scripts() {
 		$asset_version = BTM_Plugin_Options::get_instance()->get_asset_version();
 
-		wp_enqueue_script( 'select2-script', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/js/select2.js', array( 'jquery' ), $asset_version , true );
-		wp_enqueue_style( 'select2-style', plugin_dir_url( __DIR__ ) . 'assets/js/select2/dist/css/select2.css', array(), $asset_version );
+		wp_enqueue_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js', array( 'jquery' ), $asset_version , true );
+		wp_enqueue_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css', array(), $asset_version );
 
 		wp_enqueue_script( 'fancybox-script', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js', array( 'jquery' ), $asset_version , true );
 		wp_enqueue_style( 'fancybox-style', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.css', array(), $asset_version );
