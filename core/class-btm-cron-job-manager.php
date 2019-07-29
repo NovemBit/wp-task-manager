@@ -28,8 +28,8 @@ final class BTM_Cron_Job_Manager{
 	}
 
 	private function __construct() {
-		$this->jobs[] = BTM_Cron_Job_Task_Runner::get_instance();
 		$this->jobs[] = BTM_Cron_Job_Delete_Old_Entities::get_instance();
+		$this->jobs[] = BTM_Cron_Job_Task_Runner::get_instance();
 	}
 	private function __clone() {}
 	private function __wakeup() {}

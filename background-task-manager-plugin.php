@@ -141,6 +141,7 @@ final class BTM_Plugin {
 		BTM_Plugin_Options::get_instance();
 
 		BTM_Task_Bulk_Argument_Manager::get_instance();
+		BTM_Task_Delete_Old_Entities_Manager::get_instance();
 
 		BTM_Cron_Job_Manager::get_instance()->hook_up_jobs();
 
