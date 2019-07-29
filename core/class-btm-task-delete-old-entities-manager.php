@@ -8,15 +8,15 @@ if ( ! defined( 'BTM_PLUGIN_ACTIVE' ) ) {
 /**
  * Class BTM_Task_Delete_Manager
  */
-class BTM_Task_Delete_Manager {
+class BTM_Task_Delete_Old_Entities_Manager {
 	// region Singleton
 
 	/**
-	 * @var BTM_Task_Delete_Manager
+	 * @var BTM_Task_Delete_Old_Entities_Manager
 	 */
 	private static $instance = null;
 	/**
-	 * @return BTM_Task_Delete_Manager
+	 * @return BTM_Task_Delete_Old_Entities_Manager
 	 */
 	public static function get_instance(){
 		if( null === self::$instance ){
@@ -27,7 +27,7 @@ class BTM_Task_Delete_Manager {
 	}
 
 	private function __construct(){
-		add_filter( 'btm_' . $this->get_callback_action(), array( $this, 'on_btm_task_delete' ), 10, 1 );
+		add_filter( 'btm_' . $this->get_callback_action(), array( $this, 'on_btm_task_delete_old_entities' ), 10, 1 );
 	}
 	private function __clone(){}
 	private function __wakeup(){}
@@ -35,16 +35,16 @@ class BTM_Task_Delete_Manager {
 	// endregion
 
 	public function get_callback_action(){
-		return 'delete_task_bulk_arguments_logs';
+		return 'delete_old_entities';
 	}
 
 	/**
 	 *  Create task to delete logs
 	 *
-	 * @return bool|BTM_Task_Delete
+	 * @return BTM_Task_Delete_Old_Entities
 	 */
 	public function create_task(){
-		return new BTM_Task_Delete( $this->get_callback_action(), array(), 200 );
+		return new BTM_Task_Delete_Old_Entities( $this->get_callback_action(), array(), 200 );
 	}
 
 	/**
@@ -52,9 +52,9 @@ class BTM_Task_Delete_Manager {
 	 *
 	 * @return BTM_Task_Run_Filter_Log
 	 */
-	public function on_btm_task_delete( BTM_Task_Run_Filter_Log $task_run_filter_log ){
+	public function on_btm_task_delete_old_entities( BTM_Task_Run_Filter_Log $task_run_filter_log ){
 			$plugin_options = BTM_Plugin_Options::get_instance();
-			$interval = $plugin_options->get_delete_old_tasks_logs_bulk_arguments_interval();
+			$interval = $plugin_options->get_entities_become_old_interval();
 
 			$deleted_tasks = BTM_Task_Dao::get_instance()->delete_by_date_interval( $interval );
 

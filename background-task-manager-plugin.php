@@ -26,19 +26,23 @@ final class BTM_Plugin {
 	 */
 	private static $instance = null;
 	/**
-	 * @return BTM_Plugin
+	 * Plugin start point, called automatically from the plugin
+	 *
+	 * @throws LogicException
+	 *      in the case the method called directly outside the plugin
 	 */
-	public static function get_instance(){
+	public static function run(){
 		if( null === self::$instance ){
 			self::$instance = new self();
+		}else{
+			throw new LogicException(
+				__( 'Should not be called directly outside the plugin.', 'background_task_manager' )
+			);
 		}
-
-		return self::$instance;
 	}
 
 	private function __construct() {
 		$this->bootstrap();
-
 		$this->hooking_up();
 	}
 	private function __clone() {}
@@ -67,7 +71,7 @@ final class BTM_Plugin {
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-simple.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-system-simple.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-normalizer.php' );
-		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-delete.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-delete-old-entities.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument.php' );
 
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
@@ -79,9 +83,9 @@ final class BTM_Plugin {
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-single-view.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log-view.php' );
+
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-view-search-status-filter.php' );
-
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-view-filter.php' );
 		require_once( $model_path . 'view' . DIRECTORY_SEPARATOR . 'filter' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log-view-filter.php' );
@@ -106,7 +110,7 @@ final class BTM_Plugin {
 
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
-		require_once( $core_path . 'class-btm-task-delete-manager.php' );
+		require_once( $core_path . 'class-btm-task-delete-old-entities-manager.php' );
 		require_once( $core_path . 'class-btm-cron-job-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
@@ -116,6 +120,10 @@ final class BTM_Plugin {
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-bulk-argument-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-run-log-page-table.php' );
+
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job.php' );
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-task-runner.php' );
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-delete-old-entities.php' );
 
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );
@@ -130,34 +138,13 @@ final class BTM_Plugin {
 		register_deactivation_hook( __FILE__, array( $this, 'on_plugin_deactivation' ) );
 		register_uninstall_hook( __FILE__, array( __CLASS__, 'on_plugin_uninstall' ) );
 
-		add_action( BTM_Plugin_Options::get_instance()->get_delete_old_tasks_logs_bulk_arguments_cron_job_name(), array( $this, 'on_delete_old_tasks_logs_bulk_arguments_cron_job_run' ) );
-		add_action( BTM_Plugin_Options::get_instance()->get_cron_job_name(), array( $this, 'on_cron_job_run_tasks' ) );
-		add_action( 'after_setup_theme', array( $this, 'on_after_setup_theme' ) );
-		add_action( 'init', array( $this, 'on_late_init' ), PHP_INT_MAX - 10 );
-	}
-
-	public function on_cron_job_run_tasks(){
-		BTM_Task_Bulk_Argument_Manager::get_instance();
-		BTM_Task_Manager::get_instance()->run_the_tasks();
-	}
-
-	public function on_delete_old_tasks_logs_bulk_arguments_cron_job_run(){
-		BTM_Task_Delete_Manager::get_instance();
-		update_option( 'asd', 123 );
-		$delete_task_bulk_arguments_logs = BTM_Task_Delete_Manager::get_instance()->create_task();
-		BTM_Task_Manager::get_instance()->register_simple_task( $delete_task_bulk_arguments_logs );
-	}
-
-	/**
-	 * Callback for after_setup_theme, should not be called directly
-	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/after_setup_theme
-	 */
-	public function on_after_setup_theme(){
-		// init cron job manager
-		BTM_Cron_Job_Manager::get_instance();
-
-		// init options
 		BTM_Plugin_Options::get_instance();
+
+		BTM_Task_Bulk_Argument_Manager::get_instance();
+
+		BTM_Cron_Job_Manager::get_instance()->hook_up_jobs();
+
+		add_action( 'init', array( $this, 'on_late_init' ), PHP_INT_MAX - 10 );
 	}
 
 	/**
@@ -169,7 +156,8 @@ final class BTM_Plugin {
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
-			$this->on_cron_job_run_tasks();
+			// this method should not be called directly, this is only for debug purposes
+			BTM_Cron_Job_Task_Runner::get_instance()->on_cron_job_runs();
 			exit;
 		}
 	}
@@ -180,8 +168,7 @@ final class BTM_Plugin {
 	 */
 	public function on_plugin_activation(){
 		BTM_Migration_Manager::get_instance()->migrate_up();
-		BTM_Cron_Job_Manager::get_instance()->activate_cron_job();
-		BTM_Cron_Job_Manager::get_instance()->activate_delete_old_tasks_logs_bulk_arguments_cron_job();
+		BTM_Cron_Job_Manager::get_instance()->activate_jobs();
 	}
 
 	/**
@@ -189,8 +176,7 @@ final class BTM_Plugin {
 	 * @see register_deactivation_hook
 	 */
 	public function on_plugin_deactivation(){
-		BTM_Cron_Job_Manager::get_instance()->remove_cron_job();
-		BTM_Cron_Job_Manager::get_instance()->remove_delete_old_tasks_logs_bulk_arguments_cron_job();
+		BTM_Cron_Job_Manager::get_instance()->remove_jobs();
 	}
 
 	/**
@@ -203,4 +189,4 @@ final class BTM_Plugin {
 }
 
 // start the plugin
-BTM_Plugin::get_instance();
+BTM_Plugin::run();
