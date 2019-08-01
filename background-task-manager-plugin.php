@@ -111,7 +111,6 @@ final class BTM_Plugin {
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
 		require_once( $core_path . 'class-btm-task-delete-old-entities-manager.php' );
-		require_once( $core_path . 'class-btm-cron-job-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
 
@@ -124,6 +123,7 @@ final class BTM_Plugin {
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job.php' );
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-task-runner.php' );
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-delete-old-entities.php' );
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-manager.php' );
 
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );
