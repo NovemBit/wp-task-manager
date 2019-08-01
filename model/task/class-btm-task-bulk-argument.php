@@ -257,7 +257,6 @@ class BTM_Task_Bulk_Argument {
 	/**
 	 * BTM_Task constructor.
 	 *
-	 * @param int $task_id
 	 * @param mixed[] $callback_arguments
 	 * @param int $priority
 	 * @param BTM_Task_Run_Status $status

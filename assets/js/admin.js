@@ -27,7 +27,7 @@
 		$('.btm-callback-action-settings').select2();
 		$('.btm-status-settings').select2();
 		$('.btm-users-settings').select2({
-			placeholder: 'Select users',
+			placeholder: 'Select users'
 		});
 	});
 
@@ -55,7 +55,7 @@
 			$.ajax({
 				type : 'POST',
 				url : ajax_url,
-				data : data_obj,
+				data : data_obj
 			}).success(function(data){
 				if( data ){
 					$("input:checkbox[name=delete]:checked").parent().parent().hide();
@@ -75,7 +75,7 @@
 		$.ajax({
 			type : 'POST',
 			url : ajax_url,
-			data : data_obj,
+			data : data_obj
 		}).success(function( data ){
 				if( data ){
 					$( e.target ).parent().text( 'User removed' );

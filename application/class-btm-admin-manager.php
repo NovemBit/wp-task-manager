@@ -102,8 +102,8 @@ final class BTM_Admin_Manager {
 			if( ctype_digit( $interval ) ){
 				$updated = BTM_Plugin_Options::get_instance()->update_cron_job_interval_in_minutes( (int)$interval );
 				if( $updated ){
-					BTM_Cron_Job_Manager::get_instance()->remove_cron_job();
-					BTM_Cron_Job_Manager::get_instance()->activate_cron_job();
+					BTM_Cron_Job_Task_Runner::get_instance()->remove();
+					BTM_Cron_Job_Task_Runner::get_instance()->activate();
 				}
 			}
 		}
@@ -116,16 +116,16 @@ final class BTM_Admin_Manager {
 		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ] ) ){
 			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_interval ) ){
-				BTM_Plugin_Options::get_instance()->update_delete_old_tasks_logs_bulk_arguments_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_interval );
+				BTM_Plugin_Options::get_instance()->update_entities_become_old_interval( (int)$delete_old_tasks_logs_bulk_arguments_interval );
 			}
 		}
 		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ] ) ){
 			$delete_old_tasks_logs_bulk_arguments_cron_job_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_cron_job_interval ) ){
-				$updated = BTM_Plugin_Options::get_instance()->update_delete_old_tasks_logs_bulk_arguments_cron_job_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_cron_job_interval );
+				$updated = BTM_Plugin_Options::get_instance()->update_delete_old_entities_cron_job_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_cron_job_interval );
 				if( $updated ){
-					BTM_Cron_Job_Manager::get_instance()->remove_delete_old_tasks_logs_bulk_arguments_cron_job();
-					BTM_Cron_Job_Manager::get_instance()->activate_delete_old_tasks_logs_bulk_arguments_cron_job();
+					BTM_Cron_Job_Delete_Old_Entities::get_instance()->remove();
+					BTM_Cron_Job_Delete_Old_Entities::get_instance()->activate();
 				}
 			}
 		}
@@ -140,6 +140,7 @@ final class BTM_Admin_Manager {
 					$notification->create_users( $user_id, $last_insert_id );
 				}
 		}
+
 		$callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions();
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
 		$users = get_users( [ 'role__in' => [ 'administrator' ] ] );

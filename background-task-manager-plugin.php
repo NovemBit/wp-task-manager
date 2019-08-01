@@ -138,9 +138,8 @@ final class BTM_Plugin {
 		register_deactivation_hook( __FILE__, array( $this, 'on_plugin_deactivation' ) );
 		register_uninstall_hook( __FILE__, array( __CLASS__, 'on_plugin_uninstall' ) );
 
-		BTM_Plugin_Options::get_instance();
-
 		BTM_Task_Bulk_Argument_Manager::get_instance();
+
 		BTM_Task_Delete_Old_Entities_Manager::get_instance();
 
 		BTM_Cron_Job_Manager::get_instance()->hook_up_jobs();
