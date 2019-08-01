@@ -128,6 +128,12 @@ class BTM_Task_Run_Log_View_Dao{
 
 		$where = '';
 
+		if( $filter->has_task_id() ){
+			$where .= $wpdb->prepare( ' 
+				AND `' . $task_run_log_table_alias . '`.`task_id` = '. $filter->get_task_id() .'
+			' );
+		}
+
 		if( $filter->has_search() ){
 			$search = '%' . $wpdb->esc_like( $filter->get_search() ) . '%';
 			$where .= $wpdb->prepare( '

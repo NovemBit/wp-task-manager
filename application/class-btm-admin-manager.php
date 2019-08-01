@@ -47,10 +47,7 @@ final class BTM_Admin_Manager {
 		wp_enqueue_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js', array( 'jquery' ), $asset_version , true );
 		wp_enqueue_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css', array(), $asset_version );
 
-		wp_enqueue_script( 'fancybox-script', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js', array( 'jquery' ), $asset_version , true );
-		wp_enqueue_style( 'fancybox-style', plugin_dir_url( __DIR__ ) . 'assets/js/fancybox/fancybox/jquery.fancybox-1.3.4.css', array(), $asset_version );
-
-		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' , 'fancybox-script' ), $asset_version , true );
+		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' ), $asset_version , true );
 		wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 		wp_enqueue_style( 'btm-admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css', array(), $asset_version );
 	}
@@ -75,7 +72,7 @@ final class BTM_Admin_Manager {
 		);
 
 		new BTM_Admin_Task_Page_Table( $menu_slug );
-		 new BTM_Admin_Task_Single_Page();
+		new BTM_Admin_Task_Single_Page();
 
 		new BTM_Admin_Task_Bulk_Argument_Page_Table( $menu_slug );
 

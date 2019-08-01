@@ -287,6 +287,80 @@ class BTM_Task_Dao{
 		return $this->update( $task );
 	}
 
+	/**
+	 * This function should be update only registered and in progress tasks to paused tasks
+	 *
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function pause_tasks( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+			WHERE `id` IN ( ' . $ids_in . ' )
+			AND ( 
+					`status` = "'.BTM_Task_Run_Status::STATUS_REGISTERED.'" 
+				OR 
+					`status` = "'.BTM_Task_Run_Status::STATUS_IN_PROGRESS.'" 
+				)
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * This function should be update only paused tasks to registered tasks
+	 *
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function resume_tasks( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_REGISTERED.'"
+			WHERE `id` IN ( ' . $ids_in . ' ) 
+			AND `status` = "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
+	}
+
 	// endregion
 
 	// region DELETE
@@ -336,10 +410,21 @@ class BTM_Task_Dao{
 	public function delete_many_by_ids( array $ids ){
 		global $wpdb;
 
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
 		$query = $wpdb->prepare('
 			DELETE FROM `' . $this->get_table_name() . '` 
-			WHERE `id` IN ( %s )
-		', implode( ',', $ids ) );
+			WHERE `id` IN ( ' . $ids_in . ' ) AND `status` != "'. BTM_Task_Run_Status::STATUS_RUNNING .'"
+		' );
 
 		$deleted = $wpdb->query( $query );
 

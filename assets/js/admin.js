@@ -9,15 +9,18 @@
 		$( '#date-submit' ).trigger( 'click' )
 	});
 
-	/* Using custom settings */
-
-	$("a#btm-log-data").fancybox({
-		'centerOnScroll' : true
+	//Bulk verify alert
+	$( '#doaction' ).click(function () {
+		let confirmAction;
+		confirmAction = confirm( 'Are you sure?' );
+		if( false === confirmAction ){
+			$('#tasks-filter').submit(function (evt) {
+				evt.preventDefault();
+				window.history.back();
+			});
+		}
 	});
 
-	$("a#btm-arg-data").fancybox({
-		'centerOnScroll' : true
-	});
 
 	//select2
 	$(document).ready(function() {
