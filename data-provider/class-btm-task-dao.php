@@ -347,23 +347,27 @@ class BTM_Task_Dao{
 	}
 
 	/**
-	 * @param int $interval
+	 * @param int $interval_in_days
 	 *
 	 * @return bool
 	 */
-	public function delete_by_date_interval( $interval ){
+	public function delete_by_date_interval( $interval_in_days ){
 		global $wpdb;
 
-		if( ! is_int( $interval ) || 0 >= $interval ){
-			throw new InvalidArgumentException( 'Argument $interval should be positive int. Input was: ' . $interval );
+		if( ! is_int( $interval_in_days ) || 0 >= $interval_in_days ){
+			throw new InvalidArgumentException( 'Argument $interval should be positive int. Input was: ' . $interval_in_days );
 		}
 
-		$deleted = $wpdb->query(
-			'DELETE FROM `' . $this->get_table_name() . '`
-            		WHERE `date_created` < (NOW() - INTERVAL '. $interval .' DAY)'
-		);
+		$interval = date( 'Y-m-d H:i:s', time() - $interval_in_days * 24 * 60 * 60 );
 
-		if( false === $deleted || 0 === $deleted ){
+		$query = $wpdb->prepare('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE `date_created` < %s
+		', $interval);
+
+		$deleted = $wpdb->query( $query );
+
+		if( false === $deleted ){
 			return false;
 		}
 

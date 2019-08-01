@@ -411,35 +411,35 @@ final class BTM_Plugin_Options{
 	/**
 	 * @var int
 	 */
-	private $entities_become_old_interval;
+	private $entities_become_old_interval_in_days;
 	/**
 	 * @return int
 	 */
-	public function get_entities_become_old_interval(){
-		return $this->entities_become_old_interval;
+	public function get_entities_become_old_interval_in_days(){
+		return $this->entities_become_old_interval_in_days;
 	}
 	/**
-	 * @param int $entities_become_old_interval
+	 * @param int $entities_become_old_interval_in_days
 	 *
 	 * @throws InvalidArgumentException
-	 *      in the case the argument $entities_become_old_interval is not a positive int
+	 *      in the case the argument $entities_become_old_interval_in_days is not a positive int
 	 */
-	public function set_entities_become_old_interval( $entities_become_old_interval ){
-		if( ! is_int( $entities_become_old_interval ) || $entities_become_old_interval <= 0 ){
+	public function set_entities_become_old_interval_in_days( $entities_become_old_interval_in_days ){
+		if( ! is_int( $entities_become_old_interval_in_days ) || $entities_become_old_interval_in_days <= 0 ){
 			throw new InvalidArgumentException(
-				'Method set_entities_become_old_interval only accepts int greater than 0. Input was: ' . $entities_become_old_interval
+				'Method set_entities_become_old_interval only accepts int greater than 0. Input was: ' . $entities_become_old_interval_in_days
 			);
 		}
 
-		$this->entities_become_old_interval = $entities_become_old_interval;
+		$this->entities_become_old_interval_in_days = $entities_become_old_interval_in_days;
 	}
 	/**
 	 * Initializes the delete log recurrence interval in days
 	 */
 	private function init_entities_become_old_interval(){
-		$interval = (int)get_option( $this->get_db_table_prefix() . 'entities_become_old_interval' , 30 );
+		$interval = (int)get_option( $this->get_db_table_prefix() . 'entities_become_old_interval_in_days' , 30 );
 
-		$this->set_entities_become_old_interval( $interval );
+		$this->set_entities_become_old_interval_in_days( $interval );
 	}
 	/**
 	 * @param int $interval
@@ -447,11 +447,11 @@ final class BTM_Plugin_Options{
 	 * @return bool
 	 */
 	public function update_entities_become_old_interval( $interval ){
-		$this->set_entities_become_old_interval( $interval );
+		$this->set_entities_become_old_interval_in_days( $interval );
 
 		$updated = update_option(
-			$this->get_db_table_prefix() . 'entities_become_old_interval',
-			$this->get_entities_become_old_interval()
+			$this->get_db_table_prefix() . 'entities_become_old_interval_in_days',
+			$this->get_entities_become_old_interval_in_days()
 		);
 
 		if( $updated ){
