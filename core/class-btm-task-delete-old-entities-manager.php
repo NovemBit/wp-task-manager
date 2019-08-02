@@ -27,7 +27,7 @@ class BTM_Task_Delete_Old_Entities_Manager {
 	}
 
 	private function __construct(){
-		add_filter( 'btm_' . $this->get_callback_action(), array( $this, 'on_btm_task_delete_old_entities' ), 10, 1 );
+		add_filter( BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $this->get_callback_action(), array( $this, 'on_btm_task_delete_old_entities' ), 10, 1 );
 	}
 	private function __clone(){}
 	private function __wakeup(){}
@@ -59,30 +59,30 @@ class BTM_Task_Delete_Old_Entities_Manager {
 		$deleted_tasks = BTM_Task_Dao::get_instance()->delete_by_date_interval( $interval );
 
 		if( $deleted_tasks ){
-			$task_run_filter_log->add_log( $interval . ' days expired tasks deleted successfully' );
+			$task_run_filter_log->add_log( $interval . __( ' days expired tasks deleted successfully', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( false );
 		}else{
-			$task_run_filter_log->add_log( 'Could not delete '. $interval .' days expired tasks' );
+			$task_run_filter_log->add_log( __( 'Could not delete ', 'background_task_manager' ) . $interval . __( ' days expired tasks', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( true );
 		}
 
 		$deleted_bulk_arguments = BTM_Task_Bulk_Argument_Dao::get_instance()->delete_by_date_interval( $interval );
 
 		if( $deleted_bulk_arguments ){
-			$task_run_filter_log->add_log( $interval . ' days expired bulk arguments deleted successfully' );
+			$task_run_filter_log->add_log( $interval . __( ' days expired bulk arguments deleted successfully', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( false );
 		}else{
-			$task_run_filter_log->add_log( 'Could not delete '. $interval .' days expired bulk arguments' );
+			$task_run_filter_log->add_log( __( 'Could not delete ', 'background_task_manager' ) . $interval . __( ' days expired bulk arguments', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( true );
 		}
 
 		$deleted_logs = BTM_Task_Run_Log_Dao::get_instance()->delete_by_date_interval( $interval );
 
 		if( $deleted_logs ){
-			$task_run_filter_log->add_log( $interval . ' days expired logs deleted successfully' );
+			$task_run_filter_log->add_log( $interval . __( ' days expired logs deleted successfully', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( false );
 		}else{
-			$task_run_filter_log->add_log( 'Could not delete '. $interval .' days expired  logs' );
+			$task_run_filter_log->add_log( __( 'Could not delete ', 'background_task_manager' ) . $interval . __( ' days expired logs', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( true );
 		}
 
