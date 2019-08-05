@@ -242,6 +242,7 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 	/**
 	 * Get a list of hidden columns.
 	 *
+	 * @param string|WP_Screen $screen The screen you want the hidden columns for
 	 * @return array
 	 */
 	public function get_hidden_columns(){
@@ -284,7 +285,6 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 		}else{
 			echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
 		}
-
 	}
 
 	/**

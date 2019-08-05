@@ -375,9 +375,9 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 */
 	public function column_cb( $item ) {
 	    if( BTM_Task_Run_Status::STATUS_RUNNING === $item->get_status()->get_value() ){
-		    echo sprintf('<input type="checkbox" name="record[]" value="%s" disabled />', $item->get_id() );
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" disabled />', $item->get_id() );
         }else{
-		    echo sprintf('<input type="checkbox" name="record[]" value="%s" />', $item->get_id() );
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" />', $item->get_id() );
         }
 	}
 
@@ -415,7 +415,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			'<a href="' . $bulk_arguments_url . '&task_id='. $item->get_id() .'">'
 			. __( 'Bulk Arguments', 'background_task_manager' ) .
 			'</a>';
-
 
 		return sprintf(
 			'%1$s %2$s',
@@ -493,8 +492,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 
 		return $out;
 	}
-
-	// endregion
 
 	// endregion
 }
