@@ -113,14 +113,14 @@ final class BTM_Admin_Manager {
 				BTM_Plugin_Options::get_instance()->update_total_execution_allowed_duration_in_seconds( (int)$duration );
 			}
 		}
-		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ] ) ){
-			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-interval" ];
+		if( isset( $_POST[ "btm-delete-old-entities-interval" ] ) ){
+			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-entities-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_interval ) ){
 				BTM_Plugin_Options::get_instance()->update_entities_become_old_interval( (int)$delete_old_tasks_logs_bulk_arguments_interval );
 			}
 		}
-		if( isset( $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ] ) ){
-			$delete_old_tasks_logs_bulk_arguments_cron_job_interval = $_POST[ "btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" ];
+		if( isset( $_POST[ "btm-delete-old-entities-cron-job-interval" ] ) ){
+			$delete_old_tasks_logs_bulk_arguments_cron_job_interval = $_POST[ "btm-delete-old-entities-cron-job-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_cron_job_interval ) ){
 				$updated = BTM_Plugin_Options::get_instance()->update_delete_old_entities_cron_job_interval_in_days( (int)$delete_old_tasks_logs_bulk_arguments_cron_job_interval );
 				if( $updated ){
@@ -168,17 +168,17 @@ final class BTM_Admin_Manager {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="delete-old-tasks-logs-bulk-arguments-cron-job"><?php esc_html_e( 'Delete Expired Tasks, Bulk arguments and Logs Cron Job Interval','background_task_manager' ); ?></label></th>
+						<th scope="row"><label for="delete-old-entities-cron-job"><?php esc_html_e( 'Delete Expired Tasks, Bulk arguments and Logs Cron Job Interval','background_task_manager' ); ?></label></th>
 						<td>
-							<input name="btm-delete-old-tasks-logs-bulk-arguments-cron-job-interval" id="delete-old-tasks-logs-bulk-arguments-cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_old_tasks_logs_bulk_arguments_cron_job_interval', 30 ); ?>" >
-							<p class="description" id="delete-old-tasks-logs-bulk-arguments-cron-job" ><?php esc_html_e( 'The expired tasks, bulk arguments and logs cron job recurrence interval in days','background_task_manager' ); ?></p>
+							<input name="btm-delete-old-entities-cron-job-interval" id="delete-old-entities-cron-job" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_old_entities_cron_job_interval_in_days', 30 ); ?>" >
+							<p class="description" id="delete-old-entities-cron-job" ><?php esc_html_e( 'The expired tasks, bulk arguments and logs cron job recurrence interval in days','background_task_manager' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="delete-old-tasks-logs-bulk-arguments"><?php esc_html_e( 'Tasks, Bulk arguments and Logs Expiration Time','background_task_manager' ); ?></label></th>
+						<th scope="row"><label for="delete-old-entities"><?php esc_html_e( 'Tasks, Bulk arguments and Logs Expiration Time','background_task_manager' ); ?></label></th>
 						<td>
-							<input name="btm-delete-old-tasks-logs-bulk-arguments-interval" id="delete-old-tasks-logs-bulk-arguments" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_delete_old_tasks_logs_bulk_arguments_interval' , 30 ); ?>" >
-							<p class="description" id="delete-old-tasks-logs-bulk-arguments" ><?php esc_html_e( 'The tasks, bulk arguments and logs expiration time in days','background_task_manager' ); ?></p>
+							<input name="btm-delete-old-entities-interval" id="delete-old-entities" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_entities_become_old_interval_in_days' , 30 ); ?>" >
+							<p class="description" id="delete-old-entities" ><?php esc_html_e( 'The tasks, bulk arguments and logs expiration time in days','background_task_manager' ); ?></p>
 						</td>
 					</tr>
 					<tr>
