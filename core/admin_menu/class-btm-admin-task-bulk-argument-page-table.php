@@ -279,7 +279,12 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 	 * @param object $item
 	 */
 	public function column_cb($item) {
-		echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+		if( BTM_Task_Run_Status::STATUS_RUNNING === $item->get_status()->get_value() ){
+			echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" disabled />', $item->get_id() );
+		}else{
+			echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+		}
+
 	}
 
 	/**
