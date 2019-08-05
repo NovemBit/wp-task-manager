@@ -75,15 +75,16 @@ class BTM_Notification_Dao{
 	}
 
 	/**
-	 * @param  $user
+	 * @param $user
+	 * @param $insert_id
 	 *
 	 * @return bool
 	 */
-	public function create_users( $user, $last_insert_id ){
+	public function create_users( $user, $insert_id ){
 		global $wpdb;
 
 		$data_users = array(
-			'notification_callback_id' => $last_insert_id,
+			'notification_callback_id' => $insert_id,
 			'user_id'                  => $user,
 		);
 		$format_users = array( '%s', '%s' );

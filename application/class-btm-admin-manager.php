@@ -134,10 +134,10 @@ final class BTM_Admin_Manager {
 			$callback[ "status" ] = $_POST[ "status" ];
 			$users = $_POST[ "users" ];
 
-			$last_insert_id = $notification->create_callback( $callback );
-			if( $last_insert_id !== false )
+			$insert_id = $notification->create_callback( $callback );
+			if( $insert_id !== false )
 				foreach ( $users as $user_id ){
-					$notification->create_users( $user_id, $last_insert_id );
+					$notification->create_users( $user_id, $insert_id );
 				}
 		}
 
