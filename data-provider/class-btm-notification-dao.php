@@ -42,7 +42,7 @@ class BTM_Notification_Dao{
 	 * @return string
 	 */
 	public function get_users_table_name(){
-		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notificatoin_users';
+		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_users';
 	}
 
 	// region CREATE
