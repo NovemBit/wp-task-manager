@@ -42,17 +42,14 @@ class BTM_Task_Single_View_Dao{
 			WHERE `id` = '. $task_id .'
 			';
 
-		$task_data = $wpdb->get_results( $query, OBJECT );
+		$task_data = $wpdb->get_row( $query, OBJECT );
+
 		if( empty( $task_data ) ){
-			return array();
+			return false;
 		}
 
-		$task = array();
-		foreach ( $task_data as $task_obj ){
-			$task[] = $this->create_task_from_db_obj( $task_obj );
-		}
+		return $this->create_task_from_db_obj( $task_data );
 
-		return $task;
 	}
 
 	// endregion

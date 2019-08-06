@@ -100,7 +100,6 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
-				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
 			}else{
 				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),

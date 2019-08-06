@@ -70,27 +70,77 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	}
 
 	public function on_hook_page_load_process_bulk(){
-		if ( isset( $_GET['action'] ) && static::BULK_ACTION_DELETE === $_GET['action'] ) {
-			// todo: bulk actions should be done with POST request and nonce should be checked
-			$to_delete = $_GET[ static::BULK_ACTION_DELETE ];
-			if( ! is_array( $to_delete ) ){
-				$to_delete = array( $to_delete );
-			}
 
-			$deleted = BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
-			// todo: check $deleted, show admin notice success or error
-
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		} else {
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		}
+        if( ! empty( $_GET[ 'action' ] ) ){
+	        // Bulk Action Delete
+	        if ( static::BULK_ACTION_DELETE === $_GET['action'] ) {
+		            $this->delete_tasks();
+	        } else {
+		            $this->slash_url();
+	        }
+	        // Bulk Action Pause
+	        if ( static::BULK_ACTION_PAUSE === $_GET['action'] ) {
+		        $this->pause_tasks();
+	        } else {
+		        $this->slash_url();
+	        }
+	        // Bulk Action Resume
+	        if ( static::BULK_ACTION_RESUME === $_GET['action'] ) {
+		        $this->resume_tasks();
+	        } else {
+		        $this->slash_url();
+	        }
+        }
 	}
+
+	private function slash_url(){
+		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+			exit;
+		}
+    }
+
+	private function delete_tasks(){
+		$to_delete = $_GET[ 'record' ];
+		if( ! is_array( $to_delete ) ){
+			$to_delete = array( $to_delete );
+		}
+
+		BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
+
+		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+			exit;
+		}
+    }
+
+    private function resume_tasks(){
+	    $to_resume = $_GET[ 'record' ];
+	    if( ! is_array( $to_resume ) ){
+		    $to_resume = array( $to_resume );
+	    }
+
+	    BTM_Task_Dao::get_instance()->resume_tasks( $to_resume );
+
+	    if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+		    wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_RESUME, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+		    exit;
+	    }
+    }
+
+    private function pause_tasks(){
+	    $to_pause = $_GET[ 'record' ];
+	    if( ! is_array( $to_pause ) ){
+		    $to_pause = array( $to_pause );
+	    }
+
+	    BTM_Task_Dao::get_instance()->pause_tasks( $to_pause );
+
+	    if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+		    wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_PAUSE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+		    exit;
+	    }
+    }
 
 	// endregion
 
@@ -121,7 +171,9 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 */
 	public function get_bulk_actions() {
 		$actions = array(
-			static::BULK_ACTION_DELETE => __( 'Delete', 'background_task_manager' )
+			static::BULK_ACTION_DELETE => __( 'Delete', 'background_task_manager' ),
+			static::BULK_ACTION_PAUSE => __( 'Pause', 'background_task_manager' ),
+			static::BULK_ACTION_RESUME => __( 'Resume', 'background_task_manager' )
 		);
 
 		return $actions;
@@ -285,7 +337,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	/**
 	 * Get a list of hidden columns.
 	 *
-	 * @param string|WP_Screen $screen The screen you want the hidden columns for
 	 * @return array
 	 */
 	public function get_hidden_columns(){
@@ -321,11 +372,13 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * Show table checkboxes
 	 *
 	 * @param object $item
-	 *
-	 * @return string
 	 */
 	public function column_cb( $item ) {
-		echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+	    if( BTM_Task_Run_Status::STATUS_RUNNING === $item->get_status()->get_value() ){
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" disabled />', $item->get_id() );
+        }else{
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" />', $item->get_id() );
+        }
 	}
 
 	/**
@@ -351,10 +404,17 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		if ( $item->get_status() != BTM_Task_Run_Status::STATUS_REGISTERED ){
 			$logs_url = add_query_arg('page', BTM_Admin_Task_Run_Log_Page_Table::get_page_slug(), $url );
 			$actions['view_logs'] =
-			'<a href="' . $logs_url . '">'
+			'<a href="' . $logs_url . '&task_id='. $item->get_id() .'">'
 				. __( 'Logs', 'background_task_manager' ) .
 			'</a>';
 		}
+
+
+		$bulk_arguments_url = add_query_arg('page', BTM_Admin_Task_Bulk_Argument_Page_Table::get_page_slug(), $url );
+		$actions['view_bulk_arguments'] =
+			'<a href="' . $bulk_arguments_url . '&task_id='. $item->get_id() .'">'
+			. __( 'Bulk Arguments', 'background_task_manager' ) .
+			'</a>';
 
 		return sprintf(
 			'%1$s %2$s',
@@ -370,24 +430,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 */
 	public function column_callback_arguments( BTM_Task_View $item ) {
 		$args = $item->get_callback_arguments();
-		foreach ( $args as $key => $arg){
-			if( is_array( $arg ) ){
-				$arg = 'Array';
-			}
-			if( is_object( $arg ) ){
-				$arg = 'Object';
-			}
-			echo '<p>'. $key .' => ' . $arg .'</p>';
-		}
-		?>
-		<a id="btm-arg-data" href="#arg-data">View more</a>
-
-		<div style="display:none">
-			<div id="arg-data" data-selectable="true">
-				<?php highlight_string("<?php\n\$args =\n" . var_export($args, true) . ";\n?>"); ?>
-			</div>
-		</div>
-		<?php
+		highlight_string( var_export($args, true) );
 	}
 
 	/**
@@ -449,8 +492,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 
 		return $out;
 	}
-
-	// endregion
 
 	// endregion
 }

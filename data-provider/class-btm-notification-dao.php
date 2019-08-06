@@ -42,7 +42,7 @@ class BTM_Notification_Dao{
 	 * @return string
 	 */
 	public function get_users_table_name(){
-		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notificatoin_users';
+		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_users';
 	}
 
 	// region CREATE
@@ -75,15 +75,16 @@ class BTM_Notification_Dao{
 	}
 
 	/**
-	 * @param  $user
+	 * @param $user
+	 * @param $insert_id
 	 *
 	 * @return bool
 	 */
-	public function create_users( $user, $last_insert_id ){
+	public function create_users( $user, $insert_id ){
 		global $wpdb;
 
 		$data_users = array(
-			'notification_callback_id' => $last_insert_id,
+			'notification_callback_id' => $insert_id,
 			'user_id'                  => $user,
 		);
 		$format_users = array( '%s', '%s' );

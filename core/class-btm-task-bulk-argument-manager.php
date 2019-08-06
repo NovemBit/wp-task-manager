@@ -26,7 +26,7 @@ class BTM_Task_Bulk_Argument_Manager {
 	}
 
 	private function __construct(){
-		add_filter( 'btm_' . $this->get_callback_action(), array( $this, 'on_btm_normalize_task_bulk_arguments' ), 5, 2 );
+		add_filter( BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $this->get_callback_action(), array( $this, 'on_btm_normalize_task_bulk_arguments' ), 5, 2 );
 	}
 	private function __clone(){}
 	private function __wakeup(){}
