@@ -75,30 +75,17 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	        // Bulk Action Delete
 	        if ( static::BULK_ACTION_DELETE === $_GET['action'] ) {
 		            $this->delete_tasks();
-	        } else {
-		            $this->slash_url();
 	        }
 	        // Bulk Action Pause
 	        if ( static::BULK_ACTION_PAUSE === $_GET['action'] ) {
 		        $this->pause_tasks();
-	        } else {
-		        $this->slash_url();
 	        }
 	        // Bulk Action Resume
 	        if ( static::BULK_ACTION_RESUME === $_GET['action'] ) {
 		        $this->resume_tasks();
-	        } else {
-		        $this->slash_url();
 	        }
         }
 	}
-
-	private function slash_url(){
-		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-			exit;
-		}
-    }
 
 	private function delete_tasks(){
 		$to_delete = $_GET[ 'record' ];
