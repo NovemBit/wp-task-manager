@@ -33,10 +33,10 @@
 
 	//custom bulk
 	$( '.btm-bulk-delete' ).click( function(){
-		if($(this).prop("checked") == true){
+		if($(this).prop("checked") === true){
 			$( '.btm-delete' ).prop("checked", true);
 		}
-		else if($(this).prop("checked") == false){
+		else if($(this).prop("checked") === false){
 			$( '.btm-delete' ).prop("checked", false);
 		}
 	} );

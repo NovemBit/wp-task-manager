@@ -421,12 +421,10 @@ class BTM_Task_Dao{
 
 		$ids_in = ltrim( $ids_in, ', ' );
 
-		$query = $wpdb->prepare('
+		$deleted = $wpdb->query( '
 			DELETE FROM `' . $this->get_table_name() . '` 
 			WHERE `id` IN ( ' . $ids_in . ' ) AND `status` != "'. BTM_Task_Run_Status::STATUS_RUNNING .'"
 		' );
-
-		$deleted = $wpdb->query( $query );
 
 		return false !== $deleted;
 	}

@@ -128,6 +128,7 @@ final class BTM_Plugin {
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );
 		require_once( $app_path . 'class-btm-admin-manager.php' );
+		require_once( $app_path . 'class-btm-admin-settings-manager.php' );
 	}
 
 	/**
@@ -155,6 +156,7 @@ final class BTM_Plugin {
 		$plugin_options = BTM_Plugin_Options::get_instance();
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
+			BTM_Admin_Settings_Manager::run();
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			// this method should not be called directly, this is only for debug purposes
 			BTM_Cron_Job_Task_Runner::get_instance()->on_cron_job_runs();

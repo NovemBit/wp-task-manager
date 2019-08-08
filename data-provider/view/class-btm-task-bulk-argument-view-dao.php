@@ -46,9 +46,7 @@ class BTM_Task_Bulk_Argument_View_Dao{
 		$where = $this->generate_where_statement( $filter, 'bulk_args', 'tasks' );
 
 		if( $filter->has_task_id() ){
-			$where .= $wpdb->prepare( ' 
-				AND `bulk_args`.`task_id` = '. $filter->get_task_id() .'
-			' );
+			$where .= ' AND `bulk_args`.`task_id` = '. $filter->get_task_id() .' ';
 		}
 
 		if( $filter->has_order_params() ){

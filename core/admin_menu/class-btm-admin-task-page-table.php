@@ -70,68 +70,64 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	}
 
 	public function on_hook_page_load_process_bulk(){
-		// Bulk Action Delete
-		if ( ! empty( $_GET['action'] ) && static::BULK_ACTION_DELETE === $_GET['action'] ) {
-			// todo: bulk actions should be done with POST request and nonce should be checked
-			$to_delete = $_GET[ 'record' ];
-			if( ! is_array( $to_delete ) ){
-				$to_delete = array( $to_delete );
-			}
 
-			$deleted = BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
-			// todo: check $deleted, show admin notice success or error
-
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		} else {
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		}
-
-		// Bulk Action Pause
-		if ( ! empty( $_GET['action'] ) && static::BULK_ACTION_PAUSE === $_GET['action'] ) {
-			$to_pause = $_GET[ 'record' ];
-			if( ! is_array( $to_pause ) ){
-				$to_pause = array( $to_pause );
-			}
-
-			BTM_Task_Dao::get_instance()->pause_tasks( $to_pause );
-
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_PAUSE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		} else {
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		}
-
-		// Bulk Action Resume
-		if ( ! empty( $_GET['action'] ) && static::BULK_ACTION_RESUME === $_GET['action'] ) {
-			$to_resume = $_GET[ 'record' ];
-			if( ! is_array( $to_resume ) ){
-				$to_resume = array( $to_resume );
-			}
-
-			BTM_Task_Dao::get_instance()->resume_tasks( $to_resume );
-
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_RESUME, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		} else {
-			if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
-				wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
-				exit;
-			}
-		}
+        if( ! empty( $_GET[ 'action' ] ) ){
+	        // Bulk Action Delete
+	        if ( static::BULK_ACTION_DELETE === $_GET['action'] ) {
+		            $this->delete_tasks();
+	        }
+	        // Bulk Action Pause
+	        if ( static::BULK_ACTION_PAUSE === $_GET['action'] ) {
+		        $this->pause_tasks();
+	        }
+	        // Bulk Action Resume
+	        if ( static::BULK_ACTION_RESUME === $_GET['action'] ) {
+		        $this->resume_tasks();
+	        }
+        }
 	}
+
+	private function delete_tasks(){
+		$to_delete = $_GET[ 'record' ];
+		if( ! is_array( $to_delete ) ){
+			$to_delete = array( $to_delete );
+		}
+
+		BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
+
+		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+			exit;
+		}
+    }
+
+    private function resume_tasks(){
+	    $to_resume = $_GET[ 'record' ];
+	    if( ! is_array( $to_resume ) ){
+		    $to_resume = array( $to_resume );
+	    }
+
+	    BTM_Task_Dao::get_instance()->resume_tasks( $to_resume );
+
+	    if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+		    wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_RESUME, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+		    exit;
+	    }
+    }
+
+    private function pause_tasks(){
+	    $to_pause = $_GET[ 'record' ];
+	    if( ! is_array( $to_pause ) ){
+		    $to_pause = array( $to_pause );
+	    }
+
+	    BTM_Task_Dao::get_instance()->pause_tasks( $to_pause );
+
+	    if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+		    wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_PAUSE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
+		    exit;
+	    }
+    }
 
 	// endregion
 
@@ -365,7 +361,11 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	 * @param object $item
 	 */
 	public function column_cb( $item ) {
-		echo sprintf('<input type="checkbox" name="record[]" value="%s" />', $item->get_id() );
+	    if( BTM_Task_Run_Status::STATUS_RUNNING === $item->get_status()->get_value() ){
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" disabled />', $item->get_id() );
+        }else{
+		      echo sprintf('<input type="checkbox" name="record[]" value="%s" />', $item->get_id() );
+        }
 	}
 
 	/**
@@ -402,7 +402,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			'<a href="' . $bulk_arguments_url . '&task_id='. $item->get_id() .'">'
 			. __( 'Bulk Arguments', 'background_task_manager' ) .
 			'</a>';
-
 
 		return sprintf(
 			'%1$s %2$s',
@@ -480,8 +479,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 
 		return $out;
 	}
-
-	// endregion
 
 	// endregion
 }
