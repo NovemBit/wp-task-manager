@@ -1,6 +1,6 @@
 (function( $ ) {
 	//filer
-	$( '#unset-date' ).click(function(){
+	$( '#btm-reset' ).click(function(){
 		$( '#jquery-datepicker-entry' ).val( '' );
 		$( '#jquery-datepicker-end' ).val( '' );
 		$( '#status-filter' ).val( '' );
