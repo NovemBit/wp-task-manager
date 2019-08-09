@@ -6,7 +6,7 @@
 		$( '#status-filter' ).val( '' );
 		$( '#callback-filter' ).val( '' );
 		$( '#search_id-search-input' ).val( '' );
-		$( '#date-submit' ).trigger( 'click' )
+		$( '#btm-submit' ).trigger( 'click' )
 	});
 
 	//Bulk verify alert
