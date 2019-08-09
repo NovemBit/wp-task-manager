@@ -1,7 +1,7 @@
 (function( $ ) {
 	//filer
 	$( '#btm-reset' ).click(function(){
-		$( '#jquery-datepicker-entry' ).val( '' );
+		$( '#jquery-datepicker-start' ).val( '' );
 		$( '#jquery-datepicker-end' ).val( '' );
 		$( '#status-filter' ).val( '' );
 		$( '#callback-filter' ).val( '' );
