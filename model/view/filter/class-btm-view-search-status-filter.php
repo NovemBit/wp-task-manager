@@ -77,4 +77,40 @@ class BTM_View_Search_Status_Filter extends BTM_View_Filter {
 
 		return false;
 	}
+
+	/**
+	 * @var int
+	 */
+	protected $task_id;
+	/**
+	 * @return int
+	 */
+	public function get_task_id(){
+		return $this->task_id;
+	}
+	/**
+	 * @param int $task_id
+	 *
+	 * @throws InvalidArgumentException
+	 *      in the case the argument $task_id is not a int
+	 */
+	public function set_task_id( $task_id ){
+		if( 0 >= $task_id ){
+			throw new InvalidArgumentException('
+				Argument $task_id should be int Input was: ' . $task_id
+			);
+		}
+
+		$this->task_id = $task_id;
+	}
+	/**
+	 * @return bool
+	 */
+	public function has_task_id(){
+		if( 0 < $this->task_id ){
+			return true;
+		}
+
+		return false;
+	}
 }

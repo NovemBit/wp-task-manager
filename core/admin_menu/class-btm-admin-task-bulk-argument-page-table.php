@@ -156,6 +156,9 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 
 	protected function prepare_filter(){
 		$filter = new BTM_Task_Bulk_Argument_View_Filter();
+		if( ! empty( $_GET[ 'task_id' ] ) ){
+			$filter->set_task_id( (int)$_GET[ 'task_id' ] );
+		}
 		if( ! empty( $_GET[ 'orderby' ] ) ){
 			$filter->set_order_by( $_GET[ 'orderby' ] );
 		}else{
@@ -277,7 +280,11 @@ final class BTM_Admin_Task_Bulk_Argument_Page_Table extends BTM_Admin_Page_Table
 	 * @param object $item
 	 */
 	public function column_cb($item) {
-		echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+		if( BTM_Task_Run_Status::STATUS_RUNNING === $item->get_status()->get_value() ){
+			echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" disabled />', $item->get_id() );
+		}else{
+			echo sprintf('<input type="checkbox" name="' . static::BULK_ACTION_DELETE . '[]" value="%s" />', $item->get_id() );
+		}
 	}
 
 	/**

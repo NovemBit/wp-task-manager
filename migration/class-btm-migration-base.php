@@ -112,7 +112,7 @@ class BTM_Migration_Base implements I_BTM_Migration{
 		');
 
 		$wpdb->query('
-			CREATE TABLE IF NOT EXISTS `btm_notificatoin_users` (
+			CREATE TABLE IF NOT EXISTS `btm_notification_users` (
 			  `notification_callback_id` bigint(20) NOT NULL,
 			  `user_id` int(11) NOT NULL,
 			  PRIMARY KEY (`notification_callback_id`,`user_id`)

@@ -126,6 +126,28 @@ class BTM_Task_Dao{
 	}
 
 	/**
+	 * @param string $callback_action
+	 *
+	 * @return I_BTM_Task|false
+	 */
+	public function get_by_callback_action( $callback_action ){
+		global $wpdb;
+
+		$query = $wpdb->prepare('
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+			WHERE `callback_action` = %d
+		', $callback_action);
+
+		$task_obj = $wpdb->get_row( $query, OBJECT );
+		if( null === $task_obj ){
+			return false;
+		}
+
+		return $this->create_task_from_db_obj( $task_obj );
+	}
+
+	/**
 	 * @param I_BTM_Task $task
 	 *
 	 * @return I_BTM_Task|false
@@ -265,6 +287,80 @@ class BTM_Task_Dao{
 		return $this->update( $task );
 	}
 
+	/**
+	 * This function should be update only registered and in progress tasks to paused tasks
+	 *
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function pause_tasks( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+			WHERE `id` IN ( ' . $ids_in . ' )
+			AND ( 
+					`status` = "'.BTM_Task_Run_Status::STATUS_REGISTERED.'" 
+				OR 
+					`status` = "'.BTM_Task_Run_Status::STATUS_IN_PROGRESS.'" 
+				)
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * This function should be update only paused tasks to registered tasks
+	 *
+	 * @param array $ids
+	 *
+	 * @return bool
+	 */
+	public function resume_tasks( array $ids ){
+		global $wpdb;
+
+		if( 0 === count( $ids ) ){
+			return true;
+		}
+
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$updated = $wpdb->query( '
+			UPDATE `' . $this->get_table_name() . '`
+			SET `status` =  "'.BTM_Task_Run_Status::STATUS_REGISTERED.'"
+			WHERE `id` IN ( ' . $ids_in . ' ) 
+			AND `status` = "'.BTM_Task_Run_Status::STATUS_PAUSED.'"
+		' );
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
+	}
+
 	// endregion
 
 	// region DELETE
@@ -314,16 +410,52 @@ class BTM_Task_Dao{
 	public function delete_many_by_ids( array $ids ){
 		global $wpdb;
 
-		$query = $wpdb->prepare('
-			DELETE FROM `' . $this->get_table_name() . '` 
-			WHERE `id` IN ( %s )
-		', implode( ',', $ids ) );
+		if( 0 === count( $ids ) ){
+			return true;
+		}
 
-		$deleted = $wpdb->query( $query );
+		$ids_in = '';
+		foreach ( $ids as $id ){
+			$ids_in .= $wpdb->prepare(', %d', $id);
+		}
+
+		$ids_in = ltrim( $ids_in, ', ' );
+
+		$deleted = $wpdb->query( '
+			DELETE FROM `' . $this->get_table_name() . '` 
+			WHERE `id` IN ( ' . $ids_in . ' ) AND `status` != "'. BTM_Task_Run_Status::STATUS_RUNNING .'"
+		' );
 
 		return false !== $deleted;
 	}
 
+	/**
+	 * @param int $interval_in_days
+	 *
+	 * @return bool
+	 */
+	public function delete_by_date_interval( $interval_in_days ){
+		global $wpdb;
+
+		if( ! is_int( $interval_in_days ) || 0 >= $interval_in_days ){
+			throw new InvalidArgumentException( 'Argument $interval should be positive int. Input was: ' . $interval_in_days );
+		}
+
+		$interval = date( 'Y-m-d H:i:s', time() - $interval_in_days * 24 * 60 * 60 );
+
+		$query = $wpdb->prepare('
+			DELETE FROM `' . $this->get_table_name() . '`
+			WHERE `date_created` < %s
+		', $interval);
+
+		$deleted = $wpdb->query( $query );
+
+		if( false === $deleted ){
+			return false;
+		}
+
+		return true;
+	}
 	// endregion
 
 	/**

@@ -56,9 +56,11 @@ final class BTM_Admin_Task_Single_Page {
 			}
 		}
 		$dao = BTM_Task_Single_View_Dao::get_instance();
-		$data = $dao->get_task( $task_id );
-		$data = $data[0];
-		$task_status = $data->get_status()->get_value();
+		$task = $dao->get_task( $task_id );
+		if( $task === false ){
+			throw new InvalidArgumentException( 'Wrong task id - ' . $task_id );
+        }
+		$task_status = $task->get_status()->get_value();
 		if( $task_id === false ){
 			throw new InvalidArgumentException( 'Argument $task_id should be set from $_GET. Input was: ' . $task_id );
 		}
@@ -70,40 +72,40 @@ final class BTM_Admin_Task_Single_Page {
 						<tbody>
 							<tr>
 								<th scope="row"><label><?php echo __( 'Callback Action', 'background_task_manager' ); ?></label></th>
-								<td><?php highlight_string( $data->get_callback_action() ); ?></td>
+								<td><?php highlight_string( $task->get_callback_action() ); ?></td>
 							</tr>
 							<tr>
 								<th scope="row"><label for="priority"><?php echo __( 'Priority', 'background_task_manager' ); ?></label></th>
 								<td>
 									<?php if( $task_status === 'registered' ){
-										?><input type="number" id="priority" name="priority" value="<?php echo $data->get_priority(); ?>" /><?php
+										?><input type="number" id="priority" name="priority" value="<?php echo $task->get_priority(); ?>" /><?php
 									}else{
-										highlight_string( $data->get_priority() );
+										highlight_string( $task->get_priority() );
 									} ?>
 								</td>
 							</tr>
 							<tr>
 								<th scope="row"><label for="bulk-size"><?php echo __( 'Bulk Size', 'background_task_manager' ); ?></label></th>
 								<td>
-									<?php if( $task_status === 'registered' && $data->get_bulk_size() > 0 ){
-										?><input type="number" id="bulk-size" min="1" name="bulk_size" value="<?php echo $data->get_bulk_size(); ?>" /><?php
+									<?php if( $task_status === 'registered' && $task->get_bulk_size() > 0 ){
+										?><input type="number" id="bulk-size" min="1" name="bulk_size" value="<?php echo $task->get_bulk_size(); ?>" /><?php
 									}else{
-										highlight_string( $data->get_bulk_size() );
+										highlight_string( $task->get_bulk_size() );
 									} ?>
 
 								</td>
 							</tr>
 							<tr>
 								<th scope="row"><label><?php echo __( 'Status', 'background_task_manager' ); ?></label></th>
-								<td><?php highlight_string( $data->get_status() ); ?></td>
+								<td><?php highlight_string( $task->get_status() ); ?></td>
 							</tr>
 							<tr>
 								<th scope="row"><label><?php echo __( 'Date Created', 'background_task_manager' ); ?></label></th>
-								<td><?php highlight_string( date('Y/m/d H:i:s', $data->get_date_created_timestamp() ) ); ?></td>
+								<td><?php highlight_string( date('Y/m/d H:i:s', $task->get_date_created_timestamp() ) ); ?></td>
 							</tr>
 							<tr>
 								<th scope="row"><label><?php echo __( 'Callback Arguments', 'background_task_manager' ); ?></label></th>
-								<td><?php highlight_string( "" . var_export( $data->get_callback_arguments(), true ) . "" ); ?></td>
+								<td><?php highlight_string( "" . var_export( $task->get_callback_arguments(), true ) . "" ); ?></td>
 							</tr>
 						</tbody>
 					</table>
