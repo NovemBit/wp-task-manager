@@ -94,6 +94,12 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		}
 
 		BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
+		foreach ( $to_delete as $task_id ){
+			$bulk_arguments = BTM_Task_Bulk_Argument_Dao::get_instance()->get_by_task_id( (int)$task_id );
+			foreach ( $bulk_arguments as $bulk_argument ){
+				BTM_Task_Bulk_Argument_Dao::get_instance()->delete( $bulk_argument );
+            }
+        }
 
 		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
 			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
