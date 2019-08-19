@@ -34,7 +34,6 @@ final class BTM_Notification_Runner {
 
 	private function __construct() {
 		$this->init_webhook();
-		add_action( 'admin_enqueue_scripts', array( $this, 'on_hook_admin_enqueue_scripts' ) );
 	}
 
 	private function __clone() {
@@ -71,35 +70,9 @@ final class BTM_Notification_Runner {
 	private $task_id = null;
 
 	/**
-	 * Should only be called from hook admin_enqueue_scripts
-	 * @see https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
-	 */
-	function on_hook_admin_enqueue_scripts() {
-		$asset_version = BTM_Plugin_Options::get_instance()->get_asset_version();
-
-		wp_enqueue_script( 'btm-admin-notification-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/notification.js' , array( 'jquery' ), $asset_version , true );
-		if( $this->webhook !== null &&
-		    $this->callback_action !== null &&
-		    $this->status !== null
-		){
-			wp_localize_script(
-				'btm-admin-notification-scripts',
-				'ajax_object',
-				array(
-					'webhook'           => $this->webhook,
-					'task_id'           => $this->task_id,
-					'task_url'          => $this->task_url,
-					'callback_action'   => $this->callback_action,
-					'status'            => $this->status,
-				)
-			);
-		}
-	}
-
-	/**
 	 * Send Notification by callback action and status if exist in Discord Notification rules from settings
 	 *
-	 * @param BTM_Task $task
+	 * @param I_BTM_Task $task
 	 */
 	public function send( $task ){
 		$callbacks_and_statuses = BTM_Notification_Dao::get_instance()->get_callback_actions_and_statuses();
@@ -111,6 +84,37 @@ final class BTM_Notification_Runner {
 				$this->callback_action = $item->callback_action;
 				$this->status = $item->status;
 				$this->task_url = admin_url( 'admin.php?page=btm-task-view&action=edit&task_id=' . $this->task_id );
+				wp_remote_post(
+					$this->webhook,
+					array(
+						'method'  => 'POST',
+						'headers' => array(
+							'Content-Type'  => 'application/json',
+						),
+						'body' => array(
+									'content' => 'Task #' . $this->task_id . ' - ' . $this->status,
+									'embeds'  => array(
+													'fields' => array(
+																	array(
+																		"name"=> "Callback action",
+																		"value"=> $this->callback_action,
+																		"inline"=> true
+																	),
+																	array(
+																		"name"=> "Status",
+																		"value"=> $this->status,
+																		"inline"=> true
+																	),
+																	array(
+																		"name"=> "Task url",
+																		"value"=> $this->task_url,
+																		"inline"=> false
+																	)
+																)
+												)
+								),
+					)
+				);
 			}
 		}
 	}

@@ -33,17 +33,11 @@ final class BTM_Task_Runner{
 		}
 	}
 	private function __construct() {
-		$this->notification_runner = BTM_Notification_Runner::get_instance();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
 
 	// endregion
-
-	/**
-	 * @var BTM_Task_Runner
-	 */
-	private $notification_runner = null;
 
 	/**
 	 * Changes the task running status during the run
