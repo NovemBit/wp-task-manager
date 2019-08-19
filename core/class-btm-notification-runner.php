@@ -88,8 +88,6 @@ class BTM_Notification_Runner {
 						'body'    => $body
 					)
 				);
-				var_dump( $asd );
-				die;
 			}
 		}
 	}
