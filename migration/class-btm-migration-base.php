@@ -110,14 +110,6 @@ class BTM_Migration_Base implements I_BTM_Migration{
 			  PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');
-
-		$wpdb->query('
-			CREATE TABLE IF NOT EXISTS `btm_notification_users` (
-			  `notification_callback_id` bigint(20) NOT NULL,
-			  `user_id` int(11) NOT NULL,
-			  PRIMARY KEY (`notification_callback_id`,`user_id`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-		');
 	}
 
 	public function down(){}

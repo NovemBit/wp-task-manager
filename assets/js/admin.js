@@ -26,9 +26,6 @@
 	$(document).ready(function() {
 		$('.btm-callback-action-settings').select2();
 		$('.btm-status-settings').select2();
-		$('.btm-users-settings').select2({
-			placeholder: 'Select users'
-		});
 	});
 
 	//custom bulk
@@ -63,27 +60,5 @@
 			});
 		}
 	});
-
-	//user remove ajax
-	$('.btm-user-remove').click(function(e){
-		let data_obj = { 'action' : 'btm_ajax' ,
-						notification_callback_id : e.target.attributes.data_notification_callback_id.nodeValue,
-						user_id : e.target.attributes.data_user_id.nodeValue
-						};
-		let ajax_url = ajax_object.ajax_url;
-
-		$.ajax({
-			type : 'POST',
-			url : ajax_url,
-			data : data_obj
-		}).success(function( data ){
-				if( data ){
-					$( e.target ).parent().text( 'User removed' );
-					$( e.target ).hide();
-				}
-			});
-
-	})
-
 
 })( jQuery );

@@ -38,13 +38,6 @@ class BTM_Notification_Dao{
 		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_callbacks';
 	}
 
-	/**
-	 * @return string
-	 */
-	public function get_users_table_name(){
-		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_users';
-	}
-
 	// region CREATE
 
 	/**
@@ -74,34 +67,6 @@ class BTM_Notification_Dao{
 		return $wpdb->insert_id;
 	}
 
-	/**
-	 * @param $user
-	 * @param $insert_id
-	 *
-	 * @return bool
-	 */
-	public function create_users( $user, $insert_id ){
-		global $wpdb;
-
-		$data_users = array(
-			'notification_callback_id' => $insert_id,
-			'user_id'                  => $user,
-		);
-		$format_users = array( '%s', '%s' );
-
-		$inserted = $wpdb->insert(
-			$this->get_users_table_name(),
-			$data_users,
-			$format_users
-		);
-
-		if( false === $inserted ){
-			return false;
-		}
-
-		return true;
-	}
-
 	// endregion
 
 	// region READ
@@ -121,23 +86,6 @@ class BTM_Notification_Dao{
 		}
 
 		return $callbacks_and_statuses;
-	}
-
-	public function get_users(){
-		global $wpdb;
-
-		$query = '
-			SELECT * 
-			FROM `' . $this->get_users_table_name() . '`
-		';
-
-		$users = $wpdb->get_results( $query, OBJECT );
-
-		if( empty( $users ) ){
-			return false;
-		}
-
-		return $users;
 	}
 
 	// endregion
@@ -221,29 +169,6 @@ class BTM_Notification_Dao{
 	// region DELETE
 
 	/**
-	 * @param $callback_action_id
-	 * @param $user_id
-	 *
-	 * @return bool
-	 */
-	public function delete_user( $callback_action_id, $user_id ){
-
-		global $wpdb;
-
-		$deleted = $wpdb->delete(
-			$this->get_users_table_name(),
-			array( 'notification_callback_id' => $callback_action_id, 'user_id' => $user_id ),
-			array( '%d', '%d' )
-		);
-
-		if( false === $deleted || 0 === $deleted ){
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * @param $notification_id
 	 *
 	 * @return bool
@@ -255,12 +180,6 @@ class BTM_Notification_Dao{
 		$deleted = $wpdb->delete(
 			$this->get_callbacks_table_name(),
 			array( 'id' => $notification_id ),
-			array( '%d' )
-		);
-
-		$wpdb->delete(
-			$this->get_users_table_name(),
-			array( 'notification_callback_id' => $notification_id ),
 			array( '%d' )
 		);
 

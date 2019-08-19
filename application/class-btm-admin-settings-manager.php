@@ -25,8 +25,6 @@ final class BTM_Admin_Settings_Manager {
 
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'on_hook_admin_menu_setup' ) );
-
-		add_action( 'wp_ajax_btm_ajax', array( $this, 'btm_ajax_handler') );
 		add_action( 'wp_ajax_btm_bulk_delete_ajax', array( $this, 'on_hook_wp_ajax_btm_bulk_delete_ajax') );
 	}
 
@@ -97,23 +95,23 @@ final class BTM_Admin_Settings_Manager {
 				}
 			}
 		}
-		if( isset( $_POST[ "callback_action" ] ) && isset( $_POST[ "status" ] ) && isset( $_POST[ "users" ] ) ){
+		if( isset( $_POST[ "btm-discord-webhook" ] ) ){
+		    $webhook = wp_http_validate_url( $_POST[ "btm-discord-webhook" ] );
+		    $updated = BTM_Plugin_Options::get_instance()->update_discord_webook( $webhook );
+		    if( $updated ){
+		        //todo show admin notice success or errors
+            }
+        }
+		if( isset( $_POST[ "callback_action" ] ) && isset( $_POST[ "status" ] ) ){
 			$callback[ "callback_action" ] = $_POST[ "callback_action" ];
 			$callback[ "status" ] = $_POST[ "status" ];
-			$users = $_POST[ "users" ];
 
 			$insert_id = $notification->create_callback( $callback );
-			if( $insert_id !== false )
-				foreach ( $users as $user_id ){
-					$notification->create_users( $user_id, $insert_id );
-				}
 		}
 
 		$callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions();
 		$task_run_statuses = BTM_Task_Run_Status::get_statuses();
-		$users = get_users( [ 'role__in' => [ 'administrator' ] ] );
 		$callbacks_and_statuses = $notification->get_callback_actions_and_statuses();
-		$users_data = $notification->get_users();
 		?>
 
 		<div class="wrap">
@@ -149,11 +147,17 @@ final class BTM_Admin_Settings_Manager {
 							<p class="description" id="delete-old-entities" ><?php esc_html_e( 'The tasks, bulk arguments and logs expiration time in days','background_task_manager' ); ?></p>
 						</td>
 					</tr>
+                    <tr>
+                        <th scope="row"><label for="discord"><?php esc_html_e( 'Discord WebHook','background_task_manager' ); ?></label></th>
+                        <td>
+                            <input name="btm-discord-webhook" id="discord" type="text" class="regular-text" value="<?php echo get_option( 'btm_discord_webhook', '' ); ?>" >
+                            <p class="description" id="discord" ><?php esc_html_e( 'Enter Discord bot webhook url to send notification to this channel','background_task_manager' ); ?></p>
+                        </td>
+                    </tr>
 					<tr>
-						<th scope="row"><label for="callback"><?php esc_html_e( 'Email Notifications','background_task_manager' ); ?></label></th>
+						<th scope="row"><label for="callback"><?php esc_html_e( 'Discord Notifications Condition','background_task_manager' ); ?></label></th>
 						<td>
 							<?php //region Selects ?>
-							<label for="callback"><?php esc_html_e( 'If callback action','background_task_manager' ); ?></label>
 							<select name="callback_action" id="callback" class="btm-callback-action-settings" >
 								<option><?php esc_html_e( 'Callback actions','background_task_manager' ); ?></option>
 								<?php foreach ( $callback_actions as $callback_action ) {
@@ -169,13 +173,7 @@ final class BTM_Admin_Settings_Manager {
 									?><option value="<?php echo $status; ?>"><?php echo $display_name; ?></option><?php
 								} ?>
 							</select>
-							<label for="users"><?php esc_html_e( 'notify','background_task_manager' ); ?></label>
-							<select name="users[]" is="users" class="btm-users-settings" multiple="multiple">
-								<?php foreach ( $users as $user ) {
-									?><option value="<?php echo $user->data->ID; ?>"><?php echo $user->data->display_name; ?></option><?php
-								} ?>
-							</select>
-							<p class="description" id="duration" ><?php esc_html_e( 'Select callback action to trigger a notification for the selected users','background_task_manager' ); ?></p>
+							<p class="description" id="duration" ><?php esc_html_e( 'Select callback action to trigger a notification for the selected status','background_task_manager' ); ?></p>
 							<?php //endregion   ?>
 						</td>
 					</tr>
@@ -198,7 +196,6 @@ final class BTM_Admin_Settings_Manager {
 							<th class="btm-th-td"><input type="checkbox" class="btm-bulk-delete" name="bulk-delete" value="all" /></th>
 							<th class="btm-th-td"><?php esc_html_e( 'Callback Action','background_task_manager' ); ?></th>
 							<th class="btm-th-td"><?php esc_html_e( 'Status','background_task_manager' ); ?></th>
-							<th class="btm-th-td"><?php esc_html_e( 'Users','background_task_manager' ); ?></th>
 						</tr>
 						<?php
 						foreach ( $callbacks_and_statuses as $value ){
@@ -207,23 +204,6 @@ final class BTM_Admin_Settings_Manager {
 								<td class="btm-th-td"><input type="checkbox" class="btm-delete" name="delete" value="<?php echo $value->id; ?>" /></td>
 								<td class="btm-th-td" ><?php echo $value->callback_action; ?></td>
 								<td class="btm-th-td"><?php echo $value->status; ?></td>
-								<td class="btm-th-td">
-									<?php
-                                    if( $users_data ){
-	                                    foreach ( $users_data as $user_data ){
-		                                    if( $value->id === $user_data->notification_callback_id ){
-			                                    $user = get_userdata( $user_data->user_id );
-
-			                                    ?><span class="btm-user" >
-                                                <span class="btm-user-remove" data_user_id="<?php echo $user_data->user_id; ?>" data_notification_callback_id="<?php echo $user_data->notification_callback_id; ?>">×</span>
-			                                    <?php echo $user->display_name; ?>
-
-                                                </span><?php
-		                                    }
-	                                    }
-                                    }
-									?>
-								</td>
 							</tr>
 							<?php
 						}
@@ -236,20 +216,6 @@ final class BTM_Admin_Settings_Manager {
 	}
 
 	// endregion
-
-	public function btm_ajax_handler(){
-		$notification = BTM_Notification_Dao::get_instance();
-		$callback_id = (int)$_POST['notification_callback_id'];
-		$user_id = (int)$_POST['user_id'];
-		$response = $notification->delete_user( $callback_id, $user_id );
-
-		if( $response === true ){
-			wp_send_json_success( true );
-		}else{
-			wp_send_json_error( false );
-		}
-	}
-
 	public function on_hook_wp_ajax_btm_bulk_delete_ajax(){
 		$notification = BTM_Notification_Dao::get_instance();
 		$notification_ids = $_POST['callback_action_ids'];
