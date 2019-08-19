@@ -77,8 +77,7 @@ class BTM_Notification_Runner {
 						)
 					)
 				);
-
-				$asd = wp_remote_post(
+				wp_remote_post(
 					$this->webhook,
 					array(
 						'method'  => 'POST',

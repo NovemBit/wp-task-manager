@@ -88,7 +88,7 @@ class BTM_Task_Dao{
 		if( empty( $task->get_id() ) ){
 			$task->set_id( $wpdb->insert_id );
 		}
-
+		new BTM_Notification_Runner( $task );
 		return true;
 	}
 
