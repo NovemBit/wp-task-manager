@@ -64,7 +64,6 @@ final class BTM_Task_Runner{
 		$task_bulk_argument_dao = BTM_Task_Bulk_Argument_Dao::get_instance();
 
 		$task_dao->mark_as_running( $task );
-		new BTM_Notification_Runner( $task );
 
 		$task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 			$task->get_id(),
@@ -102,7 +101,8 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
-				new BTM_Notification_Runner( $task );
+				$notify = new BTM_Notification_Runner();
+				$notify->notify_failed_task( $task );
 			}else{
 				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),
@@ -110,14 +110,13 @@ final class BTM_Task_Runner{
 				);
 				if( 0 < count( $more_task_bulk_arguments ) ){
 					$task_dao::get_instance()->mark_as_in_progress( $task );
-					new BTM_Notification_Runner( $task );
 				}else{
 					if( $task_bulk_argument_dao->has_failed_arguments( $task->get_id() ) ){
 						$task_dao::get_instance()->mark_as_failed( $task );
-						new BTM_Notification_Runner( $task );
+						$notify = new BTM_Notification_Runner();
+						$notify->notify_failed_task( $task );
 					}else{
 						$task_dao::get_instance()->mark_as_succeeded( $task );
-						new BTM_Notification_Runner( $task );
 					}
 				}
 			}
@@ -160,7 +159,6 @@ final class BTM_Task_Runner{
 	public function run_simple_task( I_BTM_Task $task ){
 		$task_dao = BTM_Task_Dao::get_instance();
 		$task_dao::get_instance()->mark_as_running( $task );
-		new BTM_Notification_Runner( $task );
 
 		$start = time();
 		try{
@@ -192,11 +190,11 @@ final class BTM_Task_Runner{
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
 				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
-				new BTM_Notification_Runner( $task );
+				$notify = new BTM_Notification_Runner();
+				$notify->notify_failed_task( $task );
 			}else{
 				$task_dao::get_instance()->mark_as_succeeded( $task );
 				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED );
-				new BTM_Notification_Runner( $task );
 			}
 
 			BTM_Task_Run_Log_Dao::get_instance()->create(

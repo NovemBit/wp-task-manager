@@ -72,6 +72,7 @@ final class BTM_Plugin {
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-system-simple.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument-normalizer.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-delete-old-entities.php' );
+		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-notify.php' );
 		require_once( $model_path . 'task' . DIRECTORY_SEPARATOR . 'class-btm-task-bulk-argument.php' );
 
 		require_once( $model_path . 'log' . DIRECTORY_SEPARATOR . 'class-btm-task-run-log.php' );
@@ -111,6 +112,8 @@ final class BTM_Plugin {
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
 		require_once( $core_path . 'class-btm-task-delete-old-entities-manager.php' );
+		require_once( $core_path . 'class-btm-notification-hourly-manager.php' );
+		require_once( $core_path . 'class-btm-notification-daily-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-notification-runner.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
@@ -124,12 +127,15 @@ final class BTM_Plugin {
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job.php' );
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-task-runner.php' );
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-delete-old-entities.php' );
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-notification-hourly.php' );
+		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-notification-daily.php' );
 		require_once( $core_path . 'cron-job' . DIRECTORY_SEPARATOR . 'class-btm-cron-job-manager.php' );
 
 		$app_path = $plugin_path . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR;
 		require_once( $app_path . 'class-btm-task-manager.php' );
 		require_once( $app_path . 'class-btm-admin-manager.php' );
 		require_once( $app_path . 'class-btm-admin-settings-manager.php' );
+		require_once( $app_path . 'class-btm-admin-notifications-manager.php' );
 	}
 
 	/**
@@ -158,6 +164,7 @@ final class BTM_Plugin {
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
 			BTM_Admin_Settings_Manager::run();
+			BTM_Admin_Notifications_Manager::run();
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			// this method should not be called directly, this is only for debug purposes
 			BTM_Cron_Job_Task_Runner::get_instance()->on_cron_job_runs();

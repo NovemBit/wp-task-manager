@@ -30,16 +30,6 @@
     background-color: white;
 }
 
-.btm-user{
-    background-color: #e4e4e4;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    cursor: default;
-    float: left;
-    margin-right: 5px;
-    margin-top: 5px;
-    padding: 0 5px;
-}
 
 .btm-user-remove{
     color: #999;
@@ -69,4 +59,15 @@
     float: left;
     margin-left: 10px;
     padding-top: 5px;
+}
+
+.btm-item{
+    background-color: #e4e4e4;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: default;
+    float: left;
+    margin-right: 5px;
+    margin-top: 5px;
+    padding: 0 5px;
 }

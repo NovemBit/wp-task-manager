@@ -24,8 +24,16 @@
 
 	//select2
 	$(document).ready(function() {
-		$('.btm-callback-action-settings').select2();
-		$('.btm-status-settings').select2();
+		$('#btm-notification-callback').select2();
+		$("#btm-checkbox-callback").click(function(){
+			if($("#btm-checkbox-callback").is(':checked') ){
+				$("#btm-notification-callback > option").prop("selected","selected");
+				$("#btm-notification-callback").trigger("change");
+			}else{
+				$("#btm-notification-callback > option").removeAttr("selected");
+				$("#btm-notification-callback").trigger("change");
+			}
+		});
 	});
 
 	//custom bulk

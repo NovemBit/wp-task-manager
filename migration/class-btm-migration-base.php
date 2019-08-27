@@ -105,8 +105,9 @@ class BTM_Migration_Base implements I_BTM_Migration{
 		$wpdb->query('
 			CREATE TABLE IF NOT EXISTS `btm_notification_callbacks` (
 			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-			  `callback_action` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
-			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `callback_action` TEXT(8000) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `webhook` TEXT(8000) COLLATE utf8mb4_unicode_ci NOT NULL,
+			  `report_type` TEXT(8000) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 		');

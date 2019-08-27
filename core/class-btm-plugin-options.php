@@ -38,7 +38,6 @@ final class BTM_Plugin_Options{
 		$this->init_cron_job_interval_in_minutes();
 		$this->init_entities_become_old_interval();
 		$this->init_delete_old_entities_cron_job_interval_in_days();
-		$this->init_discord_webhook();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
@@ -507,60 +506,6 @@ final class BTM_Plugin_Options{
 		$updated = update_option(
 			$this->get_db_table_prefix() . 'delete_old_entities_cron_job_interval_in_days',
 			$this->get_delete_old_entities_cron_job_interval_in_days()
-		);
-
-		if( $updated ){
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @var string
-	 */
-	private $webhook;
-	/**
-	 * @return string
-	 */
-	public function get_discord_webhook(){
-		return $this->webhook;
-	}
-	/**
-	 * @param string $webhook
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $webhook is not an string
-	 */
-	public function set_discord_webhook( $webhook ){
-		if( ! is_string( $webhook ) ) {
-			throw new InvalidArgumentException(
-				'Method set_discord_webhook only accepts string . Input was: '
-				. $webhook
-			);
-		}
-
-		$this->webhook = $webhook;
-	}
-	/**
-	 * Initializes discord webhook
-	 */
-	private function init_discord_webhook(){
-		$webhook = get_option( $this->get_db_table_prefix() . 'discord_webhook', '' );
-
-		$this->set_discord_webhook( $webhook );
-	}
-	/**
-	 * @param string $webhook
-	 *
-	 * @return bool
-	 */
-	public function update_discord_webook( $webhook ){
-		$this->set_discord_webhook( $webhook );
-
-		$updated = update_option(
-			$this->get_db_table_prefix() . 'discord_webhook',
-			$this->get_discord_webhook()
 		);
 
 		if( $updated ){

@@ -41,24 +41,25 @@ class BTM_Notification_Dao{
 	// region CREATE
 
 	/**
-	 * @param  $notification
+	 * @param $callback
+	 * @param $webhook
+	 * @param $report_type
 	 *
-	 * @return bool
+	 * @return bool|int
 	 */
-	public function create_callback( $notification ){
+	public function create( $callback, $webhook, $report_type ){
 		global $wpdb;
 
-		$data_callbacks = array(
-			'callback_action'   => $notification[ "callback_action" ],
-			'status'            => $notification[ "status" ],
-		);
-		$format_callbacks = array( '%s', '%s' );
+		$sql = 'INSERT INTO `' . $this->get_callbacks_table_name() . '` (callback_action, webhook, report_type)
+				SELECT * FROM (SELECT %s, %s, %s) AS tmp
+				WHERE NOT EXISTS (
+				    SELECT webhook FROM `' . $this->get_callbacks_table_name() . '` WHERE webhook = %s
+				) LIMIT 1';
 
-		$inserted = $wpdb->insert(
-			$this->get_callbacks_table_name(),
-			$data_callbacks,
-			$format_callbacks
-		);
+		$sql = $wpdb->prepare($sql, $callback, $webhook, $report_type, $webhook);
+
+		$inserted = $wpdb->query($sql);
+
 
 		if( false === $inserted ){
 			return false;
@@ -71,7 +72,10 @@ class BTM_Notification_Dao{
 
 	// region READ
 
-	public function get_callback_actions_and_statuses(){
+	/**
+	 * @return bool|object
+	 */
+	public function get_notification_rules(){
 		global $wpdb;
 
 		$query = '
@@ -79,13 +83,13 @@ class BTM_Notification_Dao{
 			FROM `' . $this->get_callbacks_table_name() . '`
 		';
 
-		$callbacks_and_statuses = $wpdb->get_results( $query, OBJECT );
+		$callbacks = $wpdb->get_results( $query, OBJECT );
 
-		if( empty( $callbacks_and_statuses ) ){
+		if( empty( $callbacks ) ){
 			return false;
 		}
 
-		return $callbacks_and_statuses;
+		return $callbacks;
 	}
 
 	// endregion
@@ -127,43 +131,6 @@ class BTM_Notification_Dao{
 		return true;
 	}
 
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_running( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_RUNNING ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_succeeded( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_failed( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_in_progress( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_IN_PROGRESS ) );
-		return $this->update( $task );
-	}
-
 	// endregion
 
 	// region DELETE
@@ -191,16 +158,4 @@ class BTM_Notification_Dao{
 	}
 
 	// endregion
-
-	/**
-	 * @param stdClass $task_obj
-	 *
-	 * @return I_BTM_Task
-	 */
-	protected function create_task_from_db_obj( stdClass $task_obj ){
-		$class_name = BTM_Task_Type_Service::get_instance()->get_class_from_type( $task_obj->type );
-
-		/** @var I_BTM_Task $class_name */
-		return $class_name::create_from_db_obj( $task_obj );
-	}
 }

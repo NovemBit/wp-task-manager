@@ -88,7 +88,7 @@ class BTM_Task_Dao{
 		if( empty( $task->get_id() ) ){
 			$task->set_id( $wpdb->insert_id );
 		}
-		new BTM_Notification_Runner( $task );
+
 		return true;
 	}
 
@@ -208,6 +208,54 @@ class BTM_Task_Dao{
 		}
 
 		return $this->create_task_from_db_obj( $task_obj );
+	}
+
+	/**
+	 * @param int $hour
+	 *
+	 * @return array|bool
+	 */
+	public function get_last_tasks_by_hours( $hour ){
+		global $wpdb;
+
+		$query = $wpdb->get_results('
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+			WHERE `date_created` > DATE_SUB( "'. current_time( 'mysql' ) .'", INTERVAL '. $hour .' HOUR)
+		', OBJECT );
+
+		if( null === $query ){
+			return false;
+		}
+
+		$tasks = array();
+		foreach ( $query as $task_obj ){
+			$tasks[] = $this->create_task_from_db_obj( $task_obj );
+		}
+
+		return $tasks;
+	}
+
+	/**
+	 * Return Distinct callback actions
+	 *
+	 * @return array
+	 */
+	public function get_callback_actions(){
+		global $wpdb;
+
+		$query = '
+			SELECT DISTINCT `callback_action`
+			FROM `' . $this->get_table_name() . '`
+		';
+
+		$callback_actions = $wpdb->get_results( $query, OBJECT );
+
+		if( empty( $callback_actions ) ){
+			return array();
+		}
+
+		return $callback_actions;
 	}
 
 	// endregion
