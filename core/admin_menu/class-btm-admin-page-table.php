@@ -11,8 +11,6 @@ if( ! class_exists( 'WP_List_Table' ) ) {
 
 abstract class BTM_Admin_Page_Table extends WP_List_Table{
 	const BULK_ACTION_DELETE = 'bulk-delete';
-	const BULK_ACTION_PAUSE = 'bulk-pause';
-	const BULK_ACTION_RESUME = 'bulk-resume';
 
 	// region Singleton
 

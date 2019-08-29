@@ -73,7 +73,7 @@ class BTM_Notification_Dao{
 	// region READ
 
 	/**
-	 * @return bool|object
+	 * @return bool|array
 	 */
 	public function get_notification_rules(){
 		global $wpdb;
@@ -81,6 +81,27 @@ class BTM_Notification_Dao{
 		$query = '
 			SELECT * 
 			FROM `' . $this->get_callbacks_table_name() . '`
+		';
+
+		$rules = $wpdb->get_results( $query, OBJECT );
+
+		if( empty( $rules ) ){
+			return false;
+		}
+
+		return $rules;
+	}
+
+	/**
+	 * @return bool|object
+	 */
+	public function get_notification_rule_by_id( $id ){
+		global $wpdb;
+
+		$query = '
+			SELECT * 
+			FROM `' . $this->get_callbacks_table_name() . '`
+			WHERE id = '. $id .'
 		';
 
 		$callbacks = $wpdb->get_results( $query, OBJECT );
@@ -91,36 +112,33 @@ class BTM_Notification_Dao{
 
 		return $callbacks;
 	}
-
 	// endregion
 
 	// region UPDATE
 
 	/**
-	 * @param I_BTM_Task $task
+	 * @param $id
+	 * @param $callback
+	 * @param $webhook
+	 * @param $report_type
 	 *
 	 * @return bool
 	 */
-	public function update( I_BTM_Task $task ){
+	public function update( $id, $callback, $webhook, $report_type ){
 		global $wpdb;
 
-		$callback_arguments = serialize( $task->get_callback_arguments() );
 		$updated = $wpdb->update(
-			$this->get_table_name(),
+			$this->get_callbacks_table_name(),
 			array(
-				'callback_action' => $task->get_callback_action(),
-				'callback_arguments' => $callback_arguments,
-				'priority' => $task->get_priority(),
-				'bulk_size' => $task->get_bulk_size(),
-				'status' => $task->get_status()->get_value(),
-				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
-				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
-				'argument_hash' => md5( $callback_arguments )
+				'id' => $id,
+				'callback_action' => $callback,
+				'webhook' => $webhook,
+				'report_type' => $report_type
 			),
 			array(
-				'id' => $task->get_id()
+				'id' => $id
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s' ),
+			array( '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

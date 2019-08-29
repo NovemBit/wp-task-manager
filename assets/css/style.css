@@ -56,7 +56,7 @@
 }
 
 .btm-task-edit a.btm-cansle-edit {
-    float: left;
+    display: inline-block;
     margin-left: 10px;
     padding-top: 5px;
 }
@@ -70,4 +70,30 @@
     margin-right: 5px;
     margin-top: 5px;
     padding: 0 5px;
+}
+
+.on-fail{
+    display:none;
+}
+
+.select2{
+    margin-bottom: 10px;
+}
+
+.btm-submit-wrap{
+    margin-bottom: 15px;
+}
+
+.btm-submit-wrap:after{
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.btm-submit-wrap .submit{
+    padding: 0;
+}
+
+.column-report_type{
+    width: 150px;
 }

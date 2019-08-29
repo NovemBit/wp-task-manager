@@ -119,7 +119,9 @@ final class BTM_Plugin {
 		require_once( $core_path . 'class-btm-task-runner.php' );
 
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-table.php' );
+		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-notification-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-task-single.php' );
+		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-page-notification-single.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-bulk-argument-page-table.php' );
 		require_once( $core_path . 'admin_menu' . DIRECTORY_SEPARATOR . 'class-btm-admin-task-run-log-page-table.php' );
@@ -135,7 +137,6 @@ final class BTM_Plugin {
 		require_once( $app_path . 'class-btm-task-manager.php' );
 		require_once( $app_path . 'class-btm-admin-manager.php' );
 		require_once( $app_path . 'class-btm-admin-settings-manager.php' );
-		require_once( $app_path . 'class-btm-admin-notifications-manager.php' );
 	}
 
 	/**
@@ -164,7 +165,6 @@ final class BTM_Plugin {
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
 			BTM_Admin_Settings_Manager::run();
-			BTM_Admin_Notifications_Manager::run();
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			// this method should not be called directly, this is only for debug purposes
 			BTM_Cron_Job_Task_Runner::get_instance()->on_cron_job_runs();

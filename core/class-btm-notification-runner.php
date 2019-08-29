@@ -55,50 +55,60 @@ class BTM_Notification_Runner {
 			$report_type      = maybe_unserialize( $item->report_type );
 			$this->webhook    = $item->webhook;
 			foreach ( $callback_actions as $callback_action ) {
-				if ( $task_callback_action === $callback_action && $status === 'failed' && in_array( 'failed', $report_type ) ) {
-					$this->callback_action = $callback_action;
-					$this->status          = $status;
-					$this->task_url        = admin_url( 'admin.php?page=btm-task-view&action=edit&task_id=' . $this->task_id );
-					$body                  = json_encode(
-						array(
-							'content' => 'Task #' . $this->task_id . ' - ' . $this->status,
-							'embeds'  => array(
-								array(
-									'fields' => array(
-										array(
-											"name"   => "Callback action",
-											"value"  => $this->callback_action,
-											"inline" => true
-										),
-										array(
-											"name"   => "Status",
-											"value"  => $this->status,
-											"inline" => true
-										),
-										array(
-											"name"   => "Task url",
-											"value"  => $this->task_url,
-											"inline" => false
-										)
-									)
-								)
-							)
-						)
-					);
-					wp_remote_post(
-						$this->webhook,
-						array(
-							'method'  => 'POST',
-							'headers' => array(
-								'Content-Type' => 'application/json',
-							),
-							'body'    => $body
-						)
-					);
+				if( $callback_action === 'all' && ! $task->is_system() ){
+					$this->notification_form( $task_callback_action, $status );
+				}elseif( $task_callback_action === $callback_action && $status === 'failed' && in_array( 'failed', $report_type ) ) {
+					$this->notification_form( $task_callback_action, $status );
 				}
 			}
 
 		}
+	}
+
+	/**
+	 * @param $task_callback_action
+	 * @param $status
+	 */
+	private function notification_form( $task_callback_action, $status ){
+		$this->callback_action = $task_callback_action;
+		$this->status          = $status;
+		$this->task_url        = admin_url( 'admin.php?page=btm-task-view&action=edit&task_id=' . $this->task_id );
+		$body                  = json_encode(
+			array(
+				'content' => 'Task #' . $this->task_id . ' - ' . $this->status,
+				'embeds'  => array(
+					array(
+						'fields' => array(
+							array(
+								"name"   => "Callback action",
+								"value"  => $this->callback_action,
+								"inline" => true
+							),
+							array(
+								"name"   => "Status",
+								"value"  => $this->status,
+								"inline" => true
+							),
+							array(
+								"name"   => "Task url",
+								"value"  => $this->task_url,
+								"inline" => false
+							)
+						)
+					)
+				)
+			)
+		);
+		wp_remote_post(
+			$this->webhook,
+			array(
+				'method'  => 'POST',
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+				'body'    => $body
+			)
+		);
 	}
 
 	/**

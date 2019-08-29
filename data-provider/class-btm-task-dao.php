@@ -258,6 +258,30 @@ class BTM_Task_Dao{
 		return $callback_actions;
 	}
 
+	/**
+	 * Return Distinct callback actions
+	 *
+	 * @return array
+	 */
+	public function get_callback_actions_not_system(){
+		global $wpdb;
+
+		$query = '
+			SELECT DISTINCT `callback_action`
+			FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '`
+			WHERE is_system = 0
+		';
+
+		$callback_actions = $wpdb->get_results( $query, OBJECT );
+
+		if( empty( $callback_actions ) ){
+			return array();
+		}
+
+		return $callback_actions;
+	}
+
+
 	// endregion
 
 	// region UPDATE
