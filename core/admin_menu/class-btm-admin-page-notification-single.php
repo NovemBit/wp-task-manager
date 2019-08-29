@@ -126,7 +126,7 @@ final class BTM_Admin_Notification_Single_Page {
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row"><label><?php esc_html_e( 'Report', 'background_task_manager' ); ?></label></th>
+                    <th scope="row"><label><?php esc_html_e( 'Report Frequence', 'background_task_manager' ); ?></label></th>
                     <td>
                         <fieldset>
                             <label for="hourly">
@@ -165,6 +165,11 @@ final class BTM_Admin_Notification_Single_Page {
                                 </label>
                             </fieldset>
                             <div class="select-callbacks">
+                                <div class="notify-fail">
+                                    <label for="btm-notification-callback">
+                                        <strong><?php esc_html_e( 'Select callback actions to get notifications on failure', 'background_task_manager' ); ?></strong>
+                                    </label>
+                                </div>
                                 <select name="callback_action[]" id="btm-notification-callback" multiple="multiple">
 									<?php foreach ( $callback_actions as $callback_action ) {
 										?>
@@ -175,7 +180,6 @@ final class BTM_Admin_Notification_Single_Page {
 									} ?>
                                 </select><br>
                                 <a class="edit" id="btm-add-all" href="javascript:void(0)"><?php esc_html_e( 'Select all', 'background_task_manager' ); ?></a>
-                                <p class="description"><?php esc_html_e( 'Select callback actions to get notifications on failure', 'background_task_manager' ); ?></p>
                             </div>
                         </div>
                     </td>

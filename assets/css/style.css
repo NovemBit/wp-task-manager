@@ -97,3 +97,11 @@
 .column-report_type{
     width: 150px;
 }
+
+.select-callbacks{
+    margin-top: 20px;
+}
+
+.notify-fail{
+    margin-bottom: 15px;
+}

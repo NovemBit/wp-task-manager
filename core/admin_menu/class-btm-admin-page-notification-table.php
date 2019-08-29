@@ -27,8 +27,8 @@ final class BTM_Admin_Notification_Page_Table extends BTM_Admin_Page_Table{
 
 		$page_hook = add_submenu_page(
 			$this->get_page_parent_slug(),
-			__( 'Notification Rules', 'background_task_manager' ),
-			__( 'Notification Rules', 'background_task_manager' ),
+			__( 'Notifications', 'background_task_manager' ),
+			__( 'Notifications', 'background_task_manager' ),
 			'manage_options',
 			self::get_page_slug(),
 			array(
