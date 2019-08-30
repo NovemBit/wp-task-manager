@@ -144,8 +144,8 @@ final class BTM_Admin_Notification_Single_Page {
 								<?php esc_html_e( 'Daily', 'background_task_manager' ); ?>
                             </label>
                             <br>
-                            <label for="failed">
-                                <input type="checkbox" class="btm-daily" id="failed" name="failed"
+                            <label for="btm-failed">
+                                <input type="checkbox" class="btm-failed" id="btm-failed" name="failed"
                                        value="failed" <?php if ( in_array( 'failed', $rule_report_types ) ) {
 									echo 'checked';
 								} ?> />

@@ -25,20 +25,22 @@
 	//select2
 	$(document).ready(function() {
 
-		if( $('#failed').attr('checked') ){
+		if( $('#btm-failed').attr('checked') ){
 			$('.on-fail').show()
 		}
 		if( $('#btm-checkbox-callback').attr('checked') ){
 			$('.select-callbacks').hide()
 		}
 
-		$('#failed').click(function(){
+		$('#btm-failed').click(function(){
 			if( this.checked ){
 				$('.on-fail').show(300)
 			}else{
 				$('.on-fail').hide(300)
 				$("#btm-checkbox-callback").prop('checked', false);
-				$('.select-callbacks').show()
+				$('.select-callbacks').show();
+				$("#btm-notification-callback > option").removeAttr("selected");
+				$("#btm-notification-callback").trigger("change");
 			}
 		});
 		$('#btm-checkbox-callback').click(function(){
