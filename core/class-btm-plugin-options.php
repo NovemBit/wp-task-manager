@@ -518,18 +518,18 @@ final class BTM_Plugin_Options{
 
 
 	/**
-	 * @var
+	 * @var string
 	 */
 	private $show_system;
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
 	public function get_show_system(){
 		return $this->show_system;
 	}
 	/**
-	 * @param $show_system
+	 * @param string $show_system
 	 */
 	public function set_show_system( $show_system ){
 		$this->show_system = $show_system;
@@ -543,7 +543,7 @@ final class BTM_Plugin_Options{
 		$this->set_show_system( $show_system );
 	}
 	/**
-	 * @param $show_system
+	 * @param string $show_system
 	 *
 	 * @return bool
 	 */
