@@ -38,6 +38,7 @@ final class BTM_Plugin_Options{
 		$this->init_cron_job_interval_in_minutes();
 		$this->init_entities_become_old_interval();
 		$this->init_delete_old_entities_cron_job_interval_in_days();
+		$this->init_show_system();
 	}
 	private function __clone() {}
 	private function __wakeup() {}
@@ -514,4 +515,51 @@ final class BTM_Plugin_Options{
 
 		return false;
 	}
+
+
+	/**
+	 * @var
+	 */
+	private $show_system;
+
+	/**
+	 * @return mixed
+	 */
+	public function get_show_system(){
+		return $this->show_system;
+	}
+	/**
+	 * @param $show_system
+	 */
+	public function set_show_system( $show_system ){
+		$this->show_system = $show_system;
+	}
+	/**
+	 * Initializes the show system tasks
+	 */
+	private function init_show_system(){
+		$show_system = get_option( $this->get_db_table_prefix() . 'show_system' , 'off' );
+
+		$this->set_show_system( $show_system );
+	}
+	/**
+	 * @param $show_system
+	 *
+	 * @return bool
+	 */
+	public function update_show_system( $show_system ){
+		$this->set_show_system( $show_system );
+
+		$updated = update_option(
+			$this->get_db_table_prefix() . 'show_system',
+			$this->get_show_system()
+		);
+
+		if( $updated ){
+			return true;
+		}
+
+		return false;
+	}
+
 }
