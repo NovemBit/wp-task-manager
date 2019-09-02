@@ -93,6 +93,12 @@ final class BTM_Admin_Settings_Manager {
 				}
 			}
 		}
+
+		if( isset( $_POST[ 'btm-system-tasks' ] ) ){
+            BTM_Plugin_Options::get_instance()->update_show_system( $_POST[ 'btm-system-tasks' ] );
+        }elseif ( !empty( $_POST) ){
+			BTM_Plugin_Options::get_instance()->update_show_system( 'off' );
+        }
 		?>
 
 		<div class="wrap">
@@ -128,6 +134,18 @@ final class BTM_Admin_Settings_Manager {
 							<p class="description" id="delete-old-entities" ><?php esc_html_e( 'The tasks, bulk arguments and logs expiration time in days','background_task_manager' ); ?></p>
 						</td>
 					</tr>
+                    <tr>
+                        <th scope="row"><label for="system-tasks"><?php esc_html_e( 'System Tasks','background_task_manager' ); ?></label></th>
+                        <td>
+                            <?php $show_system = get_option( 'btm_show_system', 'off' ); ?>
+                            <fieldset>
+                                <label>
+                                    <input name="btm-system-tasks" id="system-tasks" type="checkbox" class="regular-text" <?php if( $show_system === 'on' ){ echo 'checked'; } ?> >
+	                                <?php esc_html_e( 'Show system tasks?', 'background_task_manager' ); ?>
+                                </label>
+                            </fieldset>
+                        </td>
+                    </tr>
 					</tbody>
 				</table>
 				<?php submit_button( 'Save Changes', 'primary', 'submit', true, array() ); ?>

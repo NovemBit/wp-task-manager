@@ -199,9 +199,16 @@ class BTM_Task_View_Dao{
 	public function get_task_count_by_statuses(){
 		global $wpdb;
 
+		$show_system = BTM_Plugin_Options::get_instance()->get_show_system();
+		$where = '';
+		if( $show_system === 'off' ){
+			$where = 'WHERE is_system = 0';
+		}
+
 		$query = '
 			SELECT `status`, COUNT( `id` ) AS `count`
 			FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '`
+			'. $where .'
 			GROUP BY `status`
 		';
 
