@@ -130,7 +130,10 @@ class BTM_Notification_Runner {
 					$hour = 1;
 				}
 
-				$tasks            = BTM_Task_Dao::get_instance()->get_last_tasks_by_hours( $hour );
+				$tasks = BTM_Task_Dao::get_instance()->get_last_tasks_by_hours( $hour );
+				if( count( $tasks ) === 0 ){
+					return false;
+				}
 				$callback_actions = BTM_Task_Dao::get_instance()->get_callback_actions();
 
 				$tmp = [];

@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'BTM_PLUGIN_ACTIVE', true );
+define( 'BTM_DEBUG', true );
 
 /**
  * Plugin main class
@@ -168,6 +169,7 @@ final class BTM_Plugin {
 		}else if( $plugin_options->is_mode_debug() && $plugin_options->is_request_debug() && current_user_can('administrator') ){
 			// this method should not be called directly, this is only for debug purposes
 			BTM_Cron_Job_Task_Runner::get_instance()->on_cron_job_runs();
+			BTM_Cron_Job_Notification_Hourly::get_instance()->on_cron_job_runs();
 			exit;
 		}
 	}

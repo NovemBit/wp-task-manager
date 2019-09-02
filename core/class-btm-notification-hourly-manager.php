@@ -67,12 +67,12 @@ class BTM_Notification_Hourly_Manager {
 
 		$notification = new BTM_Notification_Runner();
 		$reported = $notification->report( $this->get_report_range() );
-		if( $reported === true ){
+		if( $reported ){
 			$task_run_filter_log->add_log( __( 'The hourly report is done', 'background_task_manager' ) );
 			$task_run_filter_log->set_failed( false );
 		}else{
 			$task_run_filter_log->add_log( __( 'Nothing to report', 'background_task_manager' ) );
-			$task_run_filter_log->set_failed( true );
+			$task_run_filter_log->set_failed( false );
 		}
 
 		return $task_run_filter_log;
