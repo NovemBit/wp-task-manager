@@ -34,7 +34,7 @@ class BTM_Notification_Dao{
 	/**
 	 * @return string
 	 */
-	public function get_callbacks_table_name(){
+	public function get_table_name(){
 		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_callbacks';
 	}
 
@@ -50,10 +50,10 @@ class BTM_Notification_Dao{
 	public function create( $callback, $webhook, $report_type ){
 		global $wpdb;
 
-		$sql = 'INSERT INTO `' . $this->get_callbacks_table_name() . '` (callback_action, webhook, report_type)
+		$sql = 'INSERT INTO `' . $this->get_table_name() . '` (callback_action, webhook, report_type)
 				SELECT * FROM (SELECT %s, %s, %s) AS tmp
 				WHERE NOT EXISTS (
-				    SELECT webhook FROM `' . $this->get_callbacks_table_name() . '` WHERE webhook = %s
+				    SELECT webhook FROM `' . $this->get_table_name() . '` WHERE webhook = %s
 				) LIMIT 1';
 
 		$sql = $wpdb->prepare($sql, $callback, $webhook, $report_type, $webhook);
@@ -80,7 +80,7 @@ class BTM_Notification_Dao{
 
 		$query = '
 			SELECT * 
-			FROM `' . $this->get_callbacks_table_name() . '`
+			FROM `' . $this->get_table_name() . '`
 		';
 
 		$rules = $wpdb->get_results( $query, OBJECT );
@@ -100,7 +100,7 @@ class BTM_Notification_Dao{
 
 		$query = '
 			SELECT * 
-			FROM `' . $this->get_callbacks_table_name() . '`
+			FROM `' . $this->get_table_name() . '`
 			WHERE id = '. $id .'
 		';
 
@@ -128,7 +128,7 @@ class BTM_Notification_Dao{
 		global $wpdb;
 
 		$updated = $wpdb->update(
-			$this->get_callbacks_table_name(),
+			$this->get_table_name(),
 			array(
 				'id' => $id,
 				'callback_action' => $callback,
@@ -163,7 +163,7 @@ class BTM_Notification_Dao{
 		global $wpdb;
 
 		$deleted = $wpdb->delete(
-			$this->get_callbacks_table_name(),
+			$this->get_table_name(),
 			array( 'id' => $notification_id ),
 			array( '%d' )
 		);

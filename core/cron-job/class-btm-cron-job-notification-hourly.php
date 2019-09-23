@@ -50,11 +50,8 @@ final class BTM_Cron_Job_Notification_Hourly extends BTM_Cron_Job {
 	 * Report hourly
 	 */
 	public function on_cron_job_runs() {
-
-		BTM_Notification_Hourly_Manager::get_instance();
-
-		$to_report = BTM_Notification_Hourly_Manager::get_instance()->create_task();
-
+		$manager = new BTM_Notification_Manager( $this->get_recurrence() );
+		$to_report = $manager->create_task();
 		BTM_Task_Manager::get_instance()->register_simple_task( $to_report );
 	}
 }

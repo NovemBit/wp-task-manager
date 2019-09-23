@@ -113,8 +113,7 @@ final class BTM_Plugin {
 		$core_path = $plugin_path . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR;
 		require_once( $core_path . 'class-btm-task-bulk-argument-manager.php' );
 		require_once( $core_path . 'class-btm-task-delete-old-entities-manager.php' );
-		require_once( $core_path . 'class-btm-notification-hourly-manager.php' );
-		require_once( $core_path . 'class-btm-notification-daily-manager.php' );
+		require_once( $core_path . 'class-btm-notification-manager.php' );
 		require_once( $core_path . 'class-btm-run-restrictor.php' );
 		require_once( $core_path . 'class-btm-notification-runner.php' );
 		require_once( $core_path . 'class-btm-task-runner.php' );
