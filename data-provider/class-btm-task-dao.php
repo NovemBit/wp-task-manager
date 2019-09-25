@@ -221,7 +221,7 @@ class BTM_Task_Dao{
 		$query = $wpdb->get_results('
 			SELECT * 
 			FROM `' . $this->get_table_name() . '`
-			WHERE `date_created` > DATE_SUB( NOW(), INTERVAL '. $hour .' HOUR)
+			WHERE `date_created` > DATE_SUB( NOW(), INTERVAL '. $hour .' HOUR) AND `is_system` = 0 
 		', OBJECT );
 
 		if( null === $query ){

@@ -24,15 +24,15 @@ class BTM_Notification_Manager {
 		$this->range = $range;
 		if( $range == "hourly" ){
 			add_filter(
-				BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $this->get_callback_action(),
-				array( $this, 'on_btm_task_notification_hourly_report' ),
+				BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $this->get_hourly_callback_action(),
+				array( $this, 'on_btm_task_notification_report' ),
 				10, 1
 			);
 		}
 		if( $range == "daily" ){
 			add_filter(
 				BTM_Plugin_Options::get_instance()->get_task_filter_name_prefix() . $this->get_daily_callback_action(),
-				array( $this, 'on_btm_task_notification_daily_report' ),
+				array( $this, 'on_btm_task_notification_report' ),
 				10, 1
 			);
 		}
@@ -48,6 +48,13 @@ class BTM_Notification_Manager {
 	/**
 	 * @return string
 	 */
+	public function get_hourly_callback_action() {
+		return 'notification_hourly_report';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function get_report_range() {
 		return $this->range;
 	}
@@ -57,7 +64,7 @@ class BTM_Notification_Manager {
 	 */
 	public function create_task() {
 		if( $this->range == "hourly" ){
-			return new BTM_Task_Notify( $this->get_callback_action(), array(), 200 );
+			return new BTM_Task_Notify( $this->get_hourly_callback_action(), array(), 200 );
 		}
 		if( $this->range == "daily" ){
 			return new BTM_Task_Notify( $this->get_daily_callback_action(), array(), 200 );
