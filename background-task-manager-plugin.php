@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'BTM_PLUGIN_ACTIVE', true );
-define( 'BTM_DEBUG', true );
 
 /**
  * Plugin main class
