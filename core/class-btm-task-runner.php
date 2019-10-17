@@ -32,7 +32,8 @@ final class BTM_Task_Runner{
 			throw new Exception('The instance should only be created once and used from the class BTM_Task_Manager');
 		}
 	}
-	private function __construct() {}
+	private function __construct() {
+	}
 	private function __clone() {}
 	private function __wakeup() {}
 
@@ -100,6 +101,8 @@ final class BTM_Task_Runner{
 
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
+				$notify = new BTM_Notification_Runner();
+				$notify->notify_failed_task( $task );
 			}else{
 				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),
@@ -110,6 +113,8 @@ final class BTM_Task_Runner{
 				}else{
 					if( $task_bulk_argument_dao->has_failed_arguments( $task->get_id() ) ){
 						$task_dao::get_instance()->mark_as_failed( $task );
+						$notify = new BTM_Notification_Runner();
+						$notify->notify_failed_task( $task );
 					}else{
 						$task_dao::get_instance()->mark_as_succeeded( $task );
 					}
@@ -185,6 +190,8 @@ final class BTM_Task_Runner{
 			if( $task_run_filter_log->is_failed() ){
 				$task_dao::get_instance()->mark_as_failed( $task );
 				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED );
+				$notify = new BTM_Notification_Runner();
+				$notify->notify_failed_task( $task );
 			}else{
 				$task_dao::get_instance()->mark_as_succeeded( $task );
 				$task_run_log_status = new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED );
