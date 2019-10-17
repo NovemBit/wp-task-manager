@@ -34,38 +34,32 @@ class BTM_Notification_Dao{
 	/**
 	 * @return string
 	 */
-	public function get_callbacks_table_name(){
+	public function get_table_name(){
 		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_callbacks';
-	}
-
-	/**
-	 * @return string
-	 */
-	public function get_users_table_name(){
-		return BTM_Plugin_Options::get_instance()->get_db_table_prefix() . 'notification_users';
 	}
 
 	// region CREATE
 
 	/**
-	 * @param  $notification
+	 * @param $callback
+	 * @param $webhook
+	 * @param $report_type
 	 *
-	 * @return bool
+	 * @return bool|int
 	 */
-	public function create_callback( $notification ){
+	public function create( $callback, $webhook, $report_type ){
 		global $wpdb;
 
-		$data_callbacks = array(
-			'callback_action'   => $notification[ "callback_action" ],
-			'status'            => $notification[ "status" ],
-		);
-		$format_callbacks = array( '%s', '%s' );
+		$sql = 'INSERT INTO `' . $this->get_table_name() . '` (callback_action, webhook, report_type)
+				SELECT * FROM (SELECT %s, %s, %s) AS tmp
+				WHERE NOT EXISTS (
+				    SELECT webhook FROM `' . $this->get_table_name() . '` WHERE webhook = %s
+				) LIMIT 1';
 
-		$inserted = $wpdb->insert(
-			$this->get_callbacks_table_name(),
-			$data_callbacks,
-			$format_callbacks
-		);
+		$sql = $wpdb->prepare($sql, $callback, $webhook, $report_type, $webhook);
+
+		$inserted = $wpdb->query($sql);
+
 
 		if( false === $inserted ){
 			return false;
@@ -74,101 +68,77 @@ class BTM_Notification_Dao{
 		return $wpdb->insert_id;
 	}
 
-	/**
-	 * @param $user
-	 * @param $insert_id
-	 *
-	 * @return bool
-	 */
-	public function create_users( $user, $insert_id ){
-		global $wpdb;
-
-		$data_users = array(
-			'notification_callback_id' => $insert_id,
-			'user_id'                  => $user,
-		);
-		$format_users = array( '%s', '%s' );
-
-		$inserted = $wpdb->insert(
-			$this->get_users_table_name(),
-			$data_users,
-			$format_users
-		);
-
-		if( false === $inserted ){
-			return false;
-		}
-
-		return true;
-	}
-
 	// endregion
 
 	// region READ
 
-	public function get_callback_actions_and_statuses(){
+	/**
+	 * @return bool|array
+	 */
+	public function get_notification_rules(){
 		global $wpdb;
 
 		$query = '
 			SELECT * 
-			FROM `' . $this->get_callbacks_table_name() . '`
+			FROM `' . $this->get_table_name() . '`
 		';
 
-		$callbacks_and_statuses = $wpdb->get_results( $query, OBJECT );
+		$rules = $wpdb->get_results( $query, OBJECT );
 
-		if( empty( $callbacks_and_statuses ) ){
+		if( empty( $rules ) ){
 			return false;
 		}
 
-		return $callbacks_and_statuses;
+		return $rules;
 	}
 
-	public function get_users(){
+	/**
+	 * @return bool|object
+	 */
+	public function get_notification_rule_by_id( $id ){
 		global $wpdb;
 
 		$query = '
 			SELECT * 
-			FROM `' . $this->get_users_table_name() . '`
+			FROM `' . $this->get_table_name() . '`
+			WHERE id = '. $id .'
 		';
 
-		$users = $wpdb->get_results( $query, OBJECT );
+		$callbacks = $wpdb->get_results( $query, OBJECT );
 
-		if( empty( $users ) ){
+		if( empty( $callbacks ) ){
 			return false;
 		}
 
-		return $users;
+		return $callbacks;
 	}
-
 	// endregion
 
 	// region UPDATE
 
 	/**
-	 * @param I_BTM_Task $task
+	 * @param $id
+	 * @param $callback
+	 * @param $webhook
+	 * @param $report_type
 	 *
 	 * @return bool
 	 */
-	public function update( I_BTM_Task $task ){
+	public function update( $id, $callback, $webhook, $report_type ){
 		global $wpdb;
 
-		$callback_arguments = serialize( $task->get_callback_arguments() );
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
-				'callback_action' => $task->get_callback_action(),
-				'callback_arguments' => $callback_arguments,
-				'priority' => $task->get_priority(),
-				'bulk_size' => $task->get_bulk_size(),
-				'status' => $task->get_status()->get_value(),
-				'date_created' => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
-				'type' => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
-				'argument_hash' => md5( $callback_arguments )
+				'id' => $id,
+				'callback_action' => $callback,
+				'webhook' => $webhook,
+				'report_type' => $report_type
 			),
 			array(
-				'id' => $task->get_id()
+				'id' => $id
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s' ),
+			array( '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -179,69 +149,9 @@ class BTM_Notification_Dao{
 		return true;
 	}
 
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_running( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_RUNNING ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_succeeded( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_SUCCEEDED ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_failed( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_FAILED ) );
-		return $this->update( $task );
-	}
-	/**
-	 * @param I_BTM_Task $task
-	 *
-	 * @return bool
-	 */
-	public function mark_as_in_progress( I_BTM_Task $task ){
-		$task->set_status( new BTM_Task_Run_Status( BTM_Task_Run_Status::STATUS_IN_PROGRESS ) );
-		return $this->update( $task );
-	}
-
 	// endregion
 
 	// region DELETE
-
-	/**
-	 * @param $callback_action_id
-	 * @param $user_id
-	 *
-	 * @return bool
-	 */
-	public function delete_user( $callback_action_id, $user_id ){
-
-		global $wpdb;
-
-		$deleted = $wpdb->delete(
-			$this->get_users_table_name(),
-			array( 'notification_callback_id' => $callback_action_id, 'user_id' => $user_id ),
-			array( '%d', '%d' )
-		);
-
-		if( false === $deleted || 0 === $deleted ){
-			return false;
-		}
-
-		return true;
-	}
 
 	/**
 	 * @param $notification_id
@@ -253,14 +163,8 @@ class BTM_Notification_Dao{
 		global $wpdb;
 
 		$deleted = $wpdb->delete(
-			$this->get_callbacks_table_name(),
+			$this->get_table_name(),
 			array( 'id' => $notification_id ),
-			array( '%d' )
-		);
-
-		$wpdb->delete(
-			$this->get_users_table_name(),
-			array( 'notification_callback_id' => $notification_id ),
 			array( '%d' )
 		);
 
@@ -272,16 +176,4 @@ class BTM_Notification_Dao{
 	}
 
 	// endregion
-
-	/**
-	 * @param stdClass $task_obj
-	 *
-	 * @return I_BTM_Task
-	 */
-	protected function create_task_from_db_obj( stdClass $task_obj ){
-		$class_name = BTM_Task_Type_Service::get_instance()->get_class_from_type( $task_obj->type );
-
-		/** @var I_BTM_Task $class_name */
-		return $class_name::create_from_db_obj( $task_obj );
-	}
 }

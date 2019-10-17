@@ -5,7 +5,7 @@
 .btm-notify-table{
     font-family: arial, sans-serif;
     border-collapse: collapse;
-    width: 70%;
+    width: 34%;
 }
 
 .btm-th-td{
@@ -30,16 +30,6 @@
     background-color: white;
 }
 
-.btm-user{
-    background-color: #e4e4e4;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    cursor: default;
-    float: left;
-    margin-right: 5px;
-    margin-top: 5px;
-    padding: 0 5px;
-}
 
 .btm-user-remove{
     color: #999;
@@ -66,7 +56,52 @@
 }
 
 .btm-task-edit a.btm-cansle-edit {
-    float: left;
+    display: inline-block;
     margin-left: 10px;
     padding-top: 5px;
+}
+
+.btm-item{
+    background-color: #e4e4e4;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: default;
+    float: left;
+    margin-right: 5px;
+    margin-top: 5px;
+    padding: 0 5px;
+}
+
+.on-fail{
+    display:none;
+}
+
+.select2{
+    margin-bottom: 10px;
+}
+
+.btm-submit-wrap{
+    margin-bottom: 15px;
+}
+
+.btm-submit-wrap:after{
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.btm-submit-wrap .submit{
+    padding: 0;
+}
+
+.column-report_type{
+    width: 150px;
+}
+
+.select-callbacks{
+    margin-top: 20px;
+}
+
+.notify-fail{
+    margin-bottom: 15px;
 }

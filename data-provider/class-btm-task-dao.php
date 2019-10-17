@@ -210,6 +210,78 @@ class BTM_Task_Dao{
 		return $this->create_task_from_db_obj( $task_obj );
 	}
 
+	/**
+	 * @param int $hour
+	 *
+	 * @return array|bool
+	 */
+	public function get_last_tasks_by_hours( $hour ){
+		global $wpdb;
+
+		$query = $wpdb->get_results('
+			SELECT * 
+			FROM `' . $this->get_table_name() . '`
+			WHERE `date_created` > DATE_SUB( NOW(), INTERVAL '. $hour .' HOUR) AND `is_system` = 0 
+		', OBJECT );
+
+		if( null === $query ){
+			return false;
+		}
+
+		$tasks = array();
+		foreach ( $query as $task_obj ){
+			$tasks[] = $this->create_task_from_db_obj( $task_obj );
+		}
+
+		return $tasks;
+	}
+
+	/**
+	 * Return Distinct callback actions
+	 *
+	 * @return array
+	 */
+	public function get_callback_actions(){
+		global $wpdb;
+
+		$query = '
+			SELECT DISTINCT `callback_action`
+			FROM `' . $this->get_table_name() . '`
+		';
+
+		$callback_actions = $wpdb->get_results( $query, OBJECT );
+
+		if( empty( $callback_actions ) ){
+			return array();
+		}
+
+		return $callback_actions;
+	}
+
+	/**
+	 * Return Distinct callback actions
+	 *
+	 * @return array
+	 */
+	public function get_callback_actions_not_system(){
+		global $wpdb;
+
+		$query = '
+			SELECT DISTINCT `callback_action`
+			FROM `' . BTM_Task_Dao::get_instance()->get_table_name() . '`
+			WHERE is_system = 0
+		';
+
+		$callback_actions = $wpdb->get_results( $query, OBJECT );
+
+		if( empty( $callback_actions ) ){
+			return array();
+		}
+
+		return $callback_actions;
+	}
+
+
 	// endregion
 
 	// region UPDATE

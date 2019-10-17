@@ -94,6 +94,12 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 		}
 
 		BTM_Task_Dao::get_instance()->delete_many_by_ids( $to_delete );
+		foreach ( $to_delete as $task_id ){
+			$bulk_arguments = BTM_Task_Bulk_Argument_Dao::get_instance()->get_by_task_id( (int)$task_id );
+			foreach ( $bulk_arguments as $bulk_argument ){
+				BTM_Task_Bulk_Argument_Dao::get_instance()->delete( $bulk_argument );
+            }
+        }
 
 		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
 			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'action', static::BULK_ACTION_DELETE, ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
@@ -227,7 +233,7 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 			$filter->set_date_end( $_GET[ 'date_end' ] );
 		}
 
-		if( ! empty( $_GET[ 'system' ] ) ){
+		if( BTM_Plugin_Options::get_instance()->get_show_system() === 'on' ){
 			$filter->set_show_system( true );
 		}else{
 			$filter->set_show_system( false );
@@ -247,8 +253,6 @@ final class BTM_Admin_Task_Page_Table extends BTM_Admin_Page_Table{
 	protected function extra_tablenav($which) {
 		if ( $which == "top" ) {
 			?>
-			<label for="system"><?php _e( 'Show system tasks', 'background_task_manager' ); ?></label>
-			<input type="checkbox" id="system" name="system" value="1" <?php checked( $this->filter->show_system() , 1 ); ?> />
 			<select name="callback" id="callback-filter">
 				<?php $callback_actions = BTM_Task_View_Dao::get_instance()->get_callback_actions(); ?>
 				<option value=""><?php _e( 'Callback Actions', 'background_task_manager' ); ?></option>

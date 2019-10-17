@@ -161,6 +161,14 @@ class BTM_Task_Bulk_Argument_View_Dao{
 			);
 		}
 
+		if( $filter->has_task_id() ){
+			$where .= $wpdb->prepare('
+				AND `' . $task_bulk_args_table_alias . '`.`task_id` = %s
+			',
+				$filter->get_task_id()
+			);
+		}
+
 		return $where;
 	}
 
