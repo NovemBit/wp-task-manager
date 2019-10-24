@@ -38,14 +38,17 @@ final class BTM_Admin_Manager {
 	 * @see https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
 	 */
 	function on_hook_admin_enqueue_scripts() {
-		$asset_version = BTM_Plugin_Options::get_instance()->get_asset_version();
+        global $plugin_page;
+        if( strpos( $plugin_page, 'btm' ) !== false ){
+            $asset_version = BTM_Plugin_Options::get_instance()->get_asset_version();
 
-		wp_enqueue_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js', array( 'jquery' ), $asset_version , true );
-		wp_enqueue_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css', array(), $asset_version );
+            wp_enqueue_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js', array( 'jquery' ), $asset_version , true );
+            wp_enqueue_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css', array(), $asset_version );
 
-		wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' ), $asset_version , true );
-		wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-		wp_enqueue_style( 'btm-admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css', array(), $asset_version );
+            wp_enqueue_script( 'btm-admin-scripts', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js' , array( 'jquery' ), $asset_version , true );
+            wp_localize_script( 'btm-admin-scripts', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+            wp_enqueue_style( 'btm-admin-style', plugin_dir_url( __DIR__ ) . 'assets/css/style.css', array(), $asset_version );
+        }
 	}
 
 	// region Admin Menu
