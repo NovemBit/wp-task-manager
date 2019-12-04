@@ -32,7 +32,7 @@ final class BTM_Admin_Notification_Single_Page {
 		);
 
 		if ( ! $page_hook ) {
-			if( is_admin() ){
+			if( current_user_can('administrator') ){
 				add_action( 'admin_notices', function () {
 					$class   = 'notice notice-error';
 					$message = __( 'Could not create admin page to show notification rule page.', 'background_task_manager' );
@@ -81,7 +81,7 @@ final class BTM_Admin_Notification_Single_Page {
 				if( $inserted_id ){
 					wp_safe_redirect( admin_url( '?page=btm-notification-rule&id='.$inserted_id ) );
 				}else{
-					if( is_admin() ) {
+					if( current_user_can('administrator') ) {
 						add_action( 'admin_notices', function () {
 							$class   = 'notice notice-error';
 							$message = __( 'Could not create notification rule.', 'background_task_manager' );

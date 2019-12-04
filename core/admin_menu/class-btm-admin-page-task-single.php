@@ -32,7 +32,7 @@ final class BTM_Admin_Task_Single_Page {
 		);
 
 		if( ! $page_hook ){
-			if( is_admin() ) {
+			if( current_user_can('administrator') ) {
 				add_action( 'admin_notices', function () {
 					$class   = 'notice notice-error';
 					$message = __( 'Could not create admin page to show task single page.', 'background_task_manager' );
@@ -147,7 +147,7 @@ final class BTM_Admin_Task_Single_Page {
 			$updated = $dao->update_task_priority( $task_id, $task_priority );
 
 			if( $updated === false ){
-				if( is_admin() ) {
+				if( current_user_can('administrator') ) {
 					add_action( 'admin_notices', function () {
 						$class   = 'notice notice-error';
 						$message = __( 'Task priority is not updated.', 'background_task_manager' );
@@ -170,7 +170,7 @@ final class BTM_Admin_Task_Single_Page {
 			$updated = $dao->update_task_bulk_size( $task_id, $task_bulk_size );
 
 			if( $updated === false ){
-				if( is_admin() ) {
+				if( current_user_can('administrator') ) {
 					add_action( 'admin_notices', function () {
 						$class   = 'notice notice-error';
 						$message = __( 'Task bulk size is not updated.', 'background_task_manager' );

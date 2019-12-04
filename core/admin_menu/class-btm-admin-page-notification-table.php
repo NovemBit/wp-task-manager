@@ -40,7 +40,7 @@ final class BTM_Admin_Notification_Page_Table extends BTM_Admin_Page_Table{
 		if( $page_hook ){
 			add_action( 'load-' . $page_hook, array( $this, 'on_hook_page_load_process_bulk' ) );
 		}else{
-			if( is_admin() ) {
+			if( current_user_can('administrator') ) {
 				add_action( 'admin_notices', function () {
 					$class   = 'notice notice-error';
 					$message = __( 'Could not create admin page to show background tasks.', 'background_task_manager' );
