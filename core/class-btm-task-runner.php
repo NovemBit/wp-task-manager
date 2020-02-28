@@ -99,6 +99,11 @@ final class BTM_Task_Runner{
 		}finally{
 			$end = time();
 
+            /**
+             * @todo create intermediate status for task when bulk argument failed
+             *
+             * @see https://github.com/NovemBit/wp-task-manager/issues/39
+             */
 //			if( $task_run_filter_log->is_failed() ){
 //				$task_dao::get_instance()->mark_as_failed( $task );
 //				$notify = new BTM_Notification_Runner();
