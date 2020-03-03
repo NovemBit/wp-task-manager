@@ -99,11 +99,16 @@ final class BTM_Task_Runner{
 		}finally{
 			$end = time();
 
-			if( $task_run_filter_log->is_failed() ){
-				$task_dao::get_instance()->mark_as_failed( $task );
-				$notify = new BTM_Notification_Runner();
-				$notify->notify_failed_task( $task );
-			}else{
+            /**
+             * @todo create intermediate status for task when bulk argument failed
+             *
+             * @see https://github.com/NovemBit/wp-task-manager/issues/39
+             */
+//			if( $task_run_filter_log->is_failed() ){
+//				$task_dao::get_instance()->mark_as_failed( $task );
+//				$notify = new BTM_Notification_Runner();
+//				$notify->notify_failed_task( $task );
+//			}else{
 				$more_task_bulk_arguments = $task_bulk_argument_dao->get_next_arguments_to_run(
 					$task->get_id(),
 					1
@@ -119,7 +124,7 @@ final class BTM_Task_Runner{
 						$task_dao::get_instance()->mark_as_succeeded( $task );
 					}
 				}
-			}
+//			}
 
 			// marking bulk arguments failed or succeeded
 			$task_bulk_arguments_succeeded = array();
