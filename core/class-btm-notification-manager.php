@@ -64,10 +64,10 @@ class BTM_Notification_Manager {
 	 */
 	public function create_task() {
 		if( $this->range == "hourly" ){
-			return new BTM_Task_Notify( $this->get_hourly_callback_action(), array(), 200 );
+			return new BTM_Task_Notify( $this->get_hourly_callback_action(), array(), 1 );
 		}
 		if( $this->range == "daily" ){
-			return new BTM_Task_Notify( $this->get_daily_callback_action(), array(), 200 );
+			return new BTM_Task_Notify( $this->get_daily_callback_action(), array(), 1 );
 		}
 	}
 

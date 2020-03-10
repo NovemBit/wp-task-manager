@@ -44,7 +44,7 @@ class BTM_Task_Delete_Old_Entities_Manager {
 	 * @return BTM_Task_Delete_Old_Entities
 	 */
 	public function create_task(){
-		return new BTM_Task_Delete_Old_Entities( $this->get_callback_action(), array(), 200 );
+		return new BTM_Task_Delete_Old_Entities( $this->get_callback_action(), array(), 1 );
 	}
 
 	/**
