@@ -495,6 +495,41 @@ class BTM_Task_Bulk_Argument_Dao{
 	}
 
 	/**
+	 * @param $task_id
+	 *
+	 * @return array
+	 */
+	public function get_running_arguments( $task_id ){
+		global $wpdb;
+
+		if( ! is_int( $task_id ) || 0 >= $task_id ){
+			throw new InvalidArgumentException( 'Argument $task_id should be positive int. Input was: ' . $task_id );
+		}
+
+		$query = $wpdb->prepare('
+			SELECT *
+			FROM `' . $this->get_table_name() . '`
+			WHERE task_id = %d
+				AND `status` = %s
+		',
+			$task_id,
+			BTM_Task_Run_Status::STATUS_RUNNING
+		);
+
+		$task_bulk_argument_objs = $wpdb->get_results( $query, OBJECT );
+		if( ! $task_bulk_argument_objs ){
+			$task_bulk_argument_objs = array();
+		}
+
+		$task_bulk_arguments = array();
+		foreach( $task_bulk_argument_objs as $task_bulk_argument_obj ){
+			$task_bulk_arguments[] = $this->create_task_from_db_obj( $task_bulk_argument_obj );
+		}
+
+		return $task_bulk_arguments;
+	}
+
+	/**
 	 * @param int $task_id
 	 *
 	 * @return bool

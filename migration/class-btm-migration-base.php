@@ -47,6 +47,7 @@ class BTM_Migration_Base implements I_BTM_Migration{
 			  `bulk_size` int(11) NOT NULL DEFAULT \'0\',
 			  `status` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			  `type` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL,
 			  `is_system` tinyint(1) NOT NULL,
 			  `argument_hash` char(32) COLLATE utf8mb4_unicode_ci NOT NULL,
