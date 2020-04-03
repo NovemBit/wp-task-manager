@@ -119,93 +119,95 @@ class BTM_Notification_Runner {
 	public function report( $report_range ) {
 		$notifications = BTM_Notification_Dao::get_instance()->get_notification_rules();
 
-		foreach ( $notifications as $item ) {
-			$this->webhook = $item->webhook;
-			$report_type   = maybe_unserialize( $item->report_type );
-			if ( in_array( $report_range, $report_type ) ) {
-				$hour = 0;
-				if ( $report_range === 'daily' ) {
-					$hour = 24;
-				} elseif ( $report_range === 'hourly' ) {
-					$hour = 1;
-				}
+		if( $notifications ){
+			foreach ( $notifications as $item ) {
+				$this->webhook = $item->webhook;
+				$report_type   = maybe_unserialize( $item->report_type );
+				if ( in_array( $report_range, $report_type ) ) {
+					$hour = 0;
+					if ( $report_range === 'daily' ) {
+						$hour = 24;
+					} elseif ( $report_range === 'hourly' ) {
+						$hour = 1;
+					}
 
-				$tasks = BTM_Task_Dao::get_instance()->get_last_tasks_by_hours( $hour );
-				if( count( $tasks ) === 0 ){
-					return false;
-				}
-				$callback_actions = BTM_Task_Dao::get_instance()->get_callback_actions();
+					$tasks = BTM_Task_Dao::get_instance()->get_last_tasks_by_hours( $hour );
+					if( count( $tasks ) === 0 ){
+						return false;
+					}
+					$callback_actions = BTM_Task_Dao::get_instance()->get_callback_actions();
 
-				$tmp = [];
-				foreach ( $callback_actions as $callback_action ) {
-					$callback_action = $callback_action->callback_action;
+					$tmp = [];
+					foreach ( $callback_actions as $callback_action ) {
+						$callback_action = $callback_action->callback_action;
 
-					foreach ( $tasks as $task ) {
-						$task_callback_action = $task->get_callback_action();
-						$task_status          = $task->get_status()->get_value();
+						foreach ( $tasks as $task ) {
+							$task_callback_action = $task->get_callback_action();
+							$task_status          = $task->get_status()->get_value();
 
-						if ( $callback_action === $task_callback_action ) {
-							if ( isset( $tmp[ $callback_action ] ) ) {
-								if ( isset( $tmp[ $callback_action ][ $task_status ] ) ) {
-									$tmp[ $callback_action ][ $task_status ] ++;
+							if ( $callback_action === $task_callback_action ) {
+								if ( isset( $tmp[ $callback_action ] ) ) {
+									if ( isset( $tmp[ $callback_action ][ $task_status ] ) ) {
+										$tmp[ $callback_action ][ $task_status ] ++;
+									} else {
+										$tmp[ $callback_action ][ $task_status ] = 1;
+									}
 								} else {
 									$tmp[ $callback_action ][ $task_status ] = 1;
 								}
-							} else {
-								$tmp[ $callback_action ][ $task_status ] = 1;
 							}
 						}
 					}
-				}
 
-				$clb                    = array_keys( $tmp );
-				$callback_action_report = '';
-				foreach ( $clb as $value ) {
-					$callback_action_report .= $value . "\n";
-				}
-
-				$fields = [];
-				foreach ( $clb as $callback_action ) {
-					$statuses = array_keys( $tmp[ $callback_action ] );
-					$value    = '';
-					foreach ( $statuses as $status ) {
-						$value .= $status . ' - ' . $tmp[ $callback_action ][ $status ] . "\n";
+					$clb                    = array_keys( $tmp );
+					$callback_action_report = '';
+					foreach ( $clb as $value ) {
+						$callback_action_report .= $value . "\n";
 					}
 
-					$fields[] = array(
-						"name"  => $callback_action,
-						"value" => $value
-					);
-				}
+					$fields = [];
+					foreach ( $clb as $callback_action ) {
+						$statuses = array_keys( $tmp[ $callback_action ] );
+						$value    = '';
+						foreach ( $statuses as $status ) {
+							$value .= $status . ' - ' . $tmp[ $callback_action ][ $status ] . "\n";
+						}
 
-				$content = '';
-				if( $report_range === 'daily' ){
-					$content = 'Daily Report '. PHP_EOL .' Tasks Count - ' . count( $tasks );
-				}elseif ( $report_range === 'hourly' ){
-					$content = 'Hourly Report '. PHP_EOL .' Tasks Count - ' . count( $tasks );
-				}
-				$body = json_encode(
-					array(
-						'content' => $content,
-						'embeds'  => array(
-							array(
-								'fields' => $fields
+						$fields[] = array(
+							"name"  => $callback_action,
+							"value" => $value
+						);
+					}
+
+					$content = '';
+					if( $report_range === 'daily' ){
+						$content = 'Daily Report '. PHP_EOL .' Tasks Count - ' . count( $tasks );
+					}elseif ( $report_range === 'hourly' ){
+						$content = 'Hourly Report '. PHP_EOL .' Tasks Count - ' . count( $tasks );
+					}
+					$body = json_encode(
+						array(
+							'content' => $content,
+							'embeds'  => array(
+								array(
+									'fields' => $fields
+								)
 							)
 						)
-					)
-				);
-				wp_remote_post(
-					$this->webhook,
-					array(
-						'method'  => 'POST',
-						'headers' => array(
-							'Content-Type' => 'application/json',
-						),
-						'body'    => $body
-					)
-				);
+					);
+					wp_remote_post(
+						$this->webhook,
+						array(
+							'method'  => 'POST',
+							'headers' => array(
+								'Content-Type' => 'application/json',
+							),
+							'body'    => $body
+						)
+					);
 
-				return true;
+					return true;
+				}
 			}
 		}
 
