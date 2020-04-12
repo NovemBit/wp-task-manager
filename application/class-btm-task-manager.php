@@ -50,12 +50,21 @@ final class BTM_Task_Manager{
 		$running_tasks = BTM_Task_Dao::get_instance()->get_running_tasks();
 		if( $running_tasks ){
 			foreach ( $running_tasks as $task ){
-				if( BTM_Plugin_Options::get_instance()->get_cron_job_interval_in_minutes() * 2 * 60 < time() - strtotime( $task->last_modified ) ){
+				if( BTM_Plugin_Options::get_instance()->get_long_running_tasks_to_repeat_in_seconds() < time() - strtotime( $task->last_run ) ){
 					BTM_Task_Dao::get_instance()->mark_as_in_progress( $task );
 					if( 0 < $task->get_bulk_size() ){
+						$failed_bulk_tasks_to_log = '';
 						$running_arguments = BTM_Task_Bulk_Argument_Dao::get_instance()->get_running_arguments( $task->get_id() );
-						foreach ( $running_arguments as $running_argument ){
-							BTM_Task_Bulk_Argument_Dao::get_instance()->mark_as_failed( $running_argument );
+						if( $running_arguments ){
+							/** @var BTM_Task_Bulk_Argument $running_argument */
+							foreach ( $running_arguments as $running_argument ){
+								$failed_bulk_tasks_to_log .= $running_argument->get_id() . ', ';
+								BTM_Task_Bulk_Argument_Dao::get_instance()->mark_as_failed( $running_argument );
+							}
+							$failed_bulk_tasks_to_log = substr( $failed_bulk_tasks_to_log, 0, -2 );
+						}
+						if( $failed_bulk_tasks_to_log ){
+							$task_manager_log_dao->log( __( 'Terminated execution of long-running bulk arguments: ' . $failed_bulk_tasks_to_log . '. Moved task to "In Progress"', 'background_task_manager' ) );
 						}
 					}
 				}
