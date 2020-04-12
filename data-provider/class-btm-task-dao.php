@@ -338,7 +338,7 @@ class BTM_Task_Dao{
 				'bulk_size'             => $task->get_bulk_size(),
 				'status'                => $task->get_status()->get_value(),
 				'date_created'          => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
-				'last_modified'         => date( 'Y-m-d H:i:s' , time() ),
+				'last_run'              => date( 'Y-m-d H:i:s' , time() ),
 				'type'                  => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
 				'argument_hash'         => md5( $callback_arguments ),
 				'is_system'             => $task->is_system()
@@ -362,13 +362,13 @@ class BTM_Task_Dao{
 	 *
 	 * @return bool
 	 */
-	public function change_last_modified( I_BTM_Task $task ){
+	public function change_last_run( I_BTM_Task $task ){
 		global $wpdb;
 
 		$updated = $wpdb->update(
 			$this->get_table_name(),
 			array(
-				'last_modified'          => date( 'Y-m-d H:i:s' , time() )
+				'last_run'  => date( 'Y-m-d H:i:s' , time() )
 			),
 			array(
 				'id' => $task->get_id()

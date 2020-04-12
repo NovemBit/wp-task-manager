@@ -72,7 +72,7 @@ final class BTM_Task_Runner{
 
 		$task_bulk_argument_dao->mark_many_as_running( $task_bulk_arguments );
 
-		$task_dao->change_last_modified( $task );
+		$task_dao->change_last_run( $task );
 
 		$start = time();
 		try{
@@ -167,7 +167,7 @@ final class BTM_Task_Runner{
 		$task_dao = BTM_Task_Dao::get_instance();
 		$task_dao::get_instance()->mark_as_running( $task );
 
-		$task_dao->change_last_modified( $task );
+		$task_dao->change_last_run( $task );
 
 		$start = time();
 		try{
