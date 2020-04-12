@@ -50,18 +50,19 @@ class BTM_Notification_Runner {
 		$status               = $task->get_status()->get_value();
 		$this->task_id        = $task->get_id();
 
-		foreach ( $notifications as $item ) {
-			$callback_actions = maybe_unserialize( $item->callback_action );
-			$report_type      = maybe_unserialize( $item->report_type );
-			$this->webhook    = $item->webhook;
-			foreach ( $callback_actions as $callback_action ) {
-				if( $callback_action === 'all' && ! $task->is_system() ){
-					$this->notification_form( $task_callback_action, $status );
-				}elseif( $task_callback_action === $callback_action && $status === 'failed' && in_array( 'failed', $report_type ) ) {
-					$this->notification_form( $task_callback_action, $status );
+		if( $notifications ){
+			foreach ( $notifications as $item ) {
+				$callback_actions = maybe_unserialize( $item->callback_action );
+				$report_type      = maybe_unserialize( $item->report_type );
+				$this->webhook    = $item->webhook;
+				foreach ( $callback_actions as $callback_action ) {
+					if( $callback_action === 'all' && ! $task->is_system() ){
+						$this->notification_form( $task_callback_action, $status );
+					}elseif( $task_callback_action === $callback_action && $status === 'failed' && in_array( 'failed', $report_type ) ) {
+						$this->notification_form( $task_callback_action, $status );
+					}
 				}
 			}
-
 		}
 	}
 
@@ -119,7 +120,7 @@ class BTM_Notification_Runner {
 	public function report( $report_range ) {
 		$notifications = BTM_Notification_Dao::get_instance()->get_notification_rules();
 
-		if( $notifications ){
+		if( !empty( $notifications ) ){
 			foreach ( $notifications as $item ) {
 				$this->webhook = $item->webhook;
 				$report_type   = maybe_unserialize( $item->report_type );

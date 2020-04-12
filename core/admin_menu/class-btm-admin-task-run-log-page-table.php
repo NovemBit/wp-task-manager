@@ -39,12 +39,15 @@ final class BTM_Admin_Task_Run_Log_Page_Table extends BTM_Admin_Page_Table{
 		if( $page_hook ){
 			add_action( 'load-' . $page_hook, array( $this, 'on_hook_page_load_process_bulk' ) );
 		}else{
-			add_action( 'admin_notices', function(){
-				$class = 'notice notice-error';
-				$message = __( 'Could not create admin page to show background task run logs.', 'background_task_manager' );
+			if( current_user_can('administrator') ) {
+				add_action( 'admin_notices', function () {
+					$class   = 'notice notice-error';
+					$message = __( 'Could not create admin page to show background task run logs.',
+						'background_task_manager' );
 
-				printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
-			} );
+					printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+				} );
+			}
 		}
 	}
 

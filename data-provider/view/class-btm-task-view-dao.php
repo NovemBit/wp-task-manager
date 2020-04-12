@@ -85,7 +85,7 @@ class BTM_Task_View_Dao{
 			LEFT JOIN `' . BTM_Task_Bulk_Argument_Dao::get_instance()->get_table_name() . '` AS `bulk_args_done`
 				ON `bulk_args_done`.`task_id` = `matched_tasks_totals`.`id`
 				AND `bulk_args_done`.`status` != "' . BTM_Task_Run_Status::STATUS_REGISTERED . '"
-			GROUP BY `matched_tasks_totals`.`id`
+			GROUP BY `matched_tasks_totals`.`id` DESC
 		';
 
 		$task_view_objs = $wpdb->get_results( $query, OBJECT );
