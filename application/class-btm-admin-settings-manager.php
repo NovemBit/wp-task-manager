@@ -77,6 +77,12 @@ final class BTM_Admin_Settings_Manager {
 				BTM_Plugin_Options::get_instance()->update_total_execution_allowed_duration_in_seconds( (int)$duration );
 			}
 		}
+		if( isset( $_POST[ "btm-task-repeat" ] ) ){
+			$repeat = $_POST[ "btm-task-repeat" ];
+			if( ctype_digit( $repeat ) ){
+				BTM_Plugin_Options::get_instance()->update_long_running_tasks_to_repeat_in_seconds( (int)$repeat );
+			}
+		}
 		if( isset( $_POST[ "btm-delete-old-entities-interval" ] ) ){
 			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-entities-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_interval ) ){
@@ -120,6 +126,13 @@ final class BTM_Admin_Settings_Manager {
 							<p class="description" id="duration" ><?php esc_html_e( 'Total execution allowed duration in seconds','background_task_manager' ); ?></p>
 						</td>
 					</tr>
+                    <tr>
+                        <th scope="row"><label for="repeat"><?php esc_html_e( 'Long running tasks to repeat','background_task_manager' ); ?></label></th>
+                        <td>
+                            <input name="btm-task-repeat" id="repeat" type="number" min="1" class="regular-text" value="<?php echo get_option( 'btm_task_repeat', get_option( 'btm_cron_interval', 5 ) * 2 * 60 ); ?>" >
+                            <p class="description" id="repeat" ><?php esc_html_e( 'Duration in seconds, to keep alive tasks after disaster. Need to be greater than Cron Job Interval','background_task_manager' ); ?></p>
+                        </td>
+                    </tr>
 					<tr>
 						<th scope="row"><label for="delete-old-entities-cron-job"><?php esc_html_e( 'Delete Expired Tasks, Bulk arguments and Logs Cron Job Interval','background_task_manager' ); ?></label></th>
 						<td>
