@@ -77,12 +77,6 @@ final class BTM_Admin_Settings_Manager {
 				BTM_Plugin_Options::get_instance()->update_total_execution_allowed_duration_in_seconds( (int)$duration );
 			}
 		}
-		if( isset( $_POST[ "btm-task-repeat" ] ) ){
-			$repeat = $_POST[ "btm-task-repeat" ];
-			if( ctype_digit( $repeat ) ){
-				BTM_Plugin_Options::get_instance()->update_long_running_tasks_to_repeat_in_seconds( (int)$repeat );
-			}
-		}
 		if( isset( $_POST[ "btm-delete-old-entities-interval" ] ) ){
 			$delete_old_tasks_logs_bulk_arguments_interval = $_POST[ "btm-delete-old-entities-interval" ];
 			if( ctype_digit( $delete_old_tasks_logs_bulk_arguments_interval ) ){

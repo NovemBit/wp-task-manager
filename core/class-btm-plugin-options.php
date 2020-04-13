@@ -203,57 +203,6 @@ final class BTM_Plugin_Options{
 	}
 
 	/**
-	 * @var int
-	 */
-	private $long_running_tasks_to_repeat_in_seconds;
-	/**
-	 * @return int
-	 */
-	public function get_long_running_tasks_to_repeat_in_seconds(){
-		return  $this->long_running_tasks_to_repeat_in_seconds;
-	}
-	/**
-	 * @param int $long_running_tasks_to_repeat_in_seconds
-	 *
-	 * @throws InvalidArgumentException
-	 *      in the case the argument $long_running_tasks_to_repeat_in_seconds is not a positive int
-	 */
-	private function set_long_running_tasks_to_repeat_in_seconds( $long_running_tasks_to_repeat_in_seconds ){
-		if( ! is_int( $long_running_tasks_to_repeat_in_seconds ) || 0 >= $long_running_tasks_to_repeat_in_seconds ){
-			throw new InvalidArgumentException(
-				'Method set_long_running_tasks_to_repeat_in_seconds only accepts int greater than 0. Input was: '
-				. $long_running_tasks_to_repeat_in_seconds
-			);
-		}
-
-		$this->long_running_tasks_to_repeat_in_seconds = $long_running_tasks_to_repeat_in_seconds;
-	}
-	/**
-	 * Initializes long running tasks to repeat in seconds
-	 */
-	private function init_long_running_tasks_to_repeat_in_seconds(){
-		$repeat = (int)get_option( $this->get_db_table_prefix() . 'task_repeat' ,  get_option( $this->get_db_table_prefix() . 'cron_interval', 5 ) * 2 * 60 );
-
-		$this->set_long_running_tasks_to_repeat_in_seconds( $repeat );
-	}
-	/**
-	 * @param int $repeat
-	 *
-	 * @return bool
-	 */
-	public function update_long_running_tasks_to_repeat_in_seconds( $repeat ){
-		$this->set_long_running_tasks_to_repeat_in_seconds( $repeat );
-
-		$updated = update_option( $this->get_db_table_prefix() . 'task_repeat', $this->long_running_tasks_to_repeat_in_seconds );
-
-		if( $updated ){
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function get_db_table_prefix(){
