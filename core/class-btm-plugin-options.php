@@ -32,7 +32,6 @@ final class BTM_Plugin_Options{
 		$this->init_path();
 		$this->init_dir_name();
 		$this->init_total_execution_allowed_duration_in_seconds();
-		$this->init_long_running_tasks_to_repeat_in_seconds();
 		$this->init_allowed_insert_bulk_size();
 		$this->init_mode_debug();
 		$this->init_request_debug();
