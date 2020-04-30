@@ -26,6 +26,8 @@ class BTM_Task_Dao{
 	}
 
 	private function __construct() {}
+
+
 	private function __clone() {}
 	private function __wakeup() {}
 
@@ -211,6 +213,38 @@ class BTM_Task_Dao{
 	}
 
 	/**
+	 * @return array|bool
+	 */
+	public function get_running_tasks(){
+		global $wpdb;
+
+		$where = ' 1=1 ';
+		$where .= $wpdb->prepare('
+			AND `status` = %s AND `is_system` = 0
+		',
+			BTM_Task_Run_Status::STATUS_RUNNING
+		);
+
+		$query = '
+			SELECT *
+			FROM `' . $this->get_table_name() . '`
+			WHERE ' . $where . '
+		';
+
+		$tasks_obj = $wpdb->get_results( $query, OBJECT );
+		if( null === $tasks_obj ){
+			return false;
+		}
+
+		$tasks = array();
+		foreach ( $tasks_obj as $task_obj ){
+			$tasks[] = $this->create_task_from_db_obj( $task_obj );
+		}
+
+		return $tasks;
+	}
+
+	/**
 	 * @param int $hour
 	 *
 	 * @return array|bool
@@ -304,6 +338,7 @@ class BTM_Task_Dao{
 				'bulk_size'             => $task->get_bulk_size(),
 				'status'                => $task->get_status()->get_value(),
 				'date_created'          => date( 'Y-m-d H:i:s' , $task->get_date_created_timestamp() ),
+				'last_run'              => date( 'Y-m-d H:i:s' , time() ),
 				'type'                  => BTM_Task_Type_Service::get_instance()->get_type_from_task( $task ),
 				'argument_hash'         => md5( $callback_arguments ),
 				'is_system'             => $task->is_system()
@@ -312,6 +347,33 @@ class BTM_Task_Dao{
 				'id' => $task->get_id()
 			),
 			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%d' ),
+			array( '%d' )
+		);
+
+		if( false === $updated ){
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param I_BTM_Task $task
+	 *
+	 * @return bool
+	 */
+	public function change_last_run( I_BTM_Task $task ){
+		global $wpdb;
+
+		$updated = $wpdb->update(
+			$this->get_table_name(),
+			array(
+				'last_run'  => date( 'Y-m-d H:i:s' , time() )
+			),
+			array(
+				'id' => $task->get_id()
+			),
+			array( '%s' ),
 			array( '%d' )
 		);
 

@@ -72,6 +72,8 @@ final class BTM_Task_Runner{
 
 		$task_bulk_argument_dao->mark_many_as_running( $task_bulk_arguments );
 
+		$task_dao->change_last_run( $task );
+
 		$start = time();
 		try{
 			$task_run_filter_log = new BTM_Task_Run_Filter_Log();
@@ -164,6 +166,8 @@ final class BTM_Task_Runner{
 	public function run_simple_task( I_BTM_Task $task ){
 		$task_dao = BTM_Task_Dao::get_instance();
 		$task_dao::get_instance()->mark_as_running( $task );
+
+		$task_dao->change_last_run( $task );
 
 		$start = time();
 		try{
