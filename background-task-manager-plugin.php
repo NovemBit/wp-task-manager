@@ -160,6 +160,7 @@ final class BTM_Plugin {
 	 * @see https://codex.wordpress.org/Plugin_API/Action_Reference/init
 	 */
 	public function on_late_init(){
+		BTM_Migration_Manager::get_instance()->migrate_up();
 		$plugin_options = BTM_Plugin_Options::get_instance();
 		if( is_admin() ){
 			BTM_Admin_Manager::run();
@@ -177,7 +178,6 @@ final class BTM_Plugin {
 	 * @see register_activation_hook
 	 */
 	public function on_plugin_activation(){
-		BTM_Migration_Manager::get_instance()->migrate_up();
 		BTM_Cron_Job_Manager::get_instance()->activate_jobs();
 	}
 
