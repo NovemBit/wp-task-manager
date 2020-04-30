@@ -346,7 +346,7 @@ class BTM_Task_Dao{
 			array(
 				'id' => $task->get_id()
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%d' ),
+			array( '%s', '%s', '%d', '%d', '%s', '%s','%s', '%s', '%s', '%d' ),
 			array( '%d' )
 		);
 
