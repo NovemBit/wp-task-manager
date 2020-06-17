@@ -89,4 +89,16 @@ interface I_BTM_Task{
 	 *      in the case the argument $is_system is not bool
 	 */
 	public function set_is_system( $is_system );
+
+	/**
+	 * @return int
+	 */
+	public function get_last_run_timestamp();
+
+	/**
+	 * @param $last_run_timestamp
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function set_last_run_timestamp( $last_run_timestamp );
 }

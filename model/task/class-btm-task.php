@@ -25,6 +25,7 @@ class BTM_Task implements I_BTM_Task{
 
 		$task->set_id( (int) $task_obj->id );
 		$task->set_is_system( (bool) $task_obj->is_system );
+		$task->set_last_run_timestamp( strtotime( $task_obj->last_run ) );
 
 		return $task;
 	}
@@ -219,6 +220,31 @@ class BTM_Task implements I_BTM_Task{
 		}
 
 		$this->is_system = $is_system;
+	}
+
+	/**
+	 * @var int
+	 */
+	protected $last_run_timestamp;
+
+	/**
+	 * @return int
+	 */
+	public function get_last_run_timestamp(){
+		return $this->last_run_timestamp;
+	}
+
+	/**
+	 * @param $last_run_timestamp
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function set_last_run_timestamp( $last_run_timestamp ){
+		if( ! is_int( $last_run_timestamp ) ){
+			throw new InvalidArgumentException( 'Argument $last_run should be int. Input was: ' . $last_run_timestamp );
+		}
+
+		$this->last_run_timestamp = $last_run_timestamp;
 	}
 
 	/**
