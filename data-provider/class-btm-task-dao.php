@@ -213,7 +213,7 @@ class BTM_Task_Dao{
 	}
 
 	/**
-	 * @return array|bool
+	 * @return I_BTM_Task[]|false
 	 */
 	public function get_running_tasks(){
 		global $wpdb;
