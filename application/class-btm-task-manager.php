@@ -56,7 +56,7 @@ final class BTM_Task_Manager {
 		$running_tasks = BTM_Task_Dao::get_instance()->get_running_tasks();
 		if ( $running_tasks ) {
 			foreach ( $running_tasks as $task ) {
-				if ( BTM_Plugin_Options::get_instance()->get_cron_job_interval_in_minutes() * 60 < time() - strtotime( $task->last_run ) ) {
+				if ( BTM_Plugin_Options::get_instance()->get_cron_job_interval_in_minutes() * 60 < time() - $task->get_last_run_timestamp() ) {
 					BTM_Task_Dao::get_instance()->mark_as_in_progress( $task );
 					if ( 0 < $task->get_bulk_size() ) {
 						$failed_bulk_tasks_to_log = '';
